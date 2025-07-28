@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   DialogContent,
   Typography,
@@ -10,16 +10,32 @@ import {
   Grow,
   Chip,
   Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import {
+  CompareArrows as CompareIcon,
+  Compare as CompareActiveIcon,
+} from "@mui/icons-material";
 import { useCoBrowseScrollSync } from "../hooks/useCoBrowseScrollSync";
+import PackageDetailsModal from "./PackageDetailsModal";
 
 const CustomerCatalogView = ({
   sharedPackages = [],
   sessionRef,
   onInterested = () => { },
-  // onDiscuss = () => { }
-  compareList = [], // For viewing agent's comparison
+  // Comparison props
+  compareList = [],
+  addToCompare = () => { },
+  removeFromCompare = () => { },
+  isInComparison = () => false,
+  isComparisonFull = false,
+  onComparePackages = () => { },
 }) => {
+  // Local state for modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
   // Co-browse scroll sync hook
   const { scrollRef, isActiveController } = useCoBrowseScrollSync({
     sessionRef,
@@ -28,13 +44,25 @@ const CustomerCatalogView = ({
     throttleDelay: 100
   });
 
+  // Modal handlers
+  const handleOpenModal = (pkg) => {
+    setSelectedPackage(pkg);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedPackage(null);
+  };
+
   console.log("[Customer Catalog] Scroll sync active controller:", isActiveController);
   console.log("[Customer Catalog] Shared packages:", sharedPackages.length);
 
   return (
-    <DialogContent
-      sx={{ p: 0, height: '80vh', display: 'flex', flexDirection: 'column' }}
-    >
+    <Box sx={{ position: 'relative', height: '80vh', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent
+        sx={{ p: 0, flex: 1, display: 'flex', flexDirection: 'column' }}
+      >
       {/* Header with sync indicator */}
       <Box sx={{
         p: 3,
@@ -145,6 +173,7 @@ const CustomerCatalogView = ({
                     position: "relative",
                     borderRadius: 3,
                     overflow: "hidden",
+                    cursor: "pointer",
                     "&:hover": {
                       transform: "translateY(-8px) scale(1.02)",
                       boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
@@ -161,7 +190,51 @@ const CustomerCatalogView = ({
                       zIndex: 2,
                     },
                   }}
+                  onClick={() => handleOpenModal(pkg)}
                 >
+                  {/* Add to Compare Button */}
+                  <Tooltip title={
+                    isInComparison(pkg.id)
+                      ? "Remove from comparison"
+                      : isComparisonFull
+                        ? "Maximum 3 packages for comparison"
+                        : "Add to comparison"
+                  }>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isInComparison(pkg.id)) {
+                          removeFromCompare(pkg.id);
+                        } else if (!isComparisonFull) {
+                          addToCompare(pkg);
+                        }
+                      }}
+                      disabled={!isInComparison(pkg.id) && isComparisonFull}
+                      sx={{
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        zIndex: 3,
+                        bgcolor: isInComparison(pkg.id) ? "secondary.main" : "rgba(255, 255, 255, 0.95)",
+                        color: isInComparison(pkg.id) ? "white" : "primary.main",
+                        borderRadius: "50%",
+                        padding: "8px",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                        "&:hover": {
+                          bgcolor: isInComparison(pkg.id) ? "secondary.dark" : "rgba(255, 255, 255, 1)",
+                          transform: "scale(1.1)",
+                        },
+                        "&:disabled": {
+                          opacity: 0.5,
+                          bgcolor: "rgba(255, 255, 255, 0.7)",
+                        },
+                      }}
+                    >
+                      <CompareIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
                   {/* Package Image */}
                   <Box
                     sx={{
@@ -279,7 +352,7 @@ const CustomerCatalogView = ({
                           fontWeight: 700,
                         }}
                       >
-                        ${pkg.price?.toLocaleString('en-US') || pkg.price}
+                        ${(pkg.price?.discounted || pkg.price)?.toLocaleString?.('en-US') || pkg.price?.discounted || pkg.price}
                       </Typography>
                       <Button
                         variant="contained"
@@ -319,11 +392,80 @@ const CustomerCatalogView = ({
             </Typography>
           </Box>
         )}
-
-
       </Box>
+      </DialogContent>
 
-    </DialogContent>
+      {/* Sticky Footer for Comparison */}
+      {compareList.length > 0 && (
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: '#c8e6c9',
+            color: 'black',
+            p: 3, // Match DialogActions padding
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            zIndex: 10,
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+            animation: 'slideUp 0.3s ease-out',
+            '@keyframes slideUp': {
+              from: {
+                transform: 'translateY(100%)',
+                opacity: 0,
+              },
+              to: {
+                transform: 'translateY(0)',
+                opacity: 1,
+              },
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CompareActiveIcon />
+            <Typography variant="h6" fontWeight="bold">
+              {compareList.length}/3 Selected
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              {compareList.length === 3 ? 'Maximum reached' : `Add ${3 - compareList.length} more`}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              color="success"
+              size="large"
+              onClick={onComparePackages}
+              sx={{
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                mr: 2, // Match close button margin-right
+                minWidth: 160, // Match "Discuss with Agent" button width for consistency
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Compare Packages
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {/* Package Details Modal */}
+      {modalOpen && (
+      <PackageDetailsModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        packageData={selectedPackage}
+      />
+      )}
+    </Box>
   );
 };
 

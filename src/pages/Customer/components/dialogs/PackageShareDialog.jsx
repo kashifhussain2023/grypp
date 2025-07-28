@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogActions,
   Button,
 } from "@mui/material";
 import CustomerCatalogView from "../../../../components/CustomerCatalogView";
-import TourComparisonDrawer from "../../../../components/Compare/TourComparisonDrawer";
+import TourComparisonModal from "../../../../components/Compare/TourComparisonModal";
 import { useComparePackages } from "../../../../hooks/useComparePackages";
 
 const PackageShareDialog = ({
@@ -14,21 +14,30 @@ const PackageShareDialog = ({
   sharedPackages = [],
   sessionRef // Add sessionRef for scroll sync
 }) => {
-  // Comparison functionality (view-only for customers)
+  // Customer comparison functionality
   const {
     compareList,
-    isDrawerOpen,
-    setIsDrawerOpen,
+    addToCompare,
     removeFromCompare,
     clearComparison,
     getBestValue,
-    setCompareList, // Added setCompareList to the hook
+    isInComparison,
+    isComparisonFull,
   } = useComparePackages(sessionRef, 'customer');
+
+  // State for comparison modal
+  const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
+
+  // Handle opening comparison modal
+  const handleComparePackages = () => {
+    setComparisonModalOpen(true);
+  };
+
   // Debug logging
   console.log("🎭 PackageShareDialog rendered with:", {
     open,
     sharedPackagesLength: sharedPackages.length,
-    sharedPackages: sharedPackages.slice(0, 2) // First 2 packages for debugging
+    comparisonCount: compareList.length
   });
 
   // Effect to log when open state changes
@@ -41,32 +50,15 @@ const PackageShareDialog = ({
     console.log("🎭 PackageShareDialog useEffect - packages changed:", sharedPackages.length);
   }, [sharedPackages]);
 
-  // Listen for shared comparison signals from agent
+  // Effect to log when open state changes
   useEffect(() => {
-    if (!sessionRef?.current) return;
+    console.log("🎭 PackageShareDialog useEffect - open changed to:", open);
+  }, [open]);
 
-    const handleSharedComparison = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("🎭 Received shared comparison signal:", data);
-
-        // Update the comparison list with shared packages
-        if (data.packages && data.packages.length > 0) {
-          setCompareList(data.packages);
-          setIsDrawerOpen(true);
-        }
-      } catch (err) {
-        console.error("Failed to parse shared comparison signal:", err);
-      }
-    };
-
-    const session = sessionRef.current;
-    session.on('signal:shared-comparison-open', handleSharedComparison);
-
-    return () => {
-      session.off('signal:shared-comparison-open', handleSharedComparison);
-    };
-  }, [sessionRef, setCompareList, setIsDrawerOpen]);
+  // Effect to log when packages change
+  useEffect(() => {
+    console.log("🎭 PackageShareDialog useEffect - packages changed:", sharedPackages.length);
+  }, [sharedPackages]);
 
   const handleInterested = (pkg) => {
     console.log("🎭 Customer interested in package:", pkg.name);
@@ -111,8 +103,13 @@ const PackageShareDialog = ({
           sharedPackages={sharedPackages}
           sessionRef={sessionRef}
           onInterested={handleInterested}
-          onDiscuss={handleDiscuss}
+          // Comparison props
           compareList={compareList}
+          addToCompare={addToCompare}
+          removeFromCompare={removeFromCompare}
+          isInComparison={isInComparison}
+          isComparisonFull={isComparisonFull}
+          onComparePackages={handleComparePackages}
         />
 
         <DialogActions sx={{ p: 3, bgcolor: "grey.50" }}>
@@ -137,19 +134,18 @@ const PackageShareDialog = ({
         </DialogActions>
       </Dialog>
 
-      {/* Tour Comparison Drawer - Rendered outside dialog to appear on top */}
-      {compareList.length > 0 && (
-        <TourComparisonDrawer
-          open={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          compareList={compareList}
-          onRemoveFromCompare={removeFromCompare}
-          onClearComparison={clearComparison}
-          getBestValue={getBestValue}
-          userType="customer"
-          sessionRef={sessionRef}
-        />
-      )}
+      {/* Tour Comparison Modal - Full screen modal for customer comparison */}
+      <TourComparisonModal
+        open={comparisonModalOpen}
+        onClose={() => setComparisonModalOpen(false)}
+        compareList={compareList}
+        onRemoveFromCompare={removeFromCompare}
+        onClearComparison={() => {
+          clearComparison();
+          setComparisonModalOpen(false);
+        }}
+        getBestValue={getBestValue}
+      />
     </>
   );
 };

@@ -39,6 +39,7 @@ import {
 } from "@mui/icons-material";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import { Document, Page, pdfjs } from "react-pdf";
+import { samplePackageData } from "../../data/samplePackageData";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -46,233 +47,8 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 const ENABLE_AGENT_VIDEO = import.meta.env.VITE_AGENT_ENABLE_VIDEO === "true";
 const ENABLE_AGENT_AUDIO = import.meta.env.VITE_AGENT_ENABLE_AUDIO === "true";
 
-// Tour Packages Data
-const tourPackages = [
-
-  {
-    id: "pkg2",
-    name: "Goa Beach Party",
-    type: "Party",
-    price: 660,
-    currency: "USD",
-    description:
-      "3-day beach party experience with DJ nights, water sports, luxury beach resort, and vibrant nightlife.",
-    image:
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg3",
-    name: "Kerala Backwaters",
-    type: "Relaxation",
-    price: 840,
-    currency: "USD",
-    description:
-      "Peaceful 5-day houseboat journey through Kerala's serene backwaters with traditional cuisine and spa treatments.",
-    image:
-      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg4",
-    name: "Rajasthan Heritage",
-    type: "Cultural",
-    price: 1140,
-    currency: "USD",
-    description:
-      "Explore the royal heritage of Rajasthan with palace visits, cultural shows, camel safaris, and heritage hotels.",
-    image:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg5",
-    name: "Ladakh Bike Trek",
-    type: "Adventure",
-    price: 1440,
-    currency: "USD",
-    description:
-      "Epic 10-day motorcycle adventure through the rugged landscapes of Ladakh with high-altitude passes and monasteries.",
-    image:
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg6",
-    name: "Mumbai Nightlife",
-    type: "Party",
-    price: 540,
-    currency: "USD",
-    description:
-      "Experience Mumbai's vibrant nightlife with club hopping, rooftop parties, fine dining, and luxury accommodations.",
-    image:
-      "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg7",
-    name: "Manali Snow Trek",
-    type: "Trekking",
-    price: 600,
-    currency: "USD",
-    description:
-      "4-day snow trekking experience in the beautiful valleys of Manali with professional guides and mountain gear.",
-    image:
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg8",
-    name: "Andaman Islands",
-    type: "Relaxation",
-    price: 1320,
-    currency: "USD",
-    description:
-      "7-day tropical paradise with pristine beaches, scuba diving, water activities, and beachfront resorts.",
-    image:
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg9",
-    name: "Delhi Food Tour",
-    type: "Cultural",
-    price: 360,
-    currency: "USD",
-    description:
-      "Discover Delhi's rich culinary heritage with guided food walks, cooking classes, and heritage restaurant visits.",
-    image:
-      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-
-
-  {
-    id: "pkg12",
-    name: "Tokyo Cultural Immersion",
-    type: "Cultural",
-    price: 1800,
-    currency: "USD",
-    description:
-      "5-day journey through traditional and modern Tokyo with temple visits, sushi classes, and traditional ryokan stays.",
-    image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg13",
-    name: "Bali Wellness Retreat",
-    type: "Relaxation",
-    price: 1200,
-    currency: "USD",
-    description:
-      "6-day spiritual wellness retreat in Bali with yoga sessions, meditation, spa treatments, and healthy organic cuisine.",
-    image:
-      "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg14",
-    name: "Patagonia Hiking",
-    type: "Trekking",
-    price: 2200,
-    currency: "USD",
-    description:
-      "10-day guided hiking expedition through Patagonia's dramatic landscapes with expert guides and camping under the stars.",
-    image:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg15",
-    name: "Ibiza Electronic Festival",
-    type: "Party",
-    price: 1600,
-    currency: "USD",
-    description:
-      "4-day electronic music festival experience in Ibiza with VIP access, beach clubs, and luxury accommodation.",
-    image:
-      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg16",
-    name: "African Safari",
-    type: "Adventure",
-    price: 3200,
-    currency: "USD",
-    description:
-      "8-day luxury safari in Kenya and Tanzania with game drives, hot air balloon rides, and premium lodge accommodations.",
-    image:
-      "https://images.unsplash.com/photo-1547036967-23d11aacaee0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg17",
-    name: "Tuscany Wine Tour",
-    type: "Cultural",
-    price: 1500,
-    currency: "USD",
-    description:
-      "5-day wine tasting journey through Tuscany's vineyards with cooking classes, villa stays, and countryside experiences.",
-    image:
-      "https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg18",
-    name: "Maldives Overwater Villa",
-    type: "Relaxation",
-    price: 4800,
-    currency: "USD",
-    description:
-      "7-day luxury escape in an overwater villa with private beach access, snorkeling, and world-class spa treatments.",
-    image:
-      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg19",
-    name: "Iceland Northern Lights",
-    type: "Adventure",
-    price: 1900,
-    currency: "USD",
-    description:
-      "6-day Northern Lights expedition with glacier hiking, hot springs, and cozy lodge accommodations in Iceland.",
-    image:
-      "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg20",
-    name: "Amazon Rainforest Explorer",
-    type: "Trekking",
-    price: 1700,
-    currency: "USD",
-    description:
-      "7-day eco-adventure deep into the Amazon rainforest with wildlife spotting, canopy walks, and indigenous culture experiences.",
-    image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg21",
-    name: "Santorini Sunset Romance",
-    type: "Relaxation",
-    price: 2100,
-    currency: "USD",
-    description:
-      "5-day romantic getaway in Santorini with sunset dinners, private yacht tours, and luxury cave hotel stays.",
-    image:
-      "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    id: "pkg22",
-    name: "Las Vegas VIP Experience",
-    type: "Party",
-    price: 2800,
-    currency: "USD",
-    description:
-      "4-day VIP Las Vegas experience with high-end shows, exclusive clubs, luxury suites, and gourmet dining.",
-    image:
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-
-  {
-    id: "pkg25",
-    name: "Everest Base Camp Trek",
-    type: "Trekking",
-    price: 2600,
-    currency: "USD",
-    description:
-      "14-day ultimate trekking challenge to Everest Base Camp with experienced Sherpa guides and mountain lodge accommodations.",
-    image:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
-  },
-];
+// Use centralized package data
+const tourPackages = samplePackageData;
 
 const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [hasRemoteStream, setHasRemoteStream] = useState(false);
@@ -318,13 +94,13 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     compareList,
     isDrawerOpen,
     setIsDrawerOpen,
-    addToCompare,
+    addToCompare, // eslint-disable-line no-unused-vars
     removeFromCompare,
     clearComparison,
     getBestValue,
-    isInComparison,
-    isComparisonFull,
-    comparisonCount
+    isInComparison, // eslint-disable-line no-unused-vars
+    isComparisonFull, // eslint-disable-line no-unused-vars
+    comparisonCount // eslint-disable-line no-unused-vars
   } = useComparePackages(sessionRef, 'agent');
 
   const ensureMediaAccess = async () => {
@@ -1610,19 +1386,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           sessionRef={sessionRef}
           selectedPackages={selectedPackages}
           onPackageSelect={handlePackageSelect}
-          onSharePackages={shareSelectedPackages}
           clearSelectedPackages={clearSelectedPackages}
-          // Comparison props
-          compareList={compareList}
-          isDrawerOpen={isDrawerOpen}
-          setIsDrawerOpen={setIsDrawerOpen}
-          addToCompare={addToCompare}
-          removeFromCompare={removeFromCompare}
-          clearComparison={clearComparison}
-          getBestValue={getBestValue}
-          isInComparison={isInComparison}
-          isComparisonFull={isComparisonFull}
-          comparisonCount={comparisonCount}
           sharedPackages={sharedPackages}
         />
 
