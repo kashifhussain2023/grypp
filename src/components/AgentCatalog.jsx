@@ -45,7 +45,10 @@ const AgentCatalog = ({
   selectedPackages,
   onPackageSelect,
   clearSelectedPackages,
-  sharedPackages = []
+  sharedPackages = [],
+  isSharingPackages = false, // eslint-disable-line no-unused-vars
+  sharingProgress = 0, // eslint-disable-line no-unused-vars
+  sharingStatus = '' // eslint-disable-line no-unused-vars
 }) => {
   // Filter states
   const [priceRange, setPriceRange] = useState([3000, 90000]);

@@ -37,7 +37,8 @@ const PackageShareDialog = ({
   console.log("🎭 PackageShareDialog rendered with:", {
     open,
     sharedPackagesLength: sharedPackages.length,
-    comparisonCount: compareList.length
+    comparisonCount: compareList.length,
+    sharedPackagesData: sharedPackages
   });
 
   // Effect to log when open state changes
@@ -47,7 +48,10 @@ const PackageShareDialog = ({
 
   // Effect to log when packages change
   useEffect(() => {
-    console.log("🎭 PackageShareDialog useEffect - packages changed:", sharedPackages.length);
+    console.log("🎭 PackageShareDialog useEffect - packages changed:", sharedPackages.length, sharedPackages);
+    if (sharedPackages.length > 0) {
+      console.log("🎭 PackageShareDialog - First package sample:", sharedPackages[0]);
+    }
   }, [sharedPackages]);
 
   // Effect to log when open state changes

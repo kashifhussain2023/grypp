@@ -40,6 +40,7 @@ import {
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import { Document, Page, pdfjs } from "react-pdf";
 import { samplePackageData } from "../../data/samplePackageData";
+import { agentPackageService } from "../../services/AgentPackageService";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -80,6 +81,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [sharedPackages, setSharedPackages] = useState([]);
   const [sharedComparisonOpen, setSharedComparisonOpen] = useState(false);
+  
+  // Package sharing progress state
+  const [isSharingPackages, setIsSharingPackages] = useState(false);
+  const [sharingProgress, setSharingProgress] = useState(0);
+  const [sharingStatus, setSharingStatus] = useState('');
 
   const fileInputRef = useRef(null);
   const sessionRef = useRef(null);
@@ -815,10 +821,14 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     setSelectedPackages([]);
   };
 
-  const shareSelectedPackages = () => {
+  const shareSelectedPackages = async () => {
     if (selectedPackages.length === 0) {
-      // Could add a Snackbar here instead of alert for better UX
       alert("Please select at least one package to share.");
+      return;
+    }
+
+    if (isSharingPackages) {
+      alert("Package sharing is already in progress. Please wait...");
       return;
     }
 
@@ -829,49 +839,68 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     // Calculate total value of shared packages
     const totalValue = packagesToShare.reduce((sum, pkg) => sum + pkg.price, 0);
 
-    sessionRef.current?.signal(
-      {
-        type: "package-share",
-        data: JSON.stringify({
-          packages: packagesToShare,
-          totalValue: totalValue,
-          timestamp: new Date().toISOString(),
-          agentNote: `Shared ${packagesToShare.length
-            } personalized travel packages worth $${totalValue.toLocaleString(
-              "en-US"
-            )}`,
-        }),
-      },
-      (err) => {
-        if (err) {
-          console.error("Package share signal error:", err);
-          alert("Failed to share packages. Please try again.");
-        } else {
-          // Success feedback
-          console.log(
-            `Successfully shared ${packagesToShare.length
-            } packages worth $${totalValue.toLocaleString("en-US")}`
-          );
+    setIsSharingPackages(true);
+    setSharingProgress(0);
+    setSharingStatus(`Preparing to share ${packagesToShare.length} packages...`);
 
-          // Add shared packages to the list for comparison
-          setSharedPackages(prev => {
-            const newPackages = [...prev];
-            packagesToShare.forEach(pkg => {
-              if (!newPackages.find(existing => existing.id === pkg.id)) {
-                newPackages.push(pkg);
-              }
+    try {
+      await agentPackageService.sendPackages(
+        sessionRef.current,
+        packagesToShare,
+        {
+          onProgress: (progress, sentChunks, totalChunks) => {
+            setSharingProgress(progress);
+            setSharingStatus(`Sending packages: ${sentChunks}/${totalChunks} chunks (${progress.toFixed(1)}%)`);
+            console.log(`📦 Agent sending progress: ${progress.toFixed(1)}% (${sentChunks}/${totalChunks})`);
+          },
+          onComplete: () => {
+            console.log(`✅ Successfully shared ${packagesToShare.length} packages worth $${totalValue.toLocaleString("en-US")}`);
+            
+            // Add shared packages to the list for comparison
+            setSharedPackages(prev => {
+              const newPackages = [...prev];
+              packagesToShare.forEach(pkg => {
+                if (!newPackages.find(existing => existing.id === pkg.id)) {
+                  newPackages.push(pkg);
+                }
+              });
+              return newPackages;
             });
-            return newPackages;
-          });
 
-          //setPackagesDialogOpen(false);
-          //setSelectedPackages([]);
-
-          // Could add a success snackbar here
-          // setSuccessMessage(`Shared ${packagesToShare.length} packages with customer!`);
+            setSharingStatus(`✅ Successfully shared ${packagesToShare.length} packages!`);
+            
+            // Reset sharing state after a short delay
+            setTimeout(() => {
+              setIsSharingPackages(false);
+              setSharingProgress(0);
+              setSharingStatus('');
+            }, 2000);
+          },
+          onError: (error) => {
+            console.error("📦 Package share error:", error);
+            setSharingStatus(`❌ Failed to share packages: ${error.message}`);
+            alert(`Failed to share packages: ${error.message}`);
+            
+            // Reset sharing state after error
+            setTimeout(() => {
+              setIsSharingPackages(false);
+              setSharingProgress(0);
+              setSharingStatus('');
+            }, 3000);
+          },
+          useChunking: 'auto' // Automatically determine if chunking is needed
         }
-      }
-    );
+      );
+    } catch (error) {
+      console.error("📦 Error initiating package share:", error);
+      setSharingStatus(`❌ Error: ${error.message}`);
+      alert(`Error: ${error.message}`);
+      
+      // Reset sharing state
+      setIsSharingPackages(false);
+      setSharingProgress(0);
+      setSharingStatus('');
+    }
   };
 
   const openSharedComparison = () => {
@@ -1388,6 +1417,9 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           onPackageSelect={handlePackageSelect}
           clearSelectedPackages={clearSelectedPackages}
           sharedPackages={sharedPackages}
+          isSharingPackages={isSharingPackages}
+          sharingProgress={sharingProgress}
+          sharingStatus={sharingStatus}
         />
 
         <DialogActions
@@ -1414,7 +1446,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             onClick={shareSelectedPackages}
             variant="contained"
             color="primary"
-            disabled={selectedPackages.length === 0}
+            disabled={selectedPackages.length === 0 || isSharingPackages}
             sx={{
               minWidth: 200,
               py: 1.5,
@@ -1423,20 +1455,20 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
               fontWeight: 600,
               fontSize: "1rem",
               boxShadow:
-                selectedPackages.length > 0
+                selectedPackages.length > 0 && !isSharingPackages
                   ? "0 4px 12px rgba(25, 118, 210, 0.3)"
                   : "none",
               background:
-                selectedPackages.length > 0
+                selectedPackages.length > 0 && !isSharingPackages
                   ? "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)"
                   : undefined,
               "&:hover": {
                 background:
-                  selectedPackages.length > 0
+                  selectedPackages.length > 0 && !isSharingPackages
                     ? "linear-gradient(45deg, #1565c0 30%, #1976d2 90%)"
                     : undefined,
-                boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
-                transform: "translateY(-2px)",
+                boxShadow: !isSharingPackages ? "0 6px 16px rgba(25, 118, 210, 0.4)" : "none",
+                transform: !isSharingPackages ? "translateY(-2px)" : "none",
               },
               "&:disabled": {
                 background: "rgba(0, 0, 0, 0.12)",
@@ -1444,11 +1476,13 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
               },
               transition: "all 0.3s ease",
             }}
+            startIcon={isSharingPackages ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            {selectedPackages.length === 0
+            {isSharingPackages
+              ? `${sharingProgress.toFixed(0)}% - ${sharingStatus}`
+              : selectedPackages.length === 0
               ? "Select Packages to Share"
-              : `Share ${selectedPackages.length} Package${selectedPackages.length > 1 ? "s" : ""
-              }`}
+              : `Share ${selectedPackages.length} Package${selectedPackages.length > 1 ? "s" : ""}`}
           </Button>
         </DialogActions>
       </Dialog>

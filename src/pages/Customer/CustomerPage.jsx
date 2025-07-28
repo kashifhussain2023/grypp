@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
 import { PDFDocument } from "pdf-lib";
@@ -14,6 +14,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  LinearProgress,
+  Fade,
+  Backdrop,
 } from "@mui/material";
 
 // Components
@@ -25,9 +28,11 @@ import FileUploadDialog from "./components/dialogs/FileUploadDialog";
 import LoadingDialog from "./components/dialogs/LoadingDialog";
 import AgentLeftDialog from "./components/dialogs/AgentLeftDialog";
 import PackageShareDialog from "./components/dialogs/PackageShareDialog";
+import ChunkedDataProgressDialog from "./components/dialogs/ChunkedDataProgressDialog";
 
 // Hooks
 import { useVideoCall } from "./hooks/useVideoCall";
+import { useChunkedPackageShare } from "../../hooks/useChunkedPackageShare";
 
 // Utils and Constants
 import { getFileType, generateSignedFilename } from "./utils/fileUtils";
@@ -41,137 +46,204 @@ const CustomerPage = ({
   setUserId,
   setCallStarted,
 }) => {
-  // Signal handlers for the video call
-  const signalHandlers = {
-    "signal:video-assist": (event) => {
-      const data = event.data;
-      if (data === "enable-video") {
-        setActiveFeature("Video Assist");
-      } else {
-        setActiveFeature("");
-      }
-    },
-    "signal:file-request": () => {
-      setFileUploadRequested(true);
-    },
-    "signal:file-share": (event) => {
-      try {
-        const parsed = JSON.parse(event.data);
-        setFilePreviewUrl(parsed.url);
-        setFilePreviewName(parsed.name);
-        setShowUploadedDialog(true);
-      } catch (err) {
-        console.error("Failed to parse file signal:", err);
-      }
-    },
-    "signal:file-preview": (event) => {
-      try {
-        const parsed = JSON.parse(event.data);
-        setFilePreviewUrl(parsed.url);
-        setFilePreviewName(parsed.name);
-        setShowUploadedDialog(true);
-      } catch (err) {
-        console.error("Failed to parse file signal:", err);
-      }
-    },
-    "signal:file-preview-closed": () => {
-      setShowUploadedDialog(false);
-      setFilePreviewUrl(null);
-      setFilePreviewName(null);
-    },
-    "signal:file-for-signing": (event) => {
-      try {
-        const parsed = JSON.parse(event.data);
-        setSignatureDocUrl(parsed.url);
-        setSignatureDocName(parsed.name);
-        setSignatureModalOpen(true);
-      } catch (err) {
-        console.error("Failed to parse file-for-signing signal data:", err);
-      }
-    },
-    "signal:package-share": (event) => {
-      console.log("📦 Package share signal received! Data:", event.data);
+  // File and dialog states
+  const [fileUploadRequested, setFileUploadRequested] = useState(false);
+  const [showUploadedDialog, setShowUploadedDialog] = useState(false);
+  const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+  const [filePreviewName, setFilePreviewName] = useState(null);
+  const [signatureDocUrl, setSignatureDocUrl] = useState(null);
+  const [signatureDocName, setSignatureDocName] = useState(null);
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [sharedPackages, setSharedPackages] = useState([]);
+  const [showPackagesDialog, setShowPackagesDialog] = useState(false);
 
-      try {
-        const parsed = JSON.parse(event.data);
-        console.log("📦 Parsed data:", parsed);
+  // Chunked package sharing states
+  const [showChunkedProgressDialog, setShowChunkedProgressDialog] =
+    useState(false);
 
-        if (parsed.packages && Array.isArray(parsed.packages)) {
-          console.log(
-            `📦 Successfully received ${parsed.packages.length} packages from agent`
-          );
-          console.log("📦 Packages data:", parsed.packages);
+  // Refs
+  const fileInputRef = useRef(null);
+  const sigPadRef = useRef(null);
 
-          // Force state updates in sequence
-          setSharedPackages([]);
-          setShowPackagesDialog(false);
+  // Create a ref that will be updated with the actual sessionRef from useVideoCall
+  const sessionRefForChunked = useRef(null);
+  
+  // Create a ref to always have access to the latest signal handlers
+  const signalHandlersRef = useRef(null);
 
-          // Use setTimeout to ensure state updates are processed
-          setTimeout(() => {
-            setSharedPackages(parsed.packages);
-            setShowPackagesDialog(true);
-            console.log("📦 State updated via timeout - packages:", parsed.packages.length);
-          }, 10);
+  // Chunked package sharing logic (called early to get handlers)
+  const {
+    isReceiving,
+    receivingProgress,
+    receivingDetails,
+    error: chunkedError,
+    cleanup: cleanupChunkedShare,
+    handleChunkMetadata,
+    handleChunk,
+  } = useChunkedPackageShare(sessionRefForChunked);
+
+  // Signal handlers for the video call (memoized to prevent unnecessary re-renders)
+  const signalHandlers = useMemo(
+    () => ({
+      "signal:video-assist": (event) => {
+        const data = event.data;
+        if (data === "enable-video") {
+          setActiveFeature("Video Assist");
         } else {
-          console.error("📦 Invalid package data structure:", parsed);
-          console.log(
-            "📦 Expected 'packages' array, got:",
-            typeof parsed.packages,
-            parsed.packages
-          );
+          setActiveFeature("");
         }
-      } catch (err) {
-        console.error("📦 Failed to parse package share signal:", err);
-        console.error("📦 Raw data that failed to parse:", event.data);
-      }
-    },
-    "signal:request-cobrowsing-url": async () => {
-      try {
-        const res = await axios.post(
-          `${CONFIG.BACKEND_URL}/api/cobrowse-token`
-        );
-        const token = res.data?.token;
+      },
+      "signal:file-request": () => {
+        setFileUploadRequested(true);
+      },
+      "signal:file-share": (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          setFilePreviewUrl(parsed.url);
+          setFilePreviewName(parsed.name);
+          setShowUploadedDialog(true);
+        } catch (err) {
+          console.error("Failed to parse file signal:", err);
+        }
+      },
+      "signal:file-preview": (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          setFilePreviewUrl(parsed.url);
+          setFilePreviewName(parsed.name);
+          setShowUploadedDialog(true);
+        } catch (err) {
+          console.error("Failed to parse file signal:", err);
+        }
+      },
+      "signal:file-preview-closed": () => {
+        setShowUploadedDialog(false);
+        setFilePreviewUrl(null);
+        setFilePreviewName(null);
+      },
+      "signal:file-for-signing": (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          setSignatureDocUrl(parsed.url);
+          setSignatureDocName(parsed.name);
+          setSignatureModalOpen(true);
+        } catch (err) {
+          console.error("Failed to parse file-for-signing signal data:", err);
+        }
+      },
+      "signal:package-share": (event) => {
+        console.log("📦 Package share signal received! Data:", event.data);
 
-        CobrowseIO.license = CONFIG.COBROWSE_LICENSE_KEY;
-        CobrowseIO.debug = true;
-        await CobrowseIO.client();
+        try {
+          const parsed = JSON.parse(event.data);
+          console.log("📦 Parsed data:", parsed);
 
-        CobrowseIO.start({ allowIFrameStart: true });
+          if (parsed.packages && Array.isArray(parsed.packages)) {
+            console.log(
+              `📦 Successfully received ${parsed.packages.length} packages from agent`
+            );
+            console.log("📦 Packages data:", parsed.packages);
 
-        const cobrowseSession = await CobrowseIO.createSession();
-        const sessionId = cobrowseSession.id();
-        const sessionUrl = `https://cobrowse.io/session/${sessionId}/?token=${token}&end_action=none&navigation=none&messages=none`;
+            // Force state updates in sequence
+            setSharedPackages([]);
+            setShowPackagesDialog(false);
 
-        if (sessionUrl && sessionRef.current) {
-          sessionRef.current.signal(
-            {
-              type: "cobrowsing-url",
-              data: JSON.stringify({ action: "start", sessionUrl }),
-            },
-            (err) => {
-              if (err) {
-                console.error("❌ Signal error:", err);
+            // Use setTimeout to ensure state updates are processed
+            setTimeout(() => {
+              setSharedPackages(parsed.packages);
+              setShowPackagesDialog(true);
+              console.log(
+                "📦 State updated via timeout - packages:",
+                parsed.packages.length
+              );
+            }, 10);
+          } else {
+            console.error("📦 Invalid package data structure:", parsed);
+            console.log(
+              "📦 Expected 'packages' array, got:",
+              typeof parsed.packages,
+              parsed.packages
+            );
+          }
+        } catch (err) {
+          console.error("📦 Failed to parse package share signal:", err);
+          console.error("📦 Raw data that failed to parse:", event.data);
+        }
+      },
+      "signal:request-cobrowsing-url": async () => {
+        try {
+          const res = await axios.post(
+            `${CONFIG.BACKEND_URL}/api/cobrowse-token`
+          );
+          const token = res.data?.token;
+
+          CobrowseIO.license = CONFIG.COBROWSE_LICENSE_KEY;
+          CobrowseIO.debug = true;
+          await CobrowseIO.client();
+
+          CobrowseIO.start({ allowIFrameStart: true });
+
+          const cobrowseSession = await CobrowseIO.createSession();
+          const sessionId = cobrowseSession.id();
+          const sessionUrl = `https://cobrowse.io/session/${sessionId}/?token=${token}&end_action=none&navigation=none&messages=none`;
+
+          // Use the sessionRef from the ref to avoid dependency issues
+          const currentSessionRef = sessionRefForChunked.current;
+          if (sessionUrl && currentSessionRef) {
+            currentSessionRef.signal(
+              {
+                type: "cobrowsing-url",
+                data: JSON.stringify({ action: "start", sessionUrl }),
+              },
+              (err) => {
+                if (err) {
+                  console.error("❌ Signal error:", err);
+                }
               }
-            }
+            );
+          }
+        } catch (error) {
+          console.error("❌ Failed to parse cobrowsing signal:", error);
+        }
+      },
+      "signal:agent-request-shared-packages": (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log(
+            "🎭 Agent requested to open shared packages dialog:",
+            data
+          );
+          if (data.action === "open-shared-packages-dialog") {
+            console.log("📦 Opening shared packages dialog for customer");
+            setShowPackagesDialog(true);
+          }
+        } catch (err) {
+          console.error(
+            "Failed to parse agent-request-shared-packages signal:",
+            err
           );
         }
-      } catch (error) {
-        console.error("❌ Failed to parse cobrowsing signal:", error);
-      }
-    },
-    "signal:agent-request-shared-packages": (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("🎭 Agent requested to open shared packages dialog:", data);
-        if (data.action === "open-shared-packages-dialog") {
-          console.log("📦 Opening shared packages dialog for customer");
-          setShowPackagesDialog(true);
-        }
-      } catch (err) {
-        console.error("Failed to parse agent-request-shared-packages signal:", err);
-      }
-    },
-  };
+      },
+      "signal:package-share-chunk-metadata": (event) => {
+        console.log(
+          "📦 CUSTOMER: Signal handler triggered for package-share-chunk-metadata"
+        );
+        handleChunkMetadata(event);
+      },
+      "signal:package-share-chunk": (event) => {
+        console.log(
+          "📦 CUSTOMER: Signal handler triggered for package-share-chunk"
+        );
+        handleChunk(event);
+      },
+    }),
+    [handleChunkMetadata, handleChunk]
+  ); // Remove sessionRef dependency to avoid initialization order issue
+
+  // Update the ref whenever signal handlers change
+  signalHandlersRef.current = signalHandlers;
 
   // Video call logic
   const {
@@ -197,25 +269,50 @@ const CustomerPage = ({
     setUserId,
     setCallStarted,
     onEndCall,
-    signalHandlers
+    signalHandlers,
   });
 
-  // File and dialog states
-  const [fileUploadRequested, setFileUploadRequested] = useState(false);
-  const [showUploadedDialog, setShowUploadedDialog] = useState(false);
-  const [filePreviewUrl, setFilePreviewUrl] = useState(null);
-  const [filePreviewName, setFilePreviewName] = useState(null);
-  const [signatureDocUrl, setSignatureDocUrl] = useState(null);
-  const [signatureDocName, setSignatureDocName] = useState(null);
-  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [sharedPackages, setSharedPackages] = useState([]);
-  const [showPackagesDialog, setShowPackagesDialog] = useState(false);
+  // Update sessionRef for chunked package sharing after useVideoCall
+  useEffect(() => {
+    if (sessionRef?.current && sessionRefForChunked.current !== sessionRef.current) {
+      sessionRefForChunked.current = sessionRef.current;
+      console.log('📦 CUSTOMER: Updated sessionRef for chunked package sharing');
+    }
+  }, [sessionRef]);
 
-  // Refs
-  const fileInputRef = useRef(null);
-  const sigPadRef = useRef(null);
+  // Set up global callback for chunked package reception and progress dialog management
+  useEffect(() => {
+    // Register global callback for chunked package reception
+    window.chunkedPackageReceived = (syntheticEvent) => {
+      console.log('📦 CUSTOMER: chunkedPackageReceived called with:', syntheticEvent);
+      console.log('📦 CUSTOMER: Available signal handlers:', signalHandlersRef.current ? Object.keys(signalHandlersRef.current) : 'none');
+      
+      // This will trigger the existing package-share signal handler
+      const existingHandler = signalHandlersRef.current?.["signal:package-share"];
+      if (existingHandler) {
+        console.log('📦 CUSTOMER: Calling package-share handler with synthetic event');
+        existingHandler(syntheticEvent);
+      } else {
+        console.error('📦 CUSTOMER: No package-share handler found!', signalHandlersRef.current);
+      }
+    };
+
+    // Show progress dialog when receiving chunks
+    if (isReceiving) {
+      setShowChunkedProgressDialog(true);
+    } else {
+      // Hide progress dialog when reception is complete or stopped
+      setTimeout(() => setShowChunkedProgressDialog(false), 1000); // Small delay to show completion
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (window.chunkedPackageReceived) {
+        delete window.chunkedPackageReceived;
+      }
+      cleanupChunkedShare();
+    };
+  }, [isReceiving, cleanupChunkedShare]); // Removed signalHandlers dependency since we use ref
 
   // Render fallback avatar when video is disabled
   const renderFallbackAvatar = (label = "You") => {
@@ -429,8 +526,6 @@ const CustomerPage = ({
     }
   };
 
-
-
   // Waiting room view
   if (joined && waitingForAgent) {
     return (
@@ -586,15 +681,14 @@ const CustomerPage = ({
                 type: "customer-request-packages",
                 data: JSON.stringify({
                   action: "open-packages-dialog",
-                  timestamp: new Date().toISOString()
-                })
+                  timestamp: new Date().toISOString(),
+                }),
               });
             } else {
               console.log("❌ No session ref available");
             }
           }}
         />
-
 
         {/* Hidden File Input */}
         <input
@@ -727,6 +821,16 @@ const CustomerPage = ({
           <DialogTitle>Test Dialog</DialogTitle>
         </Dialog>
 
+        {/* Chunked Data Progress Dialog */}
+        <ChunkedDataProgressDialog
+          open={showChunkedProgressDialog}
+          isReceiving={isReceiving}
+          receivingProgress={receivingProgress}
+          receivingDetails={receivingDetails}
+          error={chunkedError}
+          onClose={() => setShowChunkedProgressDialog(false)}
+        />
+
         {/* Debug: Show dialog state in console when it changes */}
         {console.log(
           "📦 CustomerPage render - showPackagesDialog:",
@@ -734,6 +838,100 @@ const CustomerPage = ({
           "sharedPackages.length:",
           sharedPackages.length
         )}
+
+        {/* Bottom Line Loader for Chunked Package Reception */}
+        <Fade in={isReceiving}>
+          <Box
+            sx={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              bgcolor: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(10px)",
+              borderTop: "1px solid",
+              borderColor: "divider",
+              boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Box sx={{ p: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "primary.main",
+                    minWidth: "fit-content",
+                  }}
+                >
+                  📦 Receiving packages...
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.85rem",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    flex: 1,
+                  }}
+                >
+                  {receivingDetails?.status ||
+                    `${receivingProgress?.toFixed(1) || 0}% complete`}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "primary.main",
+                    minWidth: "fit-content",
+                  }}
+                >
+                  {receivingProgress?.toFixed(0) || 0}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={receivingProgress || 0}
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: "rgba(0, 0, 0, 0.1)",
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
+                  },
+                }}
+              />
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+              >
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.75rem" }}
+                >
+                  {receivingDetails?.chunksReceived || 0} of{" "}
+                  {receivingDetails?.totalChunks || 0} chunks
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.75rem" }}
+                >
+                  {receivingDetails?.estimatedSize
+                    ? `~${(receivingDetails.estimatedSize / 1024).toFixed(1)}KB`
+                    : ""}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Fade>
       </Paper>
     </ErrorBoundary>
   );
