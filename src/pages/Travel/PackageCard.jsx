@@ -1,179 +1,163 @@
-import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  Grow,
-} from "@mui/material";
-import { CalendarToday } from "@mui/icons-material";
-import { keyframes } from "@emotion/react";
-import { useState } from "react";
-import PackageDetailsModal from "../../components/PackageDetailsModal";
-import { samplePackageData } from "../../data/samplePackageData";
+import { Paper, Typography, Box, IconButton, useTheme } from "@mui/material";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { useState, useRef, useEffect } from "react";
+import CardComp from "./CardComp"; // Assuming CardComp is in the same directory
 
-// Animation keyframes
-const floatAnimation = keyframes`
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0); }
-`;
+const PackageCard = ({ title, packageData }) => {
+  const theme = useTheme();
+  const scrollRef = useRef(null);
+  const [showArrows, setShowArrows] = useState({
+    left: false,
+    right: true,
+  });
 
-const PackageCard = ({ destination, duration, price, description, image }) => {
-  const [modalOpen, setModalOpen] = useState(false);
+  const checkScrollPosition = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const isAtStart = scrollLeft === 0;
+      // Added a small tolerance (1px) for isAtEnd to account for potential sub-pixel rendering issues.
+      const isAtEnd = Math.abs(scrollLeft + clientWidth - scrollWidth) < 1;
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
+      setShowArrows({
+        left: !isAtStart,
+        right: !isAtEnd,
+      });
+    }
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
+  const handleScroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = 300; // Adjusted scroll amount for smoother feel
+      const newPosition =
+        direction === "left"
+          ? scrollRef.current.scrollLeft - scrollAmount
+          : scrollRef.current.scrollLeft + scrollAmount;
+
+      scrollRef.current.scrollTo({
+        left: newPosition,
+        behavior: "smooth",
+      });
+    }
   };
+
+  useEffect(() => {
+    const currentRef = scrollRef.current;
+
+    // Initial check
+    checkScrollPosition();
+
+    // Add event listener
+    if (currentRef) {
+      currentRef.addEventListener("scroll", checkScrollPosition);
+      // Re-check scroll position on window resize
+      window.addEventListener("resize", checkScrollPosition);
+    }
+
+    // Cleanup
+    return () => {
+      if (currentRef) {
+        currentRef.removeEventListener("scroll", checkScrollPosition);
+        window.removeEventListener("resize", checkScrollPosition);
+      }
+    };
+  }, [packageData]); // Dependency on packageData to re-evaluate arrows if data changes
 
   return (
-    <>
-      <Grow in timeout={300}>
-        <Card
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              animation: `${floatAnimation} 2s ease-in-out infinite`,
-              boxShadow: 3,
-            },
-          }}
-        >
-          {/* Fixed height image container */}
-          <Box sx={{ height: 200, overflow: "hidden" }}>
-            <CardMedia
-              component="img"
-              height="200"
-              image={image}
-              alt={destination}
-              sx={{
-                width: "100%",
-                objectFit: "cover",
-                transition: "transform 0.5s ease",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                },
-              }}
-            />
-          </Box>
+    <Paper
+      elevation={4}
+      sx={{
+        py: { xs: 3, md: 4 }, // Responsive padding
+        px: { xs: 1, md: 2 }, // Responsive padding
+        mb: { xs: 3, md: 4 },
+        borderRadius: theme.shape.borderRadius,
+        position: "relative",
+        overflow: "hidden", // Ensures no overflow issues from children
+      }}
+    >
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          fontWeight: theme.typography.fontWeightSemiBold, // Use theme fontWeight
+          px: { xs: 2, md: 3 }, // Responsive padding
+          pb: { xs: 1, md: 2 }, // Add padding below title
+        }}
+      >
+        {title}
+      </Typography>
 
-          {/* Card content with fixed structure */}
-          <CardContent
+      <Box sx={{ position: "relative" }}>
+        {showArrows.left && (
+          <IconButton
+            onClick={() => handleScroll("left")}
+            aria-label="scroll left"
             sx={{
-              flexGrow: 1,
-              display: "flex",
-              flexDirection: "column",
-              p: 3,
+              position: "absolute",
+              left: theme.spacing(1),
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              backgroundColor: theme.palette.background.paper,
+              "&:hover": { backgroundColor: theme.palette.action.hover }, // More subtle hover
+              boxShadow: theme.shadows[3], // Lighter shadow for arrows
+              width: 44, // Slightly smaller
+              height: 44,
+              display: { xs: "none", sm: "flex" }, // Hide on extra small, show on small and up
+              color: theme.palette.text.primary, // Ensure arrow color is visible
             }}
           >
-            {/* Destination title - fixed 2 lines */}
-            <Typography
-              variant="h5"
-              component="h3"
-              sx={{
-                fontWeight: 600,
-                minHeight: "2.5em", // 2 lines of text
-                overflow: "hidden",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {destination}
-            </Typography>
+            <ChevronLeft fontSize="medium" /> {/* Medium size icon */}
+          </IconButton>
+        )}
 
-            {/* Duration with icon - fixed height */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                color: "primary.main",
-                mb: 1.5,
-                height: "24px", // Fixed height for alignment
-              }}
-            >
-              <CalendarToday sx={{ mr: 1, fontSize: "1rem" }} />
-              <Typography variant="body1">{duration}</Typography>
-            </Box>
+        {showArrows.right && (
+          <IconButton
+            onClick={() => handleScroll("right")}
+            aria-label="scroll right"
+            sx={{
+              position: "absolute",
+              right: theme.spacing(1),
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              backgroundColor: theme.palette.background.paper,
+              "&:hover": { backgroundColor: theme.palette.action.hover },
+              boxShadow: theme.shadows[3],
+              width: 44,
+              height: 44,
+              display: { xs: "none", sm: "flex" },
+              color: theme.palette.text.primary,
+            }}
+          >
+            <ChevronRight fontSize="medium" />
+          </IconButton>
+        )}
 
-            {/* Price section - fixed height */}
-            <Box sx={{ mb: 2, height: "42px" }}>
-              <Typography
-                variant="h5"
-                component="span"
-                sx={{
-                  color: "error.main",
-                  fontWeight: 700,
-                  mr: 1,
-                }}
-              >
-                {price}
-              </Typography>
-              <Typography
-                variant="body2"
-                component="span"
-                sx={{
-                  color: "text.secondary",
-                }}
-              >
-                per person
-              </Typography>
-            </Box>
-
-            {/* Description - fixed 3 lines */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mb: 3,
-                flexGrow: 1,
-                minHeight: "5em", // 3 lines of text
-                overflow: "hidden",
-                display: "-webkit-box",
-                WebkitLineClamp: 4,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {description}
-            </Typography>
-
-            {/* Button - fixed at bottom */}
-            <Button
-              variant="outlined"
-              color="primary"
-              fullWidth
-              onClick={handleOpenModal}
-              sx={{
-                fontWeight: 600,
-                py: 1,
-                "&:hover": {
-                  bgcolor: "primary.main",
-                  color: "white",
-                },
-              }}
-            >
-              VIEW DETAILS
-            </Button>
-          </CardContent>
-        </Card>
-      </Grow>
-
-      {/* Package Details Modal */}
-      {modalOpen && (
-      <PackageDetailsModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        packageData={samplePackageData}
-      />
-      )}
-    </>
+        <Box
+          ref={scrollRef}
+          sx={{
+            display: "flex",
+            gap: theme.spacing(3),
+            px: { xs: 2, md: 3 }, // Responsive padding
+            py: theme.spacing(1),
+            overflowX: "auto",
+            scrollBehavior: "smooth",
+            scrollSnapType: "x mandatory", // Enable scroll snapping
+            "& > *": {
+              scrollSnapAlign: "start", // Align items to the start of the scroll area
+            },
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none", // For Firefox
+            overflowY: "hidden",
+            willChange: "transform",
+          }}
+        >
+          {packageData.map((pkg, index) => (
+            <CardComp key={pkg.id || index} pkg={pkg} /> // Use a unique ID if available
+          ))}
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 
