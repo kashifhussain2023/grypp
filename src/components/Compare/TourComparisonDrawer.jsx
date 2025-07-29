@@ -29,6 +29,7 @@ import {
     Delete as DeleteIcon,
     EmojiEvents as TrophyIcon
 } from '@mui/icons-material';
+import { openTokSessionSingleton } from '../../services/OpenTokSessionManager';
 
 const TourComparisonDrawer = ({
     open,
@@ -37,8 +38,7 @@ const TourComparisonDrawer = ({
     onRemoveFromCompare,
     onClearComparison,
     getBestValue,
-    userType = 'agent',
-    sessionRef = null // Add sessionRef for scroll sync
+    userType = 'agent'
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -50,10 +50,11 @@ const TourComparisonDrawer = ({
 
     // Scroll synchronization functions
     const sendScrollPosition = useCallback((scrollTop) => {
-        if (sessionRef && sessionRef.current && !isScrollingRef.current) {
+        const session = openTokSessionSingleton.getSession();
+        if (session && !isScrollingRef.current) {
             console.log(`📊 [${userType}] Sending scroll position: ${scrollTop}`);
             try {
-                sessionRef.current.signal({
+                openTokSessionSingleton.sendSignal({
                     type: 'cobrowse-comparison-scroll-sync',
                     data: JSON.stringify({ scrollTop, userType, timestamp: Date.now() })
                 });
@@ -61,7 +62,7 @@ const TourComparisonDrawer = ({
                 console.error('Failed to send scroll signal:', err);
             }
         }
-    }, [sessionRef, userType]);
+    }, [userType]);
 
     const handleScroll = useCallback((event) => {
         if (!scrollContainerRef.current) {
@@ -88,8 +89,9 @@ const TourComparisonDrawer = ({
 
     // Listen for incoming scroll signals
     useEffect(() => {
-        if (!sessionRef || !sessionRef.current) {
-            console.log(`📊 [${userType}] No session ref available`);
+        const session = openTokSessionSingleton.getSession();
+        if (!session) {
+            console.log(`📊 [${userType}] No session available`);
             return;
         }
 
@@ -118,15 +120,13 @@ const TourComparisonDrawer = ({
         };
 
         console.log(`📊 [${userType}] Setting up scroll signal listener`);
-        sessionRef.current.on('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
+        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
 
         return () => {
-            if (sessionRef.current) {
-                console.log(`📊 [${userType}] Cleaning up scroll signal listener`);
-                sessionRef.current.off('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
-            }
+            console.log(`📊 [${userType}] Cleaning up scroll signal listener`);
+            openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-scroll-sync');
         };
-    }, [sessionRef, userType, open]);
+    }, [userType, open]);
 
     // Add scroll event listener to container
     useEffect(() => {
@@ -153,9 +153,12 @@ const TourComparisonDrawer = ({
 
     // Test scroll sync function
     const testScrollSync = useCallback(() => {
-        if (scrollContainerRef.current && sessionRef?.current) {
-            console.log(`📊 [${userType}] Testing scroll sync manually`);
-            sendScrollPosition(100); // Send test scroll position
+        if (scrollContainerRef.current) {
+            const session = openTokSessionSingleton.getSession();
+            if (session) {
+                console.log(`📊 [${userType}] Testing scroll sync manually`);
+                sendScrollPosition(100); // Send test scroll position
+            }
         }
     }, [sendScrollPosition, userType]);
 

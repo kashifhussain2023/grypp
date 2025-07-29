@@ -57,6 +57,9 @@ const CustomerCatalogView = ({
 
   console.log("[Customer Catalog] Scroll sync active controller:", isActiveController);
   console.log("[Customer Catalog] Shared packages:", sharedPackages.length);
+  console.log("[Customer Catalog] Shared packages data:", sharedPackages);
+  console.log("[Customer Catalog] Shared packages type:", typeof sharedPackages);
+  console.log("[Customer Catalog] Shared packages is array:", Array.isArray(sharedPackages));
 
   return (
     <Box sx={{ position: 'relative', height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -157,8 +160,11 @@ const CustomerCatalogView = ({
         }}
       >
         <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-          {sharedPackages.map((pkg, index) => (
-            <Grid sx={{ width: "250px" }} item xs={3} sm={3} md={3} lg={3} key={pkg.id}>
+          {console.log("[Customer Catalog] Rendering packages:", sharedPackages.length)}
+          {sharedPackages.map((pkg, index) => {
+            console.log(`[Customer Catalog] Rendering package ${index}:`, pkg);
+            return (
+              <Grid sx={{ width: "250px" }} item xs={3} sm={3} md={3} lg={3} key={pkg.id}>
               <Grow
                 in={true}
                 timeout={300 + (index * 100)}
@@ -378,7 +384,8 @@ const CustomerCatalogView = ({
                 </Card>
               </Grow>
             </Grid>
-          ))}
+          );
+        })}
         </Grid>
 
         {/* Empty State */}

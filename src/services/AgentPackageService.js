@@ -1,4 +1,4 @@
-import { sessionManager } from './OpenTokSessionManager';
+import { openTokSessionSingleton } from './OpenTokSessionManager';
 
 /**
  * Agent Package Service for sending large package data via chunked transmission
@@ -15,7 +15,6 @@ export class AgentPackageService {
 
   /**
    * Send packages to customer using chunked transmission
-   * @param {Object} session - OpenTok session object
    * @param {Array} packages - Array of package objects to send
    * @param {Object} options - Options for sending
    * @param {Function} options.onProgress - Progress callback (progress, sentChunks, totalChunks)
@@ -23,7 +22,7 @@ export class AgentPackageService {
    * @param {Function} options.onError - Error callback
    * @param {boolean} options.useChunking - Force chunking even for small data (default: auto)
    */
-  async sendPackages(session, packages, options = {}) {
+  async sendPackages(packages, options = {}) {
     const {
       onProgress,
       onComplete,
@@ -31,6 +30,7 @@ export class AgentPackageService {
       useChunking = 'auto'
     } = options;
 
+    const session = openTokSessionSingleton.getSession();
     if (!session) {
       const error = new Error('No active OpenTok session');
       onError?.(error);
@@ -68,9 +68,11 @@ export class AgentPackageService {
 
       if (shouldUseChunking) {
         console.log('📦 Using chunked transmission for large package data');
+        console.log('📦 Agent: Data size:', dataSize, 'bytes, threshold: 5000 bytes');
         await this.sendChunkedPackages(session, packageData);
       } else {
         console.log('📦 Using standard transmission for small package data');
+        console.log('📦 Agent: Data size:', dataSize, 'bytes, threshold: 5000 bytes');
         await this.sendStandardPackages(session, packageData);
       }
 
@@ -90,6 +92,9 @@ export class AgentPackageService {
    */
   async sendChunkedPackages(session, packageData) {
     return new Promise((resolve, reject) => {
+      console.log('📦 Agent: Starting chunked package transmission');
+      const sessionManager = openTokSessionSingleton.getSessionManager();
+      
       sessionManager.sendChunkedData(
         session,
         packageData,
@@ -127,7 +132,8 @@ export class AgentPackageService {
    */
   async sendStandardPackages(session, packageData) {
     return new Promise((resolve, reject) => {
-      session.signal({
+      console.log('📦 Agent: Sending standard package signal:', packageData);
+      openTokSessionSingleton.sendSignal({
         type: 'package-share',
         data: JSON.stringify(packageData)
       }, (error) => {
@@ -154,20 +160,18 @@ export class AgentPackageService {
   getStatus() {
     return {
       isSending: this.isSending,
-      progress: this.sendingProgress,
-      canSend: !this.isSending
+      progress: this.sendingProgress
     };
   }
 
   /**
-   * Cancel current transmission (if possible)
+   * Cancel current sending operation
    */
-  cancel() {
+  cancelSending() {
     if (this.isSending) {
       this.isSending = false;
       this.sendingProgress = 0;
-      console.log('📦 Package transmission cancelled');
-      this.onErrorCallback?.(new Error('Transmission cancelled by user'));
+      console.log('📦 Package sending cancelled');
     }
   }
 
