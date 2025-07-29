@@ -261,7 +261,7 @@ const PaymentSection = ({ onClose }) => {
             <Button
               type="submit"
               variant="contained"
-              color="error"
+              color="primary"
               size="large"
               fullWidth
               onClick={handleSubmit}
