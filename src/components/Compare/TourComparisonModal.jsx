@@ -172,9 +172,11 @@ const TourComparisonModal = ({
   // Helper function to find best-priced package
   const getBestPricedPackage = () => {
     if (compareList.length === 0) return null;
-    return compareList.reduce((best, current) => 
-      (current.price < best.price) ? current : best
-    );
+    return compareList.reduce((best, current) => {
+      const bestPrice = best.price?.discounted || best.price?.original || best.price;
+      const currentPrice = current.price?.discounted || current.price?.original || current.price;
+      return currentPrice < bestPrice ? current : best;
+    });
   };
 
   const bestPricedPackage = getBestPricedPackage();
@@ -182,8 +184,35 @@ const TourComparisonModal = ({
   // Helper function to calculate discount percentage
   const getDiscountPercentage = (pkg) => {
     if (!bestPricedPackage || pkg.id !== bestPricedPackage.id) return 0;
-    const maxPrice = Math.max(...compareList.map(p => p.price));
-    return Math.round(((maxPrice - pkg.price) / maxPrice) * 100);
+    const maxPrice = Math.max(...compareList.map(p => {
+      const price = p.price?.discounted || p.price?.original || p.price;
+      return price;
+    }));
+    const pkgPrice = pkg.price?.discounted || pkg.price?.original || pkg.price;
+    return Math.round(((maxPrice - pkgPrice) / maxPrice) * 100);
+  };
+
+  // Helper function to calculate package discount percentage
+  const getPackageDiscountPercentage = (pkg) => {
+    if (!hasDiscount(pkg)) return 0;
+    const original = getOriginalPrice(pkg);
+    const discounted = getDisplayPrice(pkg);
+    return Math.round(((original - discounted) / original) * 100);
+  };
+
+  // Helper function to get display price
+  const getDisplayPrice = (pkg) => {
+    return pkg.price?.discounted || pkg.price?.original || pkg.price;
+  };
+
+  // Helper function to get original price
+  const getOriginalPrice = (pkg) => {
+    return pkg.price?.original || pkg.price;
+  };
+
+  // Helper function to check if there's a discount
+  const hasDiscount = (pkg) => {
+    return pkg.price?.original && pkg.price?.discounted && pkg.price.original > pkg.price.discounted;
   };
 
   const renderCellContent = (section, pkg) => {
@@ -226,14 +255,16 @@ const TourComparisonModal = ({
              )}
 
             {/* Discount Badge */}
-            {isBestPrice && discountPercentage > 0 && (
+            {hasDiscount(pkg) && (
               <Box
                 sx={{
                   position: 'absolute',
                   top: isMobile ? 20 : 25,
                   right: -8,
-                  background: 'linear-gradient(135deg, #76ff03, #64dd17)',
-                  color: '#1b5e20',
+                  background: isBestPrice 
+                    ? 'linear-gradient(135deg, #76ff03, #64dd17)' 
+                    : 'linear-gradient(135deg, #ff9800, #f57c00)',
+                  color: isBestPrice ? '#1b5e20' : '#e65100',
                   px: 1.5,
                   py: 0.5,
                   borderRadius: '20px',
@@ -242,7 +273,9 @@ const TourComparisonModal = ({
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
                   letterSpacing: '0.3px',
-                  boxShadow: '0 3px 10px rgba(118, 255, 3, 0.4)',
+                  boxShadow: isBestPrice 
+                    ? '0 3px 10px rgba(118, 255, 3, 0.4)' 
+                    : '0 3px 10px rgba(255, 152, 0, 0.4)',
                   animation: 'bounce 2s infinite',
                   '@keyframes bounce': {
                     '0%, 100%': { transform: 'scale(1)' },
@@ -250,7 +283,7 @@ const TourComparisonModal = ({
                   },
                 }}
               >
-                {discountPercentage}% OFF
+                {getPackageDiscountPercentage(pkg)}% OFF
               </Box>
             )}
 
@@ -688,8 +721,23 @@ const TourComparisonModal = ({
                  })
                }}
              >
-               ${pkg.price?.toLocaleString('en-US') || pkg.price}
+               ${getDisplayPrice(pkg)?.toLocaleString('en-US') || getDisplayPrice(pkg)}
              </Typography>
+
+             {/* Show original price if there's a discount */}
+             {hasDiscount(pkg) && (
+               <Typography 
+                 variant="body2" 
+                 color="text.secondary"
+                 sx={{ 
+                   textDecoration: 'line-through',
+                   fontSize: isMobile ? '0.75rem' : '0.875rem',
+                   mb: 0.5,
+                 }}
+               >
+                 ${getOriginalPrice(pkg)?.toLocaleString('en-US')}
+               </Typography>
+             )}
 
             <Typography 
               variant="caption" 
@@ -699,22 +747,56 @@ const TourComparisonModal = ({
                 fontWeight: isBestPrice ? 600 : 400,
               }}
             >
-              {pkg.currency || 'USD'}
+              {pkg.price?.currency || pkg.currency || 'USD'}
+              {pkg.price?.per && ` per ${pkg.price.per}`}
             </Typography>
 
-            {/* Discount savings for best price */}
-            {isBestPrice && discountPercentage > 0 && (
+            {/* EMI Information */}
+            {pkg.price?.emi && (
+              <Typography 
+                variant="caption" 
+                color="primary.main"
+                sx={{ 
+                  fontSize: isMobile ? '0.6rem' : '0.65rem',
+                  fontWeight: 600,
+                  display: 'block',
+                  mt: 0.5,
+                }}
+              >
+                {pkg.price.emi}
+              </Typography>
+            )}
+
+            {/* Price Notes */}
+            {pkg.price?.notes && (
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{ 
+                  fontSize: isMobile ? '0.55rem' : '0.6rem',
+                  fontStyle: 'italic',
+                  display: 'block',
+                  mt: 0.5,
+                  opacity: 0.8,
+                }}
+              >
+                {pkg.price.notes}
+              </Typography>
+            )}
+
+            {/* Discount savings */}
+            {hasDiscount(pkg) && (
               <Box sx={{ mt: 1 }}>
                 <Typography
                   variant="caption"
                   sx={{
-                    color: '#4caf50',
+                    color: isBestPrice ? '#4caf50' : '#ff9800',
                     fontWeight: 'bold',
                     fontSize: '0.7rem',
                     display: 'block',
                   }}
                 >
-                  Save ${(Math.max(...compareList.map(p => p.price)) - pkg.price).toLocaleString('en-US')}
+                  Save ${(getOriginalPrice(pkg) - getDisplayPrice(pkg)).toLocaleString('en-US')}
                 </Typography>
               </Box>
             )}
