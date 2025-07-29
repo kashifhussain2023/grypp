@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DialogContent,
   Typography,
@@ -29,7 +29,7 @@ const CustomerCatalogView = ({
   addToCompare = () => { },
   removeFromCompare = () => { },
   isInComparison = () => false,
-  isComparisonFull = false,
+  isComparisonFull = () => false,
   onComparePackages = () => { },
 }) => {
   // Local state for modal
@@ -43,6 +43,12 @@ const CustomerCatalogView = ({
     scrollContainerId: 'agent-catalog-scroll', // Same container ID as agent to sync
     throttleDelay: 100
   });
+
+  // Debug effect for comparison list changes
+  useEffect(() => {
+    console.log("[Customer Catalog] compareList changed:", compareList);
+    console.log("[Customer Catalog] compareList length:", compareList.length);
+  }, [compareList]);
 
   // Modal handlers
   const handleOpenModal = (pkg) => {
@@ -180,6 +186,8 @@ const CustomerCatalogView = ({
                     borderRadius: 3,
                     overflow: "hidden",
                     cursor: "pointer",
+                    border: isInComparison(pkg.id) ? "3px solid #4caf50" : "1px solid transparent",
+                    boxShadow: isInComparison(pkg.id) ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 2px 8px rgba(0,0,0,0.1)",
                     "&:hover": {
                       transform: "translateY(-8px) scale(1.02)",
                       boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
@@ -202,20 +210,34 @@ const CustomerCatalogView = ({
                   <Tooltip title={
                     isInComparison(pkg.id)
                       ? "Remove from comparison"
-                      : isComparisonFull
+                      : isComparisonFull()
                         ? "Maximum 3 packages for comparison"
                         : "Add to comparison"
                   }>
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log("[Customer Catalog] Comparison icon clicked for package:", pkg.id);
+                        console.log("[Customer Catalog] isInComparison:", isInComparison(pkg.id));
+                        console.log("[Customer Catalog] isComparisonFull:", isComparisonFull());
+                        console.log("[Customer Catalog] compareList length:", compareList.length);
+                        
+                        // Add click animation
+                        e.target.style.transform = "scale(0.8)";
+                        setTimeout(() => {
+                          e.target.style.transform = "scale(1)";
+                        }, 150);
+                        
                         if (isInComparison(pkg.id)) {
+                          console.log("[Customer Catalog] Removing from comparison");
                           removeFromCompare(pkg.id);
-                        } else if (!isComparisonFull) {
+                        } else if (!isComparisonFull()) {
+                          console.log("[Customer Catalog] Adding to comparison");
                           addToCompare(pkg);
+                        } else {
+                          console.log("[Customer Catalog] Comparison is full, cannot add more");
                         }
                       }}
-                      disabled={!isInComparison(pkg.id) && isComparisonFull}
                       sx={{
                         position: "absolute",
                         top: 12,
@@ -227,9 +249,11 @@ const CustomerCatalogView = ({
                         padding: "8px",
                         transition: "all 0.3s ease",
                         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                        border: isInComparison(pkg.id) ? "2px solid white" : "2px solid rgba(255, 255, 255, 0.3)",
                         "&:hover": {
                           bgcolor: isInComparison(pkg.id) ? "secondary.dark" : "rgba(255, 255, 255, 1)",
                           transform: "scale(1.1)",
+                          boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
                         },
                         "&:disabled": {
                           opacity: 0.5,
@@ -240,6 +264,31 @@ const CustomerCatalogView = ({
                       <CompareIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
+
+                  {/* Comparison Selected Badge */}
+                  {isInComparison(pkg.id) && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        zIndex: 3,
+                        bgcolor: "success.main",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: 24,
+                        height: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        boxShadow: "0 2px 8px rgba(76, 175, 80, 0.4)",
+                      }}
+                    >
+                      ✓
+                    </Box>
+                  )}
 
                   {/* Package Image */}
                   <Box
@@ -445,7 +494,11 @@ const CustomerCatalogView = ({
               variant="contained"
               color="success"
               size="large"
-              onClick={onComparePackages}
+              onClick={() => {
+                console.log("[Customer Catalog] Compare Packages button clicked");
+                console.log("[Customer Catalog] compareList:", compareList);
+                onComparePackages();
+              }}
               sx={{
                 fontWeight: 'bold',
                 px: 3,

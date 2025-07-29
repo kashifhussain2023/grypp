@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OT from "@opentok/client";
 import AgentCatalog from "../../components/AgentCatalog";
-import TourComparisonDrawer from "../../components/Compare/TourComparisonDrawer";
+import TourComparisonModal from "../../components/Compare/TourComparisonModal";
 import { useComparePackages } from "../../hooks/useComparePackages";
 import {
   Box,
@@ -1454,16 +1454,14 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Tour Comparison Drawer - Rendered outside dialog to appear on top */}
-      <TourComparisonDrawer
+      {/* Tour Comparison Modal - Rendered outside dialog to appear on top */}
+      <TourComparisonModal
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         compareList={compareList}
         onRemoveFromCompare={removeFromCompare}
         onClearComparison={clearComparison}
         getBestValue={getBestValue}
-        userType="agent"
-        sessionRef={sessionRef}
       />
 
       {/* Shared Packages Comparison Modal */}

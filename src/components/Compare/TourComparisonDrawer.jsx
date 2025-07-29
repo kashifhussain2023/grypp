@@ -27,7 +27,9 @@ import {
     AccessTime as TimeIcon,
     LocationOn as LocationIcon,
     Delete as DeleteIcon,
-    EmojiEvents as TrophyIcon
+    EmojiEvents as TrophyIcon,
+    TrendingUp as TrendingUpIcon,
+    LocalOffer as OfferIcon
 } from '@mui/icons-material';
 import { openTokSessionSingleton } from '../../services/OpenTokSessionManager';
 
@@ -37,7 +39,6 @@ const TourComparisonDrawer = ({
     compareList,
     onRemoveFromCompare,
     onClearComparison,
-    getBestValue,
     userType = 'agent'
 }) => {
     const theme = useTheme();
@@ -46,7 +47,33 @@ const TourComparisonDrawer = ({
     const isScrollingRef = useRef(false);
     const scrollTimeoutRef = useRef(null);
 
-    const bestValuePackage = getBestValue();
+    // Helper function to get best priced package
+    const getBestPricedPackage = () => {
+        if (compareList.length === 0) return null;
+        return compareList.reduce((best, current) => {
+            const bestPrice = best.price?.discounted || best.price;
+            const currentPrice = current.price?.discounted || current.price;
+            return currentPrice < bestPrice ? current : best;
+        });
+    };
+
+    const bestPricedPackage = getBestPricedPackage();
+
+    // Helper function to calculate savings
+    const getSavings = (pkg) => {
+        if (!bestPricedPackage || pkg.id === bestPricedPackage.id) return 0;
+        const pkgPrice = pkg.price?.discounted || pkg.price;
+        const bestPrice = bestPricedPackage.price?.discounted || bestPricedPackage.price;
+        return pkgPrice - bestPrice;
+    };
+
+    // Helper function to calculate discount percentage
+    const getDiscountPercentage = (pkg) => {
+        if (!bestPricedPackage || pkg.id === bestPricedPackage.id) return 0;
+        const pkgPrice = pkg.price?.discounted || pkg.price;
+        const bestPrice = bestPricedPackage.price?.discounted || bestPricedPackage.price;
+        return Math.round(((pkgPrice - bestPrice) / pkgPrice) * 100);
+    };
 
     // Scroll synchronization functions
     const sendScrollPosition = useCallback((scrollTop) => {
@@ -107,7 +134,7 @@ const TourComparisonDrawer = ({
                         // Set a flag to prevent feedback loop
                         isScrollingRef.current = true;
                         scrollContainerRef.current.scrollTop = data.scrollTop;
-
+                        
                         // Reset flag after a short delay
                         setTimeout(() => {
                             isScrollingRef.current = false;
@@ -115,87 +142,34 @@ const TourComparisonDrawer = ({
                     }
                 }
             } catch (err) {
-                console.error(`📊 [${userType}] Failed to parse scroll signal:`, err, event);
+                console.error('Failed to parse scroll signal:', err);
             }
         };
 
-        console.log(`📊 [${userType}] Setting up scroll signal listener`);
-        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
+        // Register scroll sync signal handler
+        session.on('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
 
         return () => {
-            console.log(`📊 [${userType}] Cleaning up scroll signal listener`);
-            openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-scroll-sync');
+            session.off('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
         };
     }, [userType, open]);
 
-    // Add scroll event listener to container
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (container && open) {
-            console.log(`📊 [${userType}] Adding scroll listener to container`);
-            container.addEventListener('scroll', handleScroll, { passive: true });
-
-            // Test scroll sync after a short delay
-            setTimeout(() => {
-                console.log(`📊 [${userType}] Testing scroll sync - container:`, container);
-                console.log(`📊 [${userType}] Container scrollHeight:`, container.scrollHeight);
-                console.log(`📊 [${userType}] Container clientHeight:`, container.clientHeight);
-            }, 1000);
-
-            return () => {
-                console.log(`📊 [${userType}] Removing scroll listener from container`);
-                container.removeEventListener('scroll', handleScroll);
-            };
-        } else {
-            console.log(`📊 [${userType}] No container or drawer not open`);
-        }
-    }, [handleScroll, userType, open]);
-
     // Test scroll sync function
-    const testScrollSync = useCallback(() => {
+    const testScrollSync = () => {
         if (scrollContainerRef.current) {
-            const session = openTokSessionSingleton.getSession();
-            if (session) {
-                console.log(`📊 [${userType}] Testing scroll sync manually`);
-                sendScrollPosition(100); // Send test scroll position
-            }
+            const testPosition = 100;
+            scrollContainerRef.current.scrollTop = testPosition;
+            sendScrollPosition(testPosition);
         }
-    }, [sendScrollPosition, userType]);
-
-    // Debug drawer open status
-    useEffect(() => {
-        if (open) {
-            console.log(`📊 [${userType}] Drawer opened`);
-            setTimeout(() => {
-                if (scrollContainerRef.current) {
-                    console.log(`📊 [${userType}] Container available:`, {
-                        scrollHeight: scrollContainerRef.current.scrollHeight,
-                        clientHeight: scrollContainerRef.current.clientHeight,
-                        scrollTop: scrollContainerRef.current.scrollTop
-                    });
-                } else {
-                    console.log(`📊 [${userType}] Container not available`);
-                }
-            }, 500);
-        } else {
-            console.log(`📊 [${userType}] Drawer closed`);
-        }
-    }, [open, userType]);
-
-    // Calculate package duration (mock data - you can add duration to your package data)
-    const getPackageDuration = (packageData) => {
-        // Mock duration calculation based on package type
-        const durationMap = {
-            'Adventure': '7-10 days',
-            'Cultural': '5-7 days',
-            'Relaxation': '3-5 days',
-            'Party': '3-4 days',
-            'Trekking': '4-6 days'
-        };
-        return durationMap[packageData.type] || '5-7 days';
     };
 
-    // Get package highlights
+    // Helper functions
+    const getPackageDuration = (packageData) => {
+        if (packageData.duration) return packageData.duration;
+        if (packageData.days) return `${packageData.days} days`;
+        return 'Duration not specified';
+    };
+
     const getPackageHighlights = (packageData) => {
         const highlightsMap = {
             'Adventure': ['Professional guides', 'Safety equipment', 'Mountain views'],
@@ -248,7 +222,7 @@ const TourComparisonDrawer = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CompareIcon />
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {userType === 'customer' ? 'Package Comparison (Agent Selected)' : 'Package Comparison'}
+                        {userType === 'customer' ? 'Package Comparison' : 'Package Comparison'}
                     </Typography>
                     {compareList.length > 0 && (
                         <Chip
@@ -337,6 +311,7 @@ const TourComparisonDrawer = ({
                         background: '#555',
                     },
                 }}
+                onScroll={handleScroll}
             >
                 {compareList.length === 0 ? (
                     // Empty State
@@ -364,7 +339,7 @@ const TourComparisonDrawer = ({
                     // Comparison Content
                     <Box sx={{ p: 3 }}>
                         {/* Best Value Alert */}
-                        {bestValuePackage && compareList.length > 1 && (
+                        {bestPricedPackage && compareList.length > 1 && (
                             <Slide direction="down" in={true} timeout={600}>
                                 <Alert
                                     icon={<TrophyIcon />}
@@ -376,171 +351,230 @@ const TourComparisonDrawer = ({
                                         },
                                     }}
                                 >
-                                    <strong>Best Value:</strong> {bestValuePackage.name} at ${bestValuePackage.price.toLocaleString()}
+                                    <strong>Best Value:</strong> {bestPricedPackage.name} at ${(bestPricedPackage.price?.discounted || bestPricedPackage.price)?.toLocaleString()}
                                 </Alert>
                             </Slide>
                         )}
 
                         {/* Package Comparison Grid */}
                         <Grid container spacing={3}>
-                            {compareList.map((pkg, index) => (
-                                <Grid sx={{ width: "250px" }} item xs={3} lg={3} md={3} key={pkg.id}>
-                                    <Slide direction="up" in={true} timeout={300 + index * 200}>
-                                        <Card
-                                            sx={{
-                                                height: '100%',
-                                                position: 'relative',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    transform: 'translateY(-4px)',
-                                                    boxShadow: theme.shadows[8],
-                                                },
-                                                border: bestValuePackage?.id === pkg.id ? `2px solid ${theme.palette.success.main}` : 'none',
-                                            }}
-                                        >
-                                            {/* Best Value Badge */}
-                                            {bestValuePackage?.id === pkg.id && compareList.length > 1 && (
-                                                <Box
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 8,
-                                                        right: 8,
-                                                        zIndex: 2,
-                                                    }}
-                                                >
-                                                    <Chip
-                                                        icon={<TrophyIcon />}
-                                                        label="Best Value"
-                                                        size="small"
-                                                        color="success"
-                                                        sx={{ fontWeight: 600 }}
-                                                    />
-                                                </Box>
-                                            )}
-
-                                            {/* Remove Button */}
-                                            {userType === 'agent' && (
-                                                <IconButton
-                                                    onClick={() => onRemoveFromCompare(pkg.id)}
-                                                    sx={{
-                                                        position: "absolute",
-                                                        top: 8,
-                                                        left: 8,
-                                                        zIndex: 2,
-                                                        bgcolor: 'rgba(255, 255, 255, 0.9)',
-                                                        '&:hover': {
-                                                            bgcolor: 'error.main',
-                                                            color: 'white',
-                                                        },
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            )}
-
-                                            {/* Package Image */}
-                                            <CardMedia
-                                                component="img"
-                                                height="200"
-                                                image={pkg.image}
-                                                alt={pkg.name}
+                            {compareList.map((pkg, index) => {
+                                const isBestPrice = bestPricedPackage?.id === pkg.id;
+                                const savings = getSavings(pkg);
+                                const discountPercentage = getDiscountPercentage(pkg);
+                                
+                                return (
+                                    <Grid sx={{ width: "250px" }} item xs={3} lg={3} md={3} key={pkg.id}>
+                                        <Slide direction="up" in={true} timeout={300 + index * 200}>
+                                            <Card
                                                 sx={{
-                                                    objectFit: 'cover',
+                                                    height: '100%',
                                                     position: 'relative',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        transform: 'translateY(-4px)',
+                                                        boxShadow: theme.shadows[8],
+                                                    },
+                                                    border: isBestPrice ? `3px solid ${theme.palette.success.main}` : '1px solid',
+                                                    borderColor: isBestPrice ? theme.palette.success.main : theme.palette.divider,
+                                                    boxShadow: isBestPrice ? '0 8px 25px rgba(76, 175, 80, 0.25)' : '0 2px 8px rgba(0,0,0,0.1)',
+                                                    background: isBestPrice ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))' : 'background.paper',
                                                 }}
-                                            />
+                                            >
+                                                {/* Best Price Badge */}
+                                                {isBestPrice && compareList.length > 1 && (
+                                                    <Box
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: -8,
+                                                            left: '50%',
+                                                            transform: 'translateX(-50%)',
+                                                            zIndex: 3,
+                                                        }}
+                                                    >
+                                                        <Chip
+                                                            icon={<TrophyIcon />}
+                                                            label="BEST VALUE"
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: 'success.main',
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.7rem',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                boxShadow: '0 4px 12px rgba(76, 175, 80, 0.4)',
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
 
-                                            <CardContent sx={{ p: 2 }}>
-                                                {/* Package Name */}
-                                                <Typography
-                                                    variant="h6"
-                                                    sx={{
-                                                        fontWeight: 600,
-                                                        mb: 1,
-                                                        lineHeight: 1.2,
-                                                        minHeight: '2.4rem',
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 2,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        overflow: 'hidden',
-                                                    }}
-                                                >
-                                                    {pkg.name}
-                                                </Typography>
+                                                {/* Remove Button */}
+                                                {userType === 'agent' && (
+                                                    <IconButton
+                                                        onClick={() => onRemoveFromCompare(pkg.id)}
+                                                        sx={{
+                                                            position: "absolute",
+                                                            top: 8,
+                                                            left: 8,
+                                                            zIndex: 2,
+                                                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                                            '&:hover': {
+                                                                bgcolor: 'error.main',
+                                                                color: 'white',
+                                                            },
+                                                        }}
+                                                        size="small"
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                )}
 
-                                                {/* Package Type */}
-                                                <Chip
-                                                    label={pkg.type}
-                                                    size="small"
+                                                {/* Package Image */}
+                                                <CardMedia
+                                                    component="img"
+                                                    height="200"
+                                                    image={pkg.image}
+                                                    alt={pkg.name}
                                                     sx={{
-                                                        mb: 2,
-                                                        bgcolor: 'primary.light',
-                                                        color: 'white',
-                                                        fontWeight: 600,
+                                                        objectFit: 'cover',
+                                                        position: 'relative',
                                                     }}
                                                 />
 
-                                                {/* Price */}
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                                    <MoneyIcon color="primary" />
+                                                <CardContent sx={{ p: 2 }}>
+                                                    {/* Package Name */}
                                                     <Typography
-                                                        variant="h5"
-                                                        color="primary.main"
-                                                        sx={{ fontWeight: 700 }}
+                                                        variant="h6"
+                                                        sx={{
+                                                            fontWeight: 600,
+                                                            mb: 1,
+                                                            lineHeight: 1.2,
+                                                            minHeight: '2.4rem',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 2,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            overflow: 'hidden',
+                                                            color: isBestPrice ? 'success.main' : 'text.primary',
+                                                        }}
                                                     >
-                                                        ${pkg.price.toLocaleString()}
+                                                        {pkg.name}
                                                     </Typography>
-                                                </Box>
 
-                                                {/* Duration */}
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                                    <TimeIcon color="action" />
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {getPackageDuration(pkg)}
-                                                    </Typography>
-                                                </Box>
+                                                    {/* Package Type */}
+                                                    <Chip
+                                                        label={pkg.type}
+                                                        size="small"
+                                                        sx={{
+                                                            mb: 2,
+                                                            bgcolor: isBestPrice ? 'success.light' : 'primary.light',
+                                                            color: 'white',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    />
 
-                                                <Divider sx={{ my: 2 }} />
+                                                    {/* Enhanced Price Display */}
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1, 
+                                                        mb: 2,
+                                                        p: isBestPrice ? 1.5 : 0,
+                                                        bgcolor: isBestPrice ? 'rgba(76, 175, 80, 0.1)' : 'transparent',
+                                                        borderRadius: isBestPrice ? 1 : 0,
+                                                        border: isBestPrice ? '2px solid #c8e6c9' : 'none',
+                                                    }}>
+                                                        <MoneyIcon color={isBestPrice ? "success" : "primary"} />
+                                                        <Box>
+                                                            <Typography
+                                                                variant="h5"
+                                                                color={isBestPrice ? "success.main" : "primary.main"}
+                                                                sx={{ 
+                                                                    fontWeight: 700,
+                                                                    fontSize: isBestPrice ? '1.5rem' : '1.25rem',
+                                                                }}
+                                                            >
+                                                                ${(pkg.price?.discounted || pkg.price)?.toLocaleString()}
+                                                            </Typography>
+                                                            {isBestPrice && (
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    color="success.main"
+                                                                    sx={{ fontWeight: 'bold' }}
+                                                                >
+                                                                    LOWEST PRICE
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
 
-                                                {/* Highlights */}
-                                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                                                    Highlights:
-                                                </Typography>
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                    {getPackageHighlights(pkg).map((highlight, idx) => (
-                                                        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <StarIcon sx={{ fontSize: 16, color: 'warning.main' }} />
-                                                            <Typography variant="body2" color="text.secondary">
-                                                                {highlight}
+                                                    {/* Savings Display for non-best packages */}
+                                                    {!isBestPrice && savings > 0 && (
+                                                        <Box sx={{ 
+                                                            mb: 2,
+                                                            p: 1,
+                                                            bgcolor: 'warning.light',
+                                                            borderRadius: 1,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1,
+                                                        }}>
+                                                            <OfferIcon color="warning" fontSize="small" />
+                                                            <Typography variant="body2" color="warning.dark" fontWeight="bold">
+                                                                Save ${savings.toLocaleString()} ({discountPercentage}% more)
                                                             </Typography>
                                                         </Box>
-                                                    ))}
-                                                </Box>
+                                                    )}
 
-                                                {/* Description */}
-                                                <Collapse in={true} timeout={800}>
-                                                    <Box sx={{ mt: 2 }}>
-                                                        <Typography
-                                                            variant="body2"
-                                                            color="text.secondary"
-                                                            sx={{
-                                                                lineHeight: 1.5,
-                                                                display: '-webkit-box',
-                                                                WebkitLineClamp: 3,
-                                                                WebkitBoxOrient: 'vertical',
-                                                                overflow: 'hidden',
-                                                            }}
-                                                        >
-                                                            {pkg.description}
+                                                    {/* Duration */}
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                                        <TimeIcon color="action" />
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {getPackageDuration(pkg)}
                                                         </Typography>
                                                     </Box>
-                                                </Collapse>
-                                            </CardContent>
-                                        </Card>
-                                    </Slide>
-                                </Grid>
-                            ))}
+
+                                                    <Divider sx={{ my: 2 }} />
+
+                                                    {/* Highlights */}
+                                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                                        Highlights:
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                        {getPackageHighlights(pkg).map((highlight, idx) => (
+                                                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                <StarIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    {highlight}
+                                                                </Typography>
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+
+                                                    {/* Description */}
+                                                    <Collapse in={true} timeout={800}>
+                                                        <Box sx={{ mt: 2 }}>
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                                sx={{
+                                                                    lineHeight: 1.5,
+                                                                    display: '-webkit-box',
+                                                                    WebkitLineClamp: 3,
+                                                                    WebkitBoxOrient: 'vertical',
+                                                                    overflow: 'hidden',
+                                                                }}
+                                                            >
+                                                                {pkg.description}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Collapse>
+                                                </CardContent>
+                                            </Card>
+                                        </Slide>
+                                    </Grid>
+                                );
+                            })}
                         </Grid>
 
                         {/* Action Buttons */}
@@ -570,7 +604,7 @@ const TourComparisonDrawer = ({
                                         color="primary"
                                         onClick={onClose}
                                     >
-                                        {userType === 'customer' ? 'Close Comparison' : 'Close Comparison'}
+                                        Close Comparison
                                     </Button>
                                 </Box>
                             </Fade>
