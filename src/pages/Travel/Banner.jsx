@@ -112,14 +112,13 @@ const HomeBanner = () => {
         if (index === activeIndex) {
           ref.current
             .play()
-            .then(() => console.log(`Playing video ${index + 1}`))
+            .then()
             .catch((error) =>
               console.error(`Video ${index + 1} play failed:`, error)
             );
         } else {
           ref.current.pause();
           ref.current.currentTime = 0;
-          console.log(`Paused video ${index + 1}`);
         }
       }
     });
@@ -295,9 +294,9 @@ const HomeBanner = () => {
       </Box>
 
       {/* Arrows */}
-      {(isMobile || isTablet ? [true] : [false]).map((mobileView) =>
+      {(isMobile || isTablet ? [true] : [false]).map((mobileView, idx) =>
         mobileView ? (
-          <>
+          <React.Fragment key={`mobile-arrows-${idx}`}>
             <IconButton
               onClick={goToPrevSlide}
               sx={{
@@ -318,9 +317,9 @@ const HomeBanner = () => {
             >
               <ArrowForwardIos sx={{ fontSize: "1.5rem" }} />
             </IconButton>
-          </>
+          </React.Fragment>
         ) : (
-          <>
+          <React.Fragment key={`desktop-arrows-${idx}`}>
             <IconButton
               onClick={goToPrevSlide}
               sx={{
@@ -341,7 +340,7 @@ const HomeBanner = () => {
             >
               <ArrowForwardIos sx={{ fontSize: "2rem" }} />
             </IconButton>
-          </>
+          </React.Fragment>
         )
       )}
 

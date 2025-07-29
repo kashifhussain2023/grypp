@@ -1,7 +1,7 @@
 import { Paper, Typography, Box, IconButton, useTheme } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { useState, useRef, useEffect } from "react";
-import CardComp from "./CardComp";
+import CardComp from "./CardComp"; // Assuming CardComp is in the same directory
 
 const PackageCard = ({ title, packageData }) => {
   const theme = useTheme();
@@ -15,7 +15,8 @@ const PackageCard = ({ title, packageData }) => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       const isAtStart = scrollLeft === 0;
-      const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 1; // Account for rounding errors
+      // Added a small tolerance (1px) for isAtEnd to account for potential sub-pixel rendering issues.
+      const isAtEnd = Math.abs(scrollLeft + clientWidth - scrollWidth) < 1;
 
       setShowArrows({
         left: !isAtStart,
@@ -26,7 +27,7 @@ const PackageCard = ({ title, packageData }) => {
 
   const handleScroll = (direction) => {
     if (scrollRef.current) {
-      const scrollAmount = 400; // You can adjust this value
+      const scrollAmount = 300; // Adjusted scroll amount for smoother feel
       const newPosition =
         direction === "left"
           ? scrollRef.current.scrollLeft - scrollAmount
@@ -48,29 +49,40 @@ const PackageCard = ({ title, packageData }) => {
     // Add event listener
     if (currentRef) {
       currentRef.addEventListener("scroll", checkScrollPosition);
+      // Re-check scroll position on window resize
+      window.addEventListener("resize", checkScrollPosition);
     }
 
     // Cleanup
     return () => {
       if (currentRef) {
         currentRef.removeEventListener("scroll", checkScrollPosition);
+        window.removeEventListener("resize", checkScrollPosition);
       }
     };
-  }, [packageData]);
+  }, [packageData]); // Dependency on packageData to re-evaluate arrows if data changes
 
   return (
     <Paper
       elevation={4}
       sx={{
-        py: 4,
-        px: 2,
-        mb: 4,
-        borderRadius: 2,
+        py: { xs: 3, md: 4 }, // Responsive padding
+        px: { xs: 1, md: 2 }, // Responsive padding
+        mb: { xs: 3, md: 4 },
+        borderRadius: theme.shape.borderRadius,
         position: "relative",
-        overflow: "hidden",
+        overflow: "hidden", // Ensures no overflow issues from children
       }}
     >
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, px: 3 }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          fontWeight: theme.typography.fontWeightSemiBold, // Use theme fontWeight
+          px: { xs: 2, md: 3 }, // Responsive padding
+          pb: { xs: 1, md: 2 }, // Add padding below title
+        }}
+      >
         {title}
       </Typography>
 
@@ -78,42 +90,46 @@ const PackageCard = ({ title, packageData }) => {
         {showArrows.left && (
           <IconButton
             onClick={() => handleScroll("left")}
+            aria-label="scroll left"
             sx={{
               position: "absolute",
-              left: 10,
+              left: theme.spacing(1),
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 2,
-              backgroundColor: "background.paper",
-              "&:hover": { backgroundColor: "background.default" },
-              boxShadow: theme.shadows[4],
-              width: 48,
-              height: 48,
-              display: { xs: "none", md: "flex" }, // Hide on mobile
+              backgroundColor: theme.palette.background.paper,
+              "&:hover": { backgroundColor: theme.palette.action.hover }, // More subtle hover
+              boxShadow: theme.shadows[3], // Lighter shadow for arrows
+              width: 44, // Slightly smaller
+              height: 44,
+              display: { xs: "none", sm: "flex" }, // Hide on extra small, show on small and up
+              color: theme.palette.text.primary, // Ensure arrow color is visible
             }}
           >
-            <ChevronLeft fontSize="large" />
+            <ChevronLeft fontSize="medium" /> {/* Medium size icon */}
           </IconButton>
         )}
 
         {showArrows.right && (
           <IconButton
             onClick={() => handleScroll("right")}
+            aria-label="scroll right"
             sx={{
               position: "absolute",
-              right: 10,
+              right: theme.spacing(1),
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 2,
-              backgroundColor: "background.paper",
-              "&:hover": { backgroundColor: "background.default" },
-              boxShadow: theme.shadows[4],
-              width: 48,
-              height: 48,
-              display: { xs: "none", md: "flex" }, // Hide on mobile
+              backgroundColor: theme.palette.background.paper,
+              "&:hover": { backgroundColor: theme.palette.action.hover },
+              boxShadow: theme.shadows[3],
+              width: 44,
+              height: 44,
+              display: { xs: "none", sm: "flex" },
+              color: theme.palette.text.primary,
             }}
           >
-            <ChevronRight fontSize="large" />
+            <ChevronRight fontSize="medium" />
           </IconButton>
         )}
 
@@ -121,23 +137,23 @@ const PackageCard = ({ title, packageData }) => {
           ref={scrollRef}
           sx={{
             display: "flex",
-            gap: 3,
-            px: 2,
-            py: 1,
+            gap: theme.spacing(3),
+            px: { xs: 2, md: 3 }, // Responsive padding
+            py: theme.spacing(1),
             overflowX: "auto",
             scrollBehavior: "smooth",
+            scrollSnapType: "x mandatory", // Enable scroll snapping
+            "& > *": {
+              scrollSnapAlign: "start", // Align items to the start of the scroll area
+            },
             "&::-webkit-scrollbar": { display: "none" },
-            scrollbarWidth: "none",
-            // Prevent vertical scrolling
+            scrollbarWidth: "none", // For Firefox
             overflowY: "hidden",
-            // Add padding to ensure content isn't hidden behind arrows
-            ml: { md: 4 },
-            mr: { md: 4 },
-            willChange: "transform", // 🆕 Add this
+            willChange: "transform",
           }}
         >
           {packageData.map((pkg, index) => (
-            <CardComp key={index} pkg={pkg} />
+            <CardComp key={pkg.id || index} pkg={pkg} /> // Use a unique ID if available
           ))}
         </Box>
       </Box>
