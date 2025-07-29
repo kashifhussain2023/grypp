@@ -6,12 +6,16 @@ import {
   Button,
   Box,
   Grow,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
-import { CalendarToday } from "@mui/icons-material";
+import { CalendarToday, Close } from "@mui/icons-material";
 import { keyframes } from "@emotion/react";
 import { useState } from "react";
 import PackageDetailsModal from "../../components/PackageDetailsModal";
 import { samplePackageData } from "../../data/samplePackageData";
+import PaymentSection from "./PaymentSection";
 
 // Animation keyframes
 const floatAnimation = keyframes`
@@ -22,6 +26,7 @@ const floatAnimation = keyframes`
 
 const PackageCard = ({ destination, duration, price, description, image }) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -161,18 +166,53 @@ const PackageCard = ({ destination, duration, price, description, image }) => {
             >
               VIEW DETAILS
             </Button>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              color="error"
+              onClick={() => setOpen(true)}
+              sx={{
+                fontWeight: 600,
+                py: 1,
+                marginTop: 1,
+                "&:hover": {
+                  bgcolor: "error.dark",
+                  color: "white",
+                },
+              }}
+            >
+              BOOK NOW
+            </Button>
           </CardContent>
         </Card>
       </Grow>
 
       {/* Package Details Modal */}
       {modalOpen && (
-      <PackageDetailsModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        packageData={samplePackageData}
-      />
+        <PackageDetailsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          packageData={samplePackageData}
+        />
       )}
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent sx={{ position: "relative", p: 3 }}>
+          <IconButton
+            onClick={() => setOpen(false)}
+            sx={{ position: "absolute", top: 8, right: 8 }}
+          >
+            <Close />
+          </IconButton>
+          <PaymentSection onClose={() => setOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
