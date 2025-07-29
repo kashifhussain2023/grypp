@@ -1,274 +1,232 @@
+import { chunkedSessionManager } from './ChunkedSessionManager';
+
 /**
- * OpenTok Session Manager for handling chunked data transmission
- * Handles large package data by breaking it into chunks and reassembling on receiver side
+ * Singleton pattern for OpenTok session handling
+ * Provides centralized session management across the application
  */
-
-// Maximum size for OpenTok signals (in bytes) - keeping it safe under the 8KB limit
-const MAX_SIGNAL_SIZE = 6000;
-const CHUNK_TIMEOUT = 10000; // 10 seconds timeout for chunk reception
-
-export class OpenTokSessionManager {
+class OpenTokSessionSingleton {
   constructor() {
-    this.pendingChunks = new Map(); // Store pending chunk assemblies
-    this.chunkTimeouts = new Map(); // Store timeouts for cleanup
-    this.progressCallbacks = new Map(); // Store progress callbacks
-  }
-
-  /**
-   * Split large data into manageable chunks
-   * @param {Object} data - Data to be chunked
-   * @param {string} messageId - Unique identifier for this message
-   * @returns {Array} Array of chunk objects
-   */
-  createChunks(data, messageId) {
-    const jsonString = JSON.stringify(data);
-    const totalSize = new Blob([jsonString]).size;
-    
-    // If data is small enough, send as single chunk
-    if (totalSize <= MAX_SIGNAL_SIZE) {
-      return [{
-        messageId,
-        chunkIndex: 0,
-        totalChunks: 1,
-        isLast: true,
-        data: jsonString,
-        size: totalSize
-      }];
-    }
-
-    const chunks = [];
-    const chunkSize = MAX_SIGNAL_SIZE - 200; // Reserve space for metadata
-    let chunkIndex = 0;
-    
-    for (let i = 0; i < jsonString.length; i += chunkSize) {
-      const chunk = jsonString.slice(i, i + chunkSize);
-      const isLast = i + chunkSize >= jsonString.length;
-      
-      chunks.push({
-        messageId,
-        chunkIndex,
-        totalChunks: Math.ceil(jsonString.length / chunkSize),
-        isLast,
-        data: chunk,
-        size: new Blob([chunk]).size
-      });
-      
-      chunkIndex++;
+    if (OpenTokSessionSingleton.instance) {
+      return OpenTokSessionSingleton.instance;
     }
     
-    return chunks;
+    this.session = null;
+    this.sessionRef = { current: null };
+    this.signalHandlers = new Map();
+    this.isInitialized = false;
+    this.listeners = new Set();
+    
+    OpenTokSessionSingleton.instance = this;
   }
 
   /**
-   * Send chunked data through OpenTok session
-   * @param {Object} session - OpenTok session
-   * @param {Object} data - Data to send
-   * @param {string} signalType - Signal type (e.g., 'package-share-chunk')
-   * @param {Function} onProgress - Progress callback function
-   * @param {Function} onComplete - Completion callback function
-   * @param {Function} onError - Error callback function
+   * Get the singleton instance
    */
-  sendChunkedData(session, data, signalType, onProgress, onComplete, onError) {
-    const messageId = this.generateMessageId();
-    const chunks = this.createChunks(data, messageId);
-    
-    console.log(`📦 Sending ${chunks.length} chunks for message ${messageId}`);
-    
-   
-    
-    // Send metadata first
-    session.signal({
-      type: `${signalType}-metadata`,
-      data: JSON.stringify({
-        messageId,
-        totalChunks: chunks.length,
-        totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
-        timestamp: Date.now()
-      })
-    }, (error) => {
-      if (error) {
-        console.error('Failed to send metadata:', error);
-        onError?.(error);
-        return;
-      }
-      
-      // Send chunks with delay to avoid overwhelming the connection
-      this.sendChunksSequentially(session, chunks, signalType, 0, onProgress, onComplete, onError);
-    });
+  static getInstance() {
+    if (!OpenTokSessionSingleton.instance) {
+      OpenTokSessionSingleton.instance = new OpenTokSessionSingleton();
+    }
+    return OpenTokSessionSingleton.instance;
   }
 
   /**
-   * Send chunks sequentially with small delays
+   * Initialize the session
+   * @param {Object} session - OpenTok session object
    */
-  sendChunksSequentially(session, chunks, signalType, index, onProgress, onComplete, onError) {
-    if (index >= chunks.length) {
-      onComplete?.();
+  initialize(session) {
+    if (this.isInitialized && this.session === session) {
+      console.log('🔌 Session already initialized with same session');
       return;
     }
 
-    const chunk = chunks[index];
-    
-    session.signal({
-      type: signalType,
-      data: JSON.stringify(chunk)
-    }, (error) => {
-      if (error) {
-        console.error(`Failed to send chunk ${index}:`, error);
-        onError?.(error);
-        return;
-      }
-      
-      const progress = ((index + 1) / chunks.length) * 100;
-      onProgress?.(progress, index + 1, chunks.length);
-      
-      console.log(`📦 Sent chunk ${index + 1}/${chunks.length} (${progress.toFixed(1)}%)`);
-      
-      if (index + 1 < chunks.length) {
-        // Small delay between chunks to avoid overwhelming the connection
-        setTimeout(() => {
-          this.sendChunksSequentially(session, chunks, signalType, index + 1, onProgress, onComplete, onError);
-        }, 50);
-      } else {
-        onComplete?.();
-      }
-    });
+    console.log('🔌 Initializing OpenTok session singleton');
+    this.session = session;
+    this.sessionRef.current = session;
+    this.isInitialized = true;
+
+    // Notify all listeners that session is available
+    this.notifyListeners('sessionInitialized', session);
   }
 
   /**
-   * Handle incoming chunk metadata
-   * @param {Object} session - OpenTok session
-   * @param {Object} metadata - Metadata object
-   * @param {Function} onProgress - Progress callback
-   * @param {Function} onComplete - Completion callback
-   * @param {Function} onError - Error callback
+   * Get the current session
+   * @returns {Object|null} Current session or null
    */
-  handleChunkMetadata(session, metadata, onProgress, onComplete, onError) {
-    const { messageId, totalChunks, totalSize } = metadata;
-    
-    console.log(`📦 Receiving chunked message ${messageId}: ${totalChunks} chunks, ${totalSize} bytes`);
-    
-    // Initialize chunk assembly
-    this.pendingChunks.set(messageId, {
-      chunks: new Array(totalChunks),
-      receivedCount: 0,
-      totalChunks,
-      totalSize,
-      onProgress,
-      onComplete,
-      onError
-    });
-    
-    // Set timeout for cleanup
-    const timeout = setTimeout(() => {
-      console.error(`📦 Timeout waiting for chunks for message ${messageId}`);
-      this.cleanupPendingChunks(messageId);
-      onError?.(new Error('Chunk reception timeout'));
-    }, CHUNK_TIMEOUT);
-    
-    this.chunkTimeouts.set(messageId, timeout);
+  getSession() {
+    return this.session;
   }
 
   /**
-   * Handle incoming chunk
-   * @param {Object} chunkData - Chunk data object
+   * Get the session ref (for compatibility with existing code)
+   * @returns {Object} Session ref object
    */
-  handleChunk(chunkData) {
-    const { messageId, chunkIndex, totalChunks, data } = chunkData;
+  getSessionRef() {
+    return this.sessionRef;
+  }
+
+  /**
+   * Check if session is available
+   * @returns {boolean} True if session is available
+   */
+  isSessionAvailable() {
+    return this.isInitialized && this.session !== null;
+  }
+
+  /**
+   * Register a signal handler
+   * @param {string} signalType - Signal type (e.g., 'signal:package-share')
+   * @param {Function} handler - Signal handler function
+   */
+  registerSignalHandler(signalType, handler) {
+    if (!this.isSessionAvailable()) {
+      console.warn(`🔌 Cannot register signal handler ${signalType}: No session available`);
+      return false;
+    }
+
+    console.log(`🔌 Registering signal handler: ${signalType}`);
     
-    const pending = this.pendingChunks.get(messageId);
-    if (!pending) {
-      console.warn(`📦 Received chunk for unknown message ${messageId}`);
+    // Remove existing handler if any
+    if (this.signalHandlers.has(signalType)) {
+      this.session.off(signalType, this.signalHandlers.get(signalType));
+    }
+
+    // Register new handler
+    this.signalHandlers.set(signalType, handler);
+    this.session.on(signalType, handler);
+    
+    return true;
+  }
+
+  /**
+   * Unregister a signal handler
+   * @param {string} signalType - Signal type to unregister
+   */
+  unregisterSignalHandler(signalType) {
+    if (!this.isSessionAvailable()) {
       return;
     }
-    
-    // Store chunk
-    pending.chunks[chunkIndex] = data;
-    pending.receivedCount++;
-    
-    console.log(`📦 Received chunk ${chunkIndex + 1}/${totalChunks} for message ${messageId}`);
-    
-    // Update progress
-    const progress = (pending.receivedCount / totalChunks) * 100;
-    pending.onProgress?.(progress, pending.receivedCount, totalChunks);
-    
-    // Check if all chunks received
-    if (pending.receivedCount === totalChunks) {
-      this.assembleChunks(messageId);
+
+    const handler = this.signalHandlers.get(signalType);
+    if (handler) {
+      console.log(`🔌 Unregistering signal handler: ${signalType}`);
+      this.session.off(signalType, handler);
+      this.signalHandlers.delete(signalType);
     }
   }
 
   /**
-   * Assemble chunks into original data
-   * @param {string} messageId - Message identifier
+   * Register multiple signal handlers at once
+   * @param {Object} handlers - Object with signal types as keys and handlers as values
    */
-  assembleChunks(messageId) {
-    const pending = this.pendingChunks.get(messageId);
-    if (!pending) return;
+  registerSignalHandlers(handlers) {
+    if (!this.isSessionAvailable()) {
+      console.warn('🔌 Cannot register signal handlers: No session available');
+      return false;
+    }
+
+    console.log('🔌 Registering multiple signal handlers:', Object.keys(handlers));
     
-    try {
-      // Concatenate all chunks
-      const fullData = pending.chunks.join('');
-      const parsedData = JSON.parse(fullData);
-      
-      console.log(`📦 Successfully assembled message ${messageId}`);
-      
-      // Clear timeout
-      const timeout = this.chunkTimeouts.get(messageId);
-      if (timeout) {
-        clearTimeout(timeout);
-        this.chunkTimeouts.delete(messageId);
+    Object.entries(handlers).forEach(([signalType, handler]) => {
+      this.registerSignalHandler(signalType, handler);
+    });
+
+    return true;
+  }
+
+  /**
+   * Unregister all signal handlers
+   */
+  unregisterAllSignalHandlers() {
+    if (!this.isSessionAvailable()) {
+      return;
+    }
+
+    console.log('🔌 Unregistering all signal handlers');
+    
+    this.signalHandlers.forEach((handler, signalType) => {
+      this.session.off(signalType, handler);
+    });
+    
+    this.signalHandlers.clear();
+  }
+
+  /**
+   * Send a signal
+   * @param {Object} signalData - Signal data object
+   * @param {Function} callback - Optional callback function
+   */
+  sendSignal(signalData, callback) {
+    if (!this.isSessionAvailable()) {
+      const error = new Error('Cannot send signal: No session available');
+      console.error('🔌', error.message);
+      if (callback) callback(error);
+      return false;
+    }
+
+    console.log('🔌 Sending signal:', signalData.type);
+    this.session.signal(signalData, callback);
+    return true;
+  }
+
+  /**
+   * Add a listener for session events
+   * @param {string} event - Event name
+   * @param {Function} callback - Callback function
+   */
+  addListener(event, callback) {
+    this.listeners.add({ event, callback });
+  }
+
+  /**
+   * Remove a listener
+   * @param {string} event - Event name
+   * @param {Function} callback - Callback function
+   */
+  removeListener(event, callback) {
+    this.listeners.forEach(listener => {
+      if (listener.event === event && listener.callback === callback) {
+        this.listeners.delete(listener);
       }
-      
-      // Call completion callback
-      pending.onComplete?.(parsedData);
-      
-      // Cleanup
-      this.cleanupPendingChunks(messageId);
-      
-    } catch (error) {
-      console.error(`📦 Failed to assemble chunks for message ${messageId}:`, error);
-      pending.onError?.(error);
-      this.cleanupPendingChunks(messageId);
-    }
+    });
   }
 
   /**
-   * Clean up pending chunks and timeouts
-   * @param {string} messageId - Message identifier
+   * Notify all listeners of an event
+   * @param {string} event - Event name
+   * @param {*} data - Event data
    */
-  cleanupPendingChunks(messageId) {
-    this.pendingChunks.delete(messageId);
-    
-    const timeout = this.chunkTimeouts.get(messageId);
-    if (timeout) {
-      clearTimeout(timeout);
-      this.chunkTimeouts.delete(messageId);
-    }
+  notifyListeners(event, data) {
+    this.listeners.forEach(listener => {
+      if (listener.event === event) {
+        listener.callback(data);
+      }
+    });
   }
 
   /**
-   * Generate unique message ID
-   * @returns {string} Unique message ID
-   */
-  generateMessageId() {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Clean up all pending operations (call on session disconnect)
+   * Cleanup and reset the singleton
    */
   cleanup() {
-    // Clear all timeouts
-    this.chunkTimeouts.forEach(timeout => clearTimeout(timeout));
+    console.log('🔌 Cleaning up OpenTok session singleton');
     
-    // Clear all maps
-    this.pendingChunks.clear();
-    this.chunkTimeouts.clear();
-    this.progressCallbacks.clear();
-    
-    console.log('📦 OpenTokSessionManager cleaned up');
+    this.unregisterAllSignalHandlers();
+    this.listeners.clear();
+    this.session = null;
+    this.sessionRef.current = null;
+    this.isInitialized = false;
+  }
+
+  /**
+   * Get session manager for chunked data operations
+   * @returns {Object} Session manager instance
+   */
+  getSessionManager() {
+    return chunkedSessionManager;
   }
 }
 
 // Export singleton instance
-export const sessionManager = new OpenTokSessionManager(); 
+export const openTokSessionSingleton = OpenTokSessionSingleton.getInstance();
+
+// Export the class for testing purposes
+export { OpenTokSessionSingleton }; 

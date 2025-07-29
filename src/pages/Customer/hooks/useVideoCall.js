@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import OT from "@opentok/client";
 import axios from "axios";
+import { openTokSessionSingleton } from "../../../services/OpenTokSessionManager";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -124,7 +125,13 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
     setWaitingForAgent(false);
     setCallStarted(true);
-    initializePublisher();
+    
+    // Initialize publisher after a short delay to ensure refs are ready
+    setTimeout(() => {
+      if (publisherRef.current && !publisher.current) {
+        initializePublisher();
+      }
+    }, 100);
   }, [setCallStarted, initializePublisher]);
 
   // Initialize session
@@ -252,19 +259,18 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
       }, 5000); // 5 second delay
     };
 
-    // Core event listeners
+    // Core event listeners only
     session.on("signal:callAccepted", handleCallAccepted);
     session.on("streamCreated", handleStreamCreated);
     session.on("signal:endCall", handleEndCall);
     session.on("connectionDestroyed", handleAgentConnectionDestroyed);
     session.on("exception", (e) => console.error("⚠️ OpenTok exception:", e));
 
-    // Custom signal handlers passed from the component
-    console.log("🔌 Setting up session event listeners");
-    Object.entries(signalHandlers).forEach(([signalType, handler]) => {
-      console.log(`🔌 Adding listener for: ${signalType}`);
-      session.on(signalType, handler);
-    });
+    // Register signal handlers with singleton
+    if (Object.keys(signalHandlers).length > 0) {
+      console.log('🔌 Registering signal handlers with singleton:', Object.keys(signalHandlers));
+      openTokSessionSingleton.registerSignalHandlers(signalHandlers);
+    }
 
     return () => {
       // Clear timeout on cleanup
@@ -273,16 +279,11 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
         agentLeftTimeoutRef.current = null;
       }
 
-      // Clean up core listeners
+      // Clean up core listeners only
       session.off("signal:callAccepted", handleCallAccepted);
       session.off("streamCreated", handleStreamCreated);
       session.off("signal:endCall", handleEndCall);
       session.off("connectionDestroyed", handleAgentConnectionDestroyed);
-      
-      // Clean up custom signal handlers
-      Object.entries(signalHandlers).forEach(([signalType, handler]) => {
-        session.off(signalType, handler);
-      });
     };
   }, [handleCallAccepted, onEndCall, signalHandlers]);
 
@@ -300,7 +301,8 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
   // Initialize publisher when ready
   useEffect(() => {
-    if (joined && !waitingForAgent && publisherRef.current) {
+    if (joined && !waitingForAgent && publisherRef.current && !publisher.current) {
+      console.log("🎥 Initializing publisher for customer");
       initializePublisher();
     }
   }, [joined, waitingForAgent, initializePublisher]);

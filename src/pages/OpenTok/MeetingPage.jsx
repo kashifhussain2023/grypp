@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OT from "@opentok/client";
 import AgentCatalog from "../../components/AgentCatalog";
-import TourComparisonDrawer from "../../components/Compare/TourComparisonDrawer";
+import TourComparisonModal from "../../components/Compare/TourComparisonModal";
 import { useComparePackages } from "../../hooks/useComparePackages";
 import {
   Box,
@@ -41,6 +41,7 @@ import VideoFileIcon from "@mui/icons-material/VideoFile";
 import { Document, Page, pdfjs } from "react-pdf";
 import { samplePackageData } from "../../data/samplePackageData";
 import { agentPackageService } from "../../services/AgentPackageService";
+import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -95,19 +96,20 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const screenPublisherRef = useRef(null);
   const publisherContainerRef = useRef(null);
 
-  // Comparison functionality (moved after sessionRef initialization)
+  // Comparison functionality
   const {
     compareList,
     isDrawerOpen,
     setIsDrawerOpen,
-    addToCompare, // eslint-disable-line no-unused-vars
+    addToCompare,
     removeFromCompare,
     clearComparison,
     getBestValue,
-    isInComparison, // eslint-disable-line no-unused-vars
-    isComparisonFull, // eslint-disable-line no-unused-vars
-    comparisonCount // eslint-disable-line no-unused-vars
-  } = useComparePackages(sessionRef, 'agent');
+    isInComparison,
+    isComparisonFull,
+    comparisonCount,
+    toggleDrawer
+  } = useComparePackages('agent');
 
   const ensureMediaAccess = async () => {
     if (!ENABLE_AGENT_VIDEO && !ENABLE_AGENT_AUDIO) return true;
@@ -118,6 +120,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     return true;
   };
 
+  // Initialize session on mount
   useEffect(() => {
     if (!sessionId) {
       return;
@@ -139,11 +142,15 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         const session = OT.initSession(apiKey, sessionId);
         sessionRef.current = session;
 
+        // Initialize the singleton with the session
+        openTokSessionSingleton.initialize(session);
+
         session.connect(token, async (err) => {
           if (err) {
-            console.error("Session connect error:", err);
+            console.error("❌ Session connect error:", err);
             return;
           }
+          console.log("✅ Agent connected to session");
 
           try {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -190,7 +197,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                     }
                   });
 
-                  session.signal(
+                  // Send call acceptance signal
+                  openTokSessionSingleton.sendSignal(
                     {
                       type: "callAccepted",
                       data: "Agent accepted the call",
@@ -215,6 +223,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           }
         });
 
+        // Set up session event handlers
         session.on("streamCreated", (event) => {
           setHasRemoteStream(true);
           setRemoteVideoOn(event.stream.hasVideo);
@@ -274,58 +283,14 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           }, 5000); // 5 second delay
         });
 
-        session.on("signal:file-share", (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.url) {
-              setCustomerFileUrl(data.url);
-              setCustomerFileName(data.name || null);
-              setCustomerFileDialogOpen(true);
-            }
-          } catch (err) {
-            console.error("Failed to parse file-share signal data:", err);
-          }
+        session.on("connectionDestroyed", (event) => {
+          console.log("🔌 Connection destroyed:", event.reason);
         });
 
-        session.on("signal:signed-document", (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.url) {
-              setSignedDocUrl(data.url);
-              setSignedDocName(data.name || "Signed Document");
-              setSignedDocDialogOpen(true);
-              setWaitingForSignedDoc(false);
-            }
-          } catch (err) {
-            console.error("Failed to parse signed document signal:", err);
-          }
-        });
+        session.on("exception", (e) => console.error("⚠️ OpenTok exception:", e));
 
-        session.on("signal:cobrowsing-url", (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            const url = data.sessionUrl;
-            setCoBrowseUrl(url);
-            setOpenCoBrowseDialog(true);
-            setIsCobrowsing(true);
-          } catch (err) {
-            console.error("Failed to parse cobrowsing-url signal:", err);
-          }
-        });
-
-        session.on("signal:customer-request-packages", (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log("📦 Customer requested to open packages dialog:", data);
-            if (data.action === "open-packages-dialog") {
-              setPackagesDialogOpen(true);
-            }
-          } catch (err) {
-            console.error("Failed to parse customer-request-packages signal:", err);
-          }
-        });
       } catch (err) {
-        console.error(err);
+        console.error("❌ Session initialization error:", err);
       }
     }
 
@@ -334,23 +299,10 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     return () => {
       isMounted = false;
       if (sessionRef.current) {
-        sessionRef.current.off("streamCreated");
-        sessionRef.current.off("streamDestroyed");
-        sessionRef.current.off("signal");
-        sessionRef.current.off("signal:file-share");
-        sessionRef.current.off("signal:signed-document");
-        sessionRef.current.off("signal:cobrowsing-url");
-        sessionRef.current.off("signal:customer-request-packages");
-
-        if (publisherRef.current) {
-          sessionRef.current.unpublish(publisherRef.current);
-          publisherRef.current.destroy();
-        }
         sessionRef.current.disconnect();
-        sessionRef.current = null;
       }
     };
-  }, [sessionId, retryMedia]);
+  }, [sessionId]);
 
   // Start or stop co-browsing
   const toggleCobrowsing = async () => {
@@ -359,19 +311,22 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       setCoBrowseUrl("");
       setOpenCoBrowseDialog(false);
     } else {
-      sessionRef.current?.signal(
-        {
-          type: "request-cobrowsing-url",
-        },
-        (err) => {
-          if (err) {
-            console.error("❌ Signal error:", err);
-            setIsCobrowsing(false);
-            setCoBrowseUrl("");
-            setOpenCoBrowseDialog(false);
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "request-cobrowsing-url",
+          },
+          (err) => {
+            if (err) {
+              console.error("❌ Signal error:", err);
+              setIsCobrowsing(false);
+              setCoBrowseUrl("");
+              setOpenCoBrowseDialog(false);
+            }
           }
-        }
-      );
+        );
+      }
     }
   };
 
@@ -443,12 +398,13 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   };
 
   const toggleScreenShare = async () => {
-    if (!sessionRef.current) return;
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
 
     if (isScreenSharing) {
       // Stop screen sharing
       if (screenPublisherRef.current) {
-        sessionRef.current.unpublish(screenPublisherRef.current);
+        session.unpublish(screenPublisherRef.current);
         screenPublisherRef.current.destroy();
         screenPublisherRef.current = null;
       }
@@ -465,7 +421,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
       // Unpublish webcam before screen share
       if (webcamPublisherRef.current) {
-        sessionRef.current.unpublish(webcamPublisherRef.current);
+        session.unpublish(webcamPublisherRef.current);
         webcamPublisherRef.current.destroy();
         webcamPublisherRef.current = null;
       }
@@ -486,7 +442,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             console.error("Screen publisher init error:", err);
             // Try to re-publish webcam if screen share fails
             if (webcamPublisherRef.current) {
-              sessionRef.current.publish(webcamPublisherRef.current);
+              session.publish(webcamPublisherRef.current);
             }
             return;
           }
@@ -495,8 +451,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
           // Listen for user manually stopping screen share
           screenPublisher.on("mediaStopped", () => {
-            if (sessionRef.current && screenPublisherRef.current) {
-              sessionRef.current.unpublish(screenPublisherRef.current);
+            if (session && screenPublisherRef.current) {
+              session.unpublish(screenPublisherRef.current);
               screenPublisherRef.current.destroy();
               screenPublisherRef.current = null;
             }
@@ -511,12 +467,12 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           });
 
           // Publish screen share
-          sessionRef.current.publish(screenPublisher, (pubErr) => {
+          session.publish(screenPublisher, (pubErr) => {
             if (pubErr) {
               console.error("Screen publish error:", pubErr);
               // Fallback: republish webcam
               if (webcamPublisherRef.current) {
-                sessionRef.current.publish(webcamPublisherRef.current);
+                session.publish(webcamPublisherRef.current);
               }
               return;
             }
@@ -530,10 +486,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   };
 
   const handleVideoAssist = () => {
-    if (!sessionRef.current) return;
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
 
     const nextState = !videoAssistActive;
-    sessionRef.current.signal(
+    openTokSessionSingleton.sendSignal(
       {
         type: "video-assist",
         data: nextState ? "enable-video" : "disable-video",
@@ -549,29 +506,33 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   };
 
   const handleEndCall = async () => {
-    if (sessionRef.current) {
-      sessionRef.current.signal(
+    const session = openTokSessionSingleton.getSession();
+    if (session) {
+      openTokSessionSingleton.sendSignal(
         { type: "endCall", data: "Agent ended the call" },
         (err) => {
           if (err) console.error("Signal send error:", err);
         }
       );
-      sessionRef.current.disconnect();
+      session.disconnect();
     }
 
     onCallEnd();
   };
 
   const handleCloseFileDialog = () => {
-    sessionRef.current?.signal(
-      {
-        type: "file-preview-closed",
-        data: "Agent closed the file preview",
-      },
-      (err) => {
-        if (err) console.error("Signal send error:", err);
-      }
-    );
+    const session = openTokSessionSingleton.getSession();
+    if (session) {
+      openTokSessionSingleton.sendSignal(
+        {
+          type: "file-preview-closed",
+          data: "Agent closed the file preview",
+        },
+        (err) => {
+          if (err) console.error("Signal send error:", err);
+        }
+      );
+    }
 
     setCustomerFileUrl(null);
     setCustomerFileDialogOpen(false);
@@ -747,17 +708,16 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             console.log("🎭 Agent clicked 'Browse Tour Packages'");
             setPackagesDialogOpen(true);
             // Send signal to customer to open their shared packages dialog
-            if (sessionRef?.current) {
+            const session = openTokSessionSingleton.getSession();
+            if (session) {
               console.log("📡 Sending signal to customer to open shared packages dialog");
-              sessionRef.current.signal({
+              openTokSessionSingleton.sendSignal({
                 type: "agent-request-shared-packages",
                 data: JSON.stringify({
                   action: "open-shared-packages-dialog",
-                  timestamp: new Date().toISOString()
-                })
+                  timestamp: new Date().toISOString(),
+                }),
               });
-            } else {
-              console.log("❌ No session ref available");
             }
           }}
           sx={{ color: "white" }}
@@ -845,7 +805,6 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
     try {
       await agentPackageService.sendPackages(
-        sessionRef.current,
         packagesToShare,
         {
           onProgress: (progress, sentChunks, totalChunks) => {
@@ -907,20 +866,20 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     setSharedComparisonOpen(true);
 
     // Sync shared comparison with customer
-    if (sessionRef.current && sharedPackages.length > 0) {
-      sessionRef.current.signal(
+    const session = openTokSessionSingleton.getSession();
+    if (session && sharedPackages.length > 0) {
+      openTokSessionSingleton.sendSignal(
         {
           type: "shared-comparison-open",
           data: JSON.stringify({
-            packages: sharedPackages,
+            action: "agent-opened-comparison",
+            sharedPackages: sharedPackages,
             timestamp: new Date().toISOString(),
           }),
         },
         (err) => {
           if (err) {
-            console.error("Shared comparison signal error:", err);
-          } else {
-            console.log("Shared comparison opened with customer");
+            console.error("Failed to send shared comparison signal:", err);
           }
         }
       );
@@ -952,28 +911,31 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       const uploadedFileUrl = res.data.url;
       const signalType = type === "sign" ? "file-for-signing" : "file-preview";
 
-      sessionRef.current?.signal(
-        {
-          type: signalType,
-          data: JSON.stringify({
-            name: file.name,
-            url: uploadedFileUrl,
-          }),
-        },
-        (err) => {
-          if (err) {
-            console.error("Signal send error:", err);
-          } else {
-            if (type === "sign") {
-              setWaitingForSignedDoc(true);
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: signalType,
+            data: JSON.stringify({
+              name: file.name,
+              url: uploadedFileUrl,
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Signal send error:", err);
             } else {
-              setCustomerFileUrl(uploadedFileUrl);
-              setCustomerFileName(file.name);
-              setCustomerFileDialogOpen(true);
+              if (type === "sign") {
+                setWaitingForSignedDoc(true);
+              } else {
+                setCustomerFileUrl(uploadedFileUrl);
+                setCustomerFileName(file.name);
+                setCustomerFileDialogOpen(true);
+              }
             }
           }
-        }
-      );
+        );
+      }
     } catch (err) {
       console.error("File upload failed:", err);
     } finally {
@@ -1125,15 +1087,20 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             variant="outlined"
             onClick={() => {
               setUploadDialogOpen(false);
-              sessionRef.current?.signal(
-                {
-                  type: "file-request",
-                  data: "Please upload your file.",
-                },
-                (err) => {
-                  if (err) console.error("Signal error:", err);
-                }
-              );
+              const session = openTokSessionSingleton.getSession();
+              if (session) {
+                openTokSessionSingleton.sendSignal(
+                  {
+                    type: "file-request",
+                    data: "Please upload your file.",
+                  },
+                  (err) => {
+                    if (err) console.error("Signal error:", err);
+                  }
+                );
+              } else {
+                console.log("❌ No session available");
+              }
             }}
             sx={{ m: 1 }}
           >
@@ -1487,16 +1454,14 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Tour Comparison Drawer - Rendered outside dialog to appear on top */}
-      <TourComparisonDrawer
+      {/* Tour Comparison Modal - Rendered outside dialog to appear on top */}
+      <TourComparisonModal
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         compareList={compareList}
         onRemoveFromCompare={removeFromCompare}
         onClearComparison={clearComparison}
         getBestValue={getBestValue}
-        userType="agent"
-        sessionRef={sessionRef}
       />
 
       {/* Shared Packages Comparison Modal */}

@@ -1,18 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
+import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 
 /**
  * Custom hook for managing tour package comparison
- * @param {Object} sessionRef - OpenTok session ref for real-time sync
  * @param {string} userType - 'agent' or 'customer'
  * @returns {Object} - Comparison state and methods
  */
-export const useComparePackages = (sessionRef, userType = 'agent') => {
+export const useComparePackages = (userType = 'agent') => {
     const [compareList, setCompareList] = useState([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Send comparison update to other party
     const syncComparison = useCallback((newCompareList) => {
-        if (!sessionRef?.current) return;
+        const session = openTokSessionSingleton.getSession();
+        if (!session) return;
 
         const syncData = {
             type: 'package-comparison-update',
@@ -21,7 +22,7 @@ export const useComparePackages = (sessionRef, userType = 'agent') => {
             timestamp: Date.now()
         };
 
-        sessionRef.current.signal(
+        openTokSessionSingleton.sendSignal(
             {
                 type: 'cobrowse-comparison-sync',
                 data: JSON.stringify(syncData)
@@ -32,11 +33,12 @@ export const useComparePackages = (sessionRef, userType = 'agent') => {
                 }
             }
         );
-    }, [sessionRef, userType]);
+    }, [userType]);
 
     // Send drawer state sync to other party
     const syncDrawerState = useCallback((isOpen) => {
-        if (!sessionRef?.current) return;
+        const session = openTokSessionSingleton.getSession();
+        if (!session) return;
 
         const syncData = {
             type: 'comparison-drawer-state',
@@ -45,7 +47,7 @@ export const useComparePackages = (sessionRef, userType = 'agent') => {
             timestamp: Date.now()
         };
 
-        sessionRef.current.signal(
+        openTokSessionSingleton.sendSignal(
             {
                 type: 'cobrowse-drawer-sync',
                 data: JSON.stringify(syncData)
@@ -56,62 +58,67 @@ export const useComparePackages = (sessionRef, userType = 'agent') => {
                 }
             }
         );
-    }, [sessionRef, userType]);
-
-    // Custom setIsDrawerOpen that syncs with other party
-    const setDrawerOpenWithSync = useCallback((isOpen) => {
-        console.log(`[Compare ${userType}] Setting drawer to: ${isOpen}`);
-        setIsDrawerOpen(isOpen);
-        syncDrawerState(isOpen);
-    }, [syncDrawerState, userType]);
-
-    // Load initial state from localStorage
-    useEffect(() => {
-        const savedCompareList = localStorage.getItem(`compare-packages-${userType}`);
-        if (savedCompareList) {
-            try {
-                setCompareList(JSON.parse(savedCompareList));
-            } catch (error) {
-                console.error('Failed to load compare list from localStorage:', error);
-            }
-        }
     }, [userType]);
 
-    // Save to localStorage whenever compareList changes
-    useEffect(() => {
-        localStorage.setItem(`compare-packages-${userType}`, JSON.stringify(compareList));
-    }, [compareList, userType]);
-
-    // Add package to comparison
+    // Add to comparison list
     const addToCompare = useCallback((packageData) => {
-        if (compareList.length >= 3) {
-            return false; // Max 3 packages
-        }
+        setCompareList(prev => {
+            const newList = [...prev];
+            if (!newList.find(pkg => pkg.id === packageData.id)) {
+                newList.push(packageData);
+                // Sync with other party
+                syncComparison(newList);
+            }
+            return newList;
+        });
+    }, [syncComparison]);
 
-        // Check if package is already in comparison
-        const isDuplicate = compareList.some(pkg => pkg.id === packageData.id);
-        if (isDuplicate) {
-            return false;
-        }
-
-        const newCompareList = [...compareList, packageData];
-        setCompareList(newCompareList);
-        syncComparison(newCompareList);
-        return true;
-    }, [compareList, syncComparison]);
-
-    // Remove package from comparison
+    // Remove from comparison list
     const removeFromCompare = useCallback((packageId) => {
-        const newCompareList = compareList.filter(pkg => pkg.id !== packageId);
-        setCompareList(newCompareList);
-        syncComparison(newCompareList);
-    }, [compareList, syncComparison]);
+        setCompareList(prev => {
+            const newList = prev.filter(pkg => pkg.id !== packageId);
+            // Sync with other party
+            syncComparison(newList);
+            return newList;
+        });
+    }, [syncComparison]);
 
-    // Clear all comparisons
+    // Clear comparison list
     const clearComparison = useCallback(() => {
         setCompareList([]);
+        // Sync with other party
         syncComparison([]);
     }, [syncComparison]);
+
+    // Get best value package
+    const getBestValue = useCallback(() => {
+        if (compareList.length === 0) return null;
+        return compareList.reduce((best, current) => {
+            const bestPrice = best.price?.discounted || best.price;
+            const currentPrice = current.price?.discounted || current.price;
+            return currentPrice < bestPrice ? current : best;
+        });
+    }, [compareList]);
+
+    // Check if package is in comparison
+    const isInComparison = useCallback((packageId) => {
+        return compareList.some(pkg => pkg.id === packageId);
+    }, [compareList]);
+
+    // Check if comparison is full (max 3 packages)
+    const isComparisonFull = useCallback(() => {
+        return compareList.length >= 3;
+    }, [compareList]);
+
+    // Get comparison count
+    const comparisonCount = compareList.length;
+
+    // Toggle drawer
+    const toggleDrawer = useCallback((open) => {
+        setIsDrawerOpen(open);
+        // Sync drawer state with other party
+        syncDrawerState(open);
+    }, [syncDrawerState]);
 
     // Handle incoming comparison sync
     const handleComparisonSync = useCallback((event) => {
@@ -158,46 +165,30 @@ export const useComparePackages = (sessionRef, userType = 'agent') => {
 
     // Set up signal listener for comparison sync
     useEffect(() => {
-        if (!sessionRef?.current) return;
+        const session = openTokSessionSingleton.getSession();
+        if (!session) return;
 
-        const session = sessionRef.current;
-        session.on('signal:cobrowse-comparison-sync', handleComparisonSync);
-        session.on('signal:cobrowse-drawer-sync', handleDrawerSync); // Add this line
+        // Register signal handlers with singleton
+        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
+        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
 
         return () => {
-            session.off('signal:cobrowse-comparison-sync', handleComparisonSync);
-            session.off('signal:cobrowse-drawer-sync', handleDrawerSync); // Add this line
+            openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-sync');
+            openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-drawer-sync');
         };
-    }, [sessionRef, handleComparisonSync, handleDrawerSync]); // Add handleDrawerSync to dependencies
-
-    // Get best value package (lowest price)
-    const getBestValue = useCallback(() => {
-        if (compareList.length === 0) return null;
-
-        return compareList.reduce((best, current) => {
-            return current.price < best.price ? current : best;
-        });
-    }, [compareList]);
-
-    // Check if package is in comparison
-    const isInComparison = useCallback((packageId) => {
-        return compareList.some(pkg => pkg.id === packageId);
-    }, [compareList]);
-
-    // Check if comparison is full
-    const isComparisonFull = compareList.length >= 3;
+    }, [handleComparisonSync, handleDrawerSync]);
 
     return {
         compareList,
         isDrawerOpen,
-        setIsDrawerOpen: setDrawerOpenWithSync,
+        setIsDrawerOpen,
         addToCompare,
         removeFromCompare,
         clearComparison,
         getBestValue,
         isInComparison,
         isComparisonFull,
-        comparisonCount: compareList.length,
-        setCompareList
+        comparisonCount,
+        toggleDrawer
     };
 }; 

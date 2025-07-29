@@ -38,6 +38,9 @@ import { useChunkedPackageShare } from "../../hooks/useChunkedPackageShare";
 import { getFileType, generateSignedFilename } from "./utils/fileUtils";
 import { CONFIG, FILE_TYPES } from "./constants";
 
+// Services
+import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
+
 const CustomerPage = ({
   name,
   email,
@@ -67,13 +70,10 @@ const CustomerPage = ({
   const fileInputRef = useRef(null);
   const sigPadRef = useRef(null);
 
-  // Create a ref that will be updated with the actual sessionRef from useVideoCall
-  const sessionRefForChunked = useRef(null);
-  
   // Create a ref to always have access to the latest signal handlers
   const signalHandlersRef = useRef(null);
 
-  // Chunked package sharing logic (called early to get handlers)
+  // Chunked package sharing logic (using singleton)
   const {
     isReceiving,
     receivingProgress,
@@ -82,7 +82,7 @@ const CustomerPage = ({
     cleanup: cleanupChunkedShare,
     handleChunkMetadata,
     handleChunk,
-  } = useChunkedPackageShare(sessionRefForChunked);
+  } = useChunkedPackageShare();
 
   // Signal handlers for the video call (memoized to prevent unnecessary re-renders)
   const signalHandlers = useMemo(
@@ -135,10 +135,14 @@ const CustomerPage = ({
       },
       "signal:package-share": (event) => {
         console.log("📦 Package share signal received! Data:", event.data);
+        console.log("📦 Package share signal event:", event);
+        console.log("📦 Package share signal event type:", event.type);
 
         try {
           const parsed = JSON.parse(event.data);
           console.log("📦 Parsed data:", parsed);
+          console.log("📦 Parsed data type:", typeof parsed);
+          console.log("📦 Parsed data keys:", Object.keys(parsed));
 
           if (parsed.packages && Array.isArray(parsed.packages)) {
             console.log(
@@ -158,6 +162,7 @@ const CustomerPage = ({
                 "📦 State updated via timeout - packages:",
                 parsed.packages.length
               );
+              console.log("📦 showPackagesDialog set to true");
             }, 10);
           } else {
             console.error("📦 Invalid package data structure:", parsed);
@@ -189,10 +194,10 @@ const CustomerPage = ({
           const sessionId = cobrowseSession.id();
           const sessionUrl = `https://cobrowse.io/session/${sessionId}/?token=${token}&end_action=none&navigation=none&messages=none`;
 
-          // Use the sessionRef from the ref to avoid dependency issues
-          const currentSessionRef = sessionRefForChunked.current;
-          if (sessionUrl && currentSessionRef) {
-            currentSessionRef.signal(
+          // Use the session from singleton
+          const session = openTokSessionSingleton.getSession();
+          if (sessionUrl && session) {
+            session.signal(
               {
                 type: "cobrowsing-url",
                 data: JSON.stringify({ action: "start", sessionUrl }),
@@ -230,17 +235,19 @@ const CustomerPage = ({
         console.log(
           "📦 CUSTOMER: Signal handler triggered for package-share-chunk-metadata"
         );
+        console.log("📦 CUSTOMER: Chunk metadata event:", event);
         handleChunkMetadata(event);
       },
       "signal:package-share-chunk": (event) => {
         console.log(
           "📦 CUSTOMER: Signal handler triggered for package-share-chunk"
         );
+        console.log("📦 CUSTOMER: Chunk event:", event);
         handleChunk(event);
       },
     }),
-    [handleChunkMetadata, handleChunk]
-  ); // Remove sessionRef dependency to avoid initialization order issue
+    []
+  );
 
   // Update the ref whenever signal handlers change
   signalHandlersRef.current = signalHandlers;
@@ -272,19 +279,29 @@ const CustomerPage = ({
     signalHandlers,
   });
 
-  // Update sessionRef for chunked package sharing after useVideoCall
+  // Initialize singleton when session is available
   useEffect(() => {
-    if (sessionRef?.current && sessionRefForChunked.current !== sessionRef.current) {
-      sessionRefForChunked.current = sessionRef.current;
-      console.log('📦 CUSTOMER: Updated sessionRef for chunked package sharing');
+    if (sessionRef?.current) {
+      console.log('🔌 Initializing OpenTok session singleton');
+      openTokSessionSingleton.initialize(sessionRef.current);
     }
   }, [sessionRef]);
+
+  // Re-register signal handlers after singleton is initialized
+  useEffect(() => {
+    if (openTokSessionSingleton.isSessionAvailable() && signalHandlers) {
+      console.log('🔌 Re-registering signal handlers after singleton initialization:', Object.keys(signalHandlers));
+      openTokSessionSingleton.registerSignalHandlers(signalHandlers);
+    }
+  }, [signalHandlers, sessionRef]);
 
   // Set up global callback for chunked package reception and progress dialog management
   useEffect(() => {
     // Register global callback for chunked package reception
     window.chunkedPackageReceived = (syntheticEvent) => {
       console.log('📦 CUSTOMER: chunkedPackageReceived called with:', syntheticEvent);
+      console.log('📦 CUSTOMER: Synthetic event data:', syntheticEvent.data);
+      console.log('📦 CUSTOMER: Synthetic event type:', syntheticEvent.type);
       console.log('📦 CUSTOMER: Available signal handlers:', signalHandlersRef.current ? Object.keys(signalHandlersRef.current) : 'none');
       
       // This will trigger the existing package-share signal handler
@@ -294,25 +311,34 @@ const CustomerPage = ({
         existingHandler(syntheticEvent);
       } else {
         console.error('📦 CUSTOMER: No package-share handler found!', signalHandlersRef.current);
+        console.error('📦 CUSTOMER: signalHandlersRef.current:', signalHandlersRef.current);
       }
     };
-
-    // Show progress dialog when receiving chunks
-    if (isReceiving) {
-      setShowChunkedProgressDialog(true);
-    } else {
-      // Hide progress dialog when reception is complete or stopped
-      setTimeout(() => setShowChunkedProgressDialog(false), 1000); // Small delay to show completion
-    }
 
     // Cleanup on unmount
     return () => {
       if (window.chunkedPackageReceived) {
         delete window.chunkedPackageReceived;
       }
+    };
+  }, [signalHandlers]); // Add signalHandlers dependency to ensure callback is updated
+
+  // Show progress dialog when receiving chunks
+  useEffect(() => {
+    if (isReceiving) {
+      setShowChunkedProgressDialog(true);
+    } else {
+      // Hide progress dialog when reception is complete or stopped
+      setTimeout(() => setShowChunkedProgressDialog(false), 1000); // Small delay to show completion
+    }
+  }, [isReceiving]);
+
+  // Cleanup chunked share on unmount
+  useEffect(() => {
+    return () => {
       cleanupChunkedShare();
     };
-  }, [isReceiving, cleanupChunkedShare]); // Removed signalHandlers dependency since we use ref
+  }, [cleanupChunkedShare]);
 
   // Render fallback avatar when video is disabled
   const renderFallbackAvatar = (label = "You") => {
@@ -374,22 +400,25 @@ const CustomerPage = ({
         type: file.type,
       };
 
-      sessionRef.current?.signal(
-        {
-          type: "file-share",
-          data: JSON.stringify(fileData),
-        },
-        (err) => {
-          if (err) {
-            console.error("❌ File signal send error:", err);
-            setError("Failed to share file.");
-          } else {
-            setFilePreviewUrl(res.data.url);
-            setFilePreviewName(res.data.name);
-            setShowUploadedDialog(true);
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        session.signal(
+          {
+            type: "file-share",
+            data: JSON.stringify(fileData),
+          },
+          (err) => {
+            if (err) {
+              console.error("❌ File signal send error:", err);
+              setError("Failed to share file.");
+            } else {
+              setFilePreviewUrl(res.data.url);
+              setFilePreviewName(res.data.name);
+              setShowUploadedDialog(true);
+            }
           }
-        }
-      );
+        );
+      }
     } catch (err) {
       console.error("❌ File upload failed:", err);
       setError("File upload failed. Please try again.");
@@ -504,22 +533,25 @@ const CustomerPage = ({
         url: res.data.url,
       };
 
-      sessionRef.current.signal(
-        {
-          type: "signed-document",
-          data: JSON.stringify(signalData),
-        },
-        (err) => {
-          if (err) {
-            console.error("Signal error:", err);
-            setError("Failed to send signed document.");
-          } else {
-            setSignatureModalOpen(false);
-            setSignatureDocUrl(null);
-            setSignatureDocName(null);
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        session.signal(
+          {
+            type: "signed-document",
+            data: JSON.stringify(signalData),
+          },
+          (err) => {
+            if (err) {
+              console.error("Signal error:", err);
+              setError("Failed to send signed document.");
+            } else {
+              setSignatureModalOpen(false);
+              setSignatureDocUrl(null);
+              setSignatureDocName(null);
+            }
           }
-        }
-      );
+        );
+      }
     } catch (err) {
       console.error("❌ Error signing document:", err);
       setError("Failed to sign document.");
@@ -675,9 +707,10 @@ const CustomerPage = ({
             console.log("🎭 Customer clicked 'View Shared Packages'");
             setShowPackagesDialog(true);
             // Send signal to agent to open their packages dialog
-            if (sessionRef?.current) {
+            const session = openTokSessionSingleton.getSession();
+            if (session) {
               console.log("📡 Sending signal to agent to open packages dialog");
-              sessionRef.current.signal({
+              openTokSessionSingleton.sendSignal({
                 type: "customer-request-packages",
                 data: JSON.stringify({
                   action: "open-packages-dialog",
@@ -685,7 +718,7 @@ const CustomerPage = ({
                 }),
               });
             } else {
-              console.log("❌ No session ref available");
+              console.log("❌ No session available");
             }
           }}
         />
@@ -806,14 +839,12 @@ const CustomerPage = ({
         {/* Debug check if component exists */}
         {console.log("📦 PackageShareDialog component:", PackageShareDialog)}
 
+        {/* Package Share Dialog */}
         <PackageShareDialog
           open={showPackagesDialog}
-          onClose={() => {
-            console.log("📦 CustomerPage: Closing packages dialog");
-            setShowPackagesDialog(false);
-          }}
+          onClose={() => setShowPackagesDialog(false)}
           sharedPackages={sharedPackages}
-          sessionRef={sessionRef}
+          userType="customer"
         />
 
         {/* Simple test dialog to verify MUI Dialog works */}

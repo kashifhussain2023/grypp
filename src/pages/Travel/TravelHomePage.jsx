@@ -13,11 +13,9 @@ const TravelHomePage = () => {
     <div className="travel-container">
       <Header className="travel-header" />
 
-      <main className="travel-main-content">
-        <Banner />
-        <PackagesSection />
-        <TravelExpert />
-      </main>
+      <Banner />
+      <PackagesSection />
+      <TravelExpert />
 
       <Footer />
     </div>

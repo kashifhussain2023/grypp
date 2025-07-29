@@ -1,11 +1,13 @@
-import { useState, useCallback, useRef } from 'react';
-import { sessionManager } from '../services/OpenTokSessionManager';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 
 /**
  * Custom hook for handling chunked package sharing over OpenTok sessions
- * Provides easy integration with loading states and progress tracking
+ * Uses the singleton session manager for better session handling
  */
-export const useChunkedPackageShare = (sessionRef) => {
+export const useChunkedPackageShare = () => {
+  console.log('📦 useChunkedPackageShare: Hook called');
+  
   const [isReceiving, setIsReceiving] = useState(false);
   const [receivingProgress, setReceivingProgress] = useState(0);
   const [receivingDetails, setReceivingDetails] = useState({
@@ -20,6 +22,7 @@ export const useChunkedPackageShare = (sessionRef) => {
 
   // Refs for cleanup
   const currentMessageRef = useRef(null);
+  const sessionManager = openTokSessionSingleton.getSessionManager();
 
   /**
    * Send chunked package data to the session
@@ -28,7 +31,8 @@ export const useChunkedPackageShare = (sessionRef) => {
    * @param {Function} onError - Callback when sending fails
    */
   const sendPackages = useCallback(async (packages, onComplete, onError) => {
-    if (!sessionRef?.current) {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) {
       const error = new Error('No active session');
       setError(error);
       onError?.(error);
@@ -49,8 +53,8 @@ export const useChunkedPackageShare = (sessionRef) => {
 
       const packageData = { packages };
 
-      await sessionManager.sendChunkedData(
-        sessionRef.current,
+      sessionManager.sendChunkedData(
+        session,
         packageData,
         'package-share-chunk',
         // Progress callback
@@ -80,7 +84,7 @@ export const useChunkedPackageShare = (sessionRef) => {
       setError(error);
       onError?.(error);
     }
-  }, [sessionRef]);
+  }, [sessionManager]);
 
   /**
    * Handle incoming chunk metadata signal
@@ -88,9 +92,8 @@ export const useChunkedPackageShare = (sessionRef) => {
   const handleChunkMetadata = useCallback((event) => {
     console.log('📦 CUSTOMER: Received chunk metadata signal:', event);
     
-    // Get the current session reference
-    const currentSession = sessionRef?.current;
-    if (!currentSession) {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) {
       console.warn('📦 CUSTOMER: No session available for chunk metadata handling');
       return;
     }
@@ -112,7 +115,7 @@ export const useChunkedPackageShare = (sessionRef) => {
       console.log(`📦 CUSTOMER: Starting to receive chunked package data: ${metadata.totalChunks} chunks, ${metadata.totalSize} bytes`);
 
       sessionManager.handleChunkMetadata(
-        currentSession,
+        session,
         metadata,
         // Progress callback
         (progress, receivedChunks, totalChunks) => { // eslint-disable-line no-unused-vars
@@ -130,6 +133,8 @@ export const useChunkedPackageShare = (sessionRef) => {
           
           console.log(`📦 CHUNKED HOOK: Successfully received and assembled package data: ${assembledData.packages?.length} packages`);
           console.log('📦 CHUNKED HOOK: Assembled data structure:', assembledData);
+          console.log('📦 CHUNKED HOOK: Assembled data type:', typeof assembledData);
+          console.log('📦 CHUNKED HOOK: Assembled data keys:', Object.keys(assembledData));
           
           // Trigger the original package-share logic
           if (assembledData.packages && Array.isArray(assembledData.packages)) {
@@ -140,6 +145,7 @@ export const useChunkedPackageShare = (sessionRef) => {
             };
             
             console.log('📦 CHUNKED HOOK: Created synthetic event:', syntheticEvent);
+            console.log('📦 CHUNKED HOOK: Synthetic event data:', syntheticEvent.data);
             console.log('📦 CHUNKED HOOK: window.chunkedPackageReceived exists:', !!window.chunkedPackageReceived);
             
             // Dispatch to any registered package share handlers
@@ -151,6 +157,8 @@ export const useChunkedPackageShare = (sessionRef) => {
             }
           } else {
             console.error('📦 CHUNKED HOOK: Invalid assembled data structure:', assembledData);
+            console.error('📦 CHUNKED HOOK: packages property:', assembledData.packages);
+            console.error('📦 CHUNKED HOOK: packages is array:', Array.isArray(assembledData.packages));
           }
         },
         // Error callback
@@ -166,7 +174,7 @@ export const useChunkedPackageShare = (sessionRef) => {
       console.error('📦 Failed to parse chunk metadata:', error);
       setError(error);
     }
-  }, [sessionRef]);
+  }, [sessionManager]);
 
   /**
    * Handle incoming chunk signal
@@ -188,10 +196,30 @@ export const useChunkedPackageShare = (sessionRef) => {
       console.error('📦 CUSTOMER: Failed to parse chunk data:', error);
       setError(error);
     }
-  }, []);
+  }, [sessionManager]);
 
-  // Note: Signal listeners are now set up by the main signal handler system
-  // The handleChunkMetadata and handleChunk functions are exported for external registration
+  // Register signal handlers when session becomes available
+  useEffect(() => {
+    const handleSessionInitialized = () => {
+      console.log('📦 useChunkedPackageShare: Session initialized, registering signal handlers');
+      
+      // Register chunked package signal handlers
+      openTokSessionSingleton.registerSignalHandler('signal:package-share-chunk-metadata', handleChunkMetadata);
+      openTokSessionSingleton.registerSignalHandler('signal:package-share-chunk', handleChunk);
+    };
+
+    // If session is already available, register handlers immediately
+    if (openTokSessionSingleton.isSessionAvailable()) {
+      handleSessionInitialized();
+    }
+
+    // Listen for session initialization
+    openTokSessionSingleton.addListener('sessionInitialized', handleSessionInitialized);
+
+    return () => {
+      openTokSessionSingleton.removeListener('sessionInitialized', handleSessionInitialized);
+    };
+  }, [handleChunkMetadata, handleChunk]);
 
   /**
    * Cleanup function to call when session ends
@@ -210,7 +238,7 @@ export const useChunkedPackageShare = (sessionRef) => {
       estimatedSize: 0
     });
     currentMessageRef.current = null;
-  }, []);
+  }, [sessionManager]);
 
   /**
    * Get human-readable file size
@@ -244,6 +272,6 @@ export const useChunkedPackageShare = (sessionRef) => {
     
     // Status helpers
     isActive: isReceiving || isSending,
-    canSend: !isReceiving && !isSending && sessionRef?.current,
+    canSend: !isReceiving && !isSending && openTokSessionSingleton.isSessionAvailable(),
   };
 }; 
