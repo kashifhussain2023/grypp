@@ -1,88 +1,194 @@
-// src/components/PackagesSection.tsx
-import { Container, Typography, Grid } from "@mui/material";
+import React from "react";
+import {
+  Box,
+  Typography,
+  Tabs,
+  Tab,
+  Grid,
+  Container,
+  Link,
+  useTheme,
+  IconButton,
+  Card,
+  CardMedia,
+  CardContent,
+  Button,
+  Chip,
+  Rating,
+  Stack,
+} from "@mui/material";
+import {
+  ChevronRight,
+  LocationOn,
+  Star,
+  Flight,
+  Hotel,
+  DirectionsCar,
+} from "@mui/icons-material";
 import PackageCard from "./PackageCard";
+import {
+  adventureData,
+  featuredPackage,
+  luxuryData,
+  popularTravelData,
+} from "../../constants/packagesData";
 
-const packages = [
-  {
-    destination: "Bali, Indonesia",
-    duration: "7 Days / 6 Nights",
-    price: "$1,299",
-    description:
-      "Experience the magical island of Bali with its lush jungles, stunning beaches, and vibrant culture. Includes luxury accommodations and guided tours.",
-    image:
-      "https://images.unsplash.com/photo-1503917988258-f87a78e3c995?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1587&q=80",
-  },
-  {
-    destination: "Santorini, Greece",
-    duration: "5 Days / 4 Nights",
-    price: "$1,899",
-    description:
-      "Discover the iconic white-washed buildings and breathtaking sunsets of Santorini. Includes flights, boutique hotel, and island tours.",
-    image:
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-  },
-  {
-    destination: "Kyoto, Japan",
-    duration: "8 Days / 7 Nights",
-    price: "$2,499",
-    description:
-      "Immerse yourself in traditional Japanese culture with visits to ancient temples, bamboo forests, and authentic tea ceremonies.",
-    image:
-      "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1530&q=80",
-  },
-  {
-    destination: "Machu Picchu, Peru",
-    duration: "10 Days / 9 Nights",
-    price: "$2,199",
-    description:
-      "Trek through the Andes to the ancient Incan city of Machu Picchu. Includes guided hikes, local accommodations, and cultural experiences.",
-    image:
-      "https://images.unsplash.com/photo-1518391846015-55a9cc003b25?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-  },
-  {
-    destination: "Paris, France",
-    duration: "6 Days / 5 Nights",
-    price: "$1,599",
-    description:
-      "Fall in love with the City of Lights. Includes Eiffel Tower access, Seine River cruise, Louvre tickets, and charming boutique hotel.",
-    image:
-      "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80",
-  },
-  {
-    destination: "Maldives",
-    duration: "7 Days / 6 Nights",
-    price: "$3,299",
-    description:
-      "Relax in paradise with this all-inclusive overwater bungalow package. Includes snorkeling, spa credits, and private transfers.",
-    image:
-      "https://images.unsplash.com/photo-1527631746610-bca00a040d60?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1587&q=80",
-  },
-];
+// Featured Package Component
+const FeaturedPackageCard = ({ packageData }) => {
+  const theme = useTheme();
 
-const PackagesSection = () => {
   return (
-    <Container
-      component="section"
-      sx={{ backgroundColor: "white" }}
-      id="packages"
+    <Card
+      sx={{
+        mb: 6,
+        position: "relative",
+        borderRadius: 2,
+        overflow: "hidden",
+        boxShadow: theme.shadows[4],
+
+        "&:hover": {
+          boxShadow: theme.shadows[8],
+          transform: "translateY(-4px)",
+          transition: "all 0.3s ease",
+        },
+      }}
     >
-      <Typography
-        variant="h2"
-        className="section-title"
-        align="center"
-        padding={4}
+      {packageData.discount && (
+        <Chip
+          label={packageData.discount}
+          color="error"
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            zIndex: 1,
+            fontWeight: "bold",
+          }}
+        />
+      )}
+      <CardMedia
+        component="img"
+        height="400"
+        image={packageData.image}
+        alt={packageData.title}
+      />
+      <CardContent
+        sx={{
+          position: "relative",
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          color: "#fff",
+          padding: theme.spacing(4),
+          "&:before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 100%)",
+            zIndex: 0,
+          },
+        }}
       >
-        Our Popular Packages
-      </Typography>
-      <Grid container paddingBottom={4} spacing={4}>
-        {packages.map((pkg, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
-            <PackageCard {...pkg} />
+        <Box position="relative" zIndex={1}>
+          <Typography
+            variant="h4"
+            component="h2"
+            gutterBottom
+            sx={{ fontWeight: 700 }}
+          >
+            {packageData.title}
+          </Typography>
+          <Box display="flex" alignItems="center" mb={2}>
+            <LocationOn fontSize="small" />
+            <Typography variant="subtitle1" sx={{ ml: 1 }}>
+              {packageData.location}
+            </Typography>
+          </Box>
+          <Typography variant="body1" paragraph sx={{ mb: 3 }}>
+            {packageData.description}
+          </Typography>
+
+          <Box display="flex" alignItems="center" mb={2}>
+            <Rating
+              value={packageData.rating}
+              precision={0.1}
+              readOnly
+              emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>
+              {packageData.rating} ({packageData.reviews} reviews)
+            </Typography>
+          </Box>
+
+          <Grid container spacing={2} mb={3}>
+            {packageData.highlights.map((highlight, index) => (
+              <Grid size={{ xs: 6 }} key={index}>
+                <Box display="flex" alignItems="center">
+                  <Star
+                    fontSize="small"
+                    sx={{ color: theme.palette.secondary.main, mr: 1 }}
+                  />
+                  <Typography variant="body2">{highlight}</Typography>
+                </Box>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {packageData.price}{" "}
+              <Typography component="span" variant="body2">
+                for {packageData.duration}
+              </Typography>
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              href={"#travelExpert"}
+              sx={{
+                borderRadius: 50,
+                px: 4,
+                py: 1.5,
+                fontWeight: 700,
+                textTransform: "none",
+              }}
+            >
+              Book Now
+            </Button>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+const PackageSection = () => {
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Featured Package Section */}
+      <FeaturedPackageCard packageData={featuredPackage} />
+
+      {/* Popular Packages Section */}
+      <PackageCard
+        title="Popular Travel Packages"
+        packageData={popularTravelData}
+      />
+
+      {/* Adventure Packages Section */}
+      <PackageCard title="Adventure Packages" packageData={adventureData} />
+
+      {/* Luxury Packages Section */}
+      <PackageCard title="Luxury Escapes" packageData={luxuryData} />
     </Container>
   );
 };
 
-export default PackagesSection;
+export default PackageSection;

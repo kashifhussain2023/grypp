@@ -1,0 +1,240 @@
+// --- Popular Travel Packages ---
+export const popularTravelData = [
+  {
+    id: 1,
+    title: "Golden Triangle",
+    location: "Delhi, Agra, Jaipur",
+    price: "₹35,999",
+    duration: "6D/5N",
+    image: "https://images.unsplash.com/photo-1587474260584-136574528ed5",
+    rating: 4.7,
+    reviews: 245,
+    activities: [
+      "Taj Mahal Sunrise Tour",
+      "Amber Fort Visit",
+      "Chandni Chowk Food Walk",
+    ],
+  },
+  {
+    id: 2,
+    title: "European Grand Tour",
+    location: "Paris, Venice, Barcelona",
+    price: "₹1,52,999",
+    duration: "12D/11N",
+    image:
+      "https://images.unsplash.com/photo-1431274172761-fca41d930114?ixlib=rb-4.0.3", // Replaced image
+    rating: 4.9,
+    reviews: 312,
+    activities: ["Eiffel Tower Access", "Gondola Ride", "Sagrada Familia Tour"],
+  },
+  {
+    id: 3,
+    title: "Japanese Cultural Journey",
+    location: "Tokyo, Kyoto, Osaka",
+    price: "₹85,999",
+    duration: "8D/7N",
+    image: "https://images.unsplash.com/photo-1492571350019-22de08371fd3",
+    rating: 4.8,
+    reviews: 198,
+    activities: [
+      "Tea Ceremony",
+      "Bullet Train Experience",
+      "Tsukiji Market Visit",
+    ],
+  },
+  {
+    id: 4,
+    title: "Egyptian Wonders",
+    location: "Cairo, Luxor, Aswan",
+    price: "₹68,999",
+    duration: "9D/8N",
+    image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368",
+    rating: 4.7,
+    reviews: 176,
+    activities: ["Pyramids of Giza", "Nile Cruise", "Valley of the Kings"],
+  },
+  {
+    id: 5,
+    title: "Moroccan Adventure",
+    location: "Marrakech, Sahara, Fes",
+    price: "₹62,999",
+    duration: "10D/9N",
+    image: "https://images.unsplash.com/photo-1580502304784-8985b7eb7260", // Replaced image
+    rating: 4.8,
+    reviews: 134,
+    activities: [
+      "Atlas Mountains Trek",
+      "Desert Glamping",
+      "Medina Exploration",
+    ],
+  },
+  {
+    id: 6,
+    title: "Vietnam Highlights",
+    location: "Hanoi, Halong Bay, Ho Chi Minh",
+    price: "₹47,999",
+    duration: "11D/10N",
+    image:
+      "https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3", // Replaced image
+    rating: 4.7,
+    reviews: 156,
+    activities: ["Halong Bay Cruise", "Cu Chi Tunnels", "Hoi An Ancient Town"],
+  },
+];
+
+// --- Adventure Packages ---
+export const adventureData = [
+  {
+    id: 1,
+    title: "Amazon Rainforest Expedition",
+    location: "Brazil",
+    price: "₹72,999",
+    duration: "9D/8N",
+    image: "https://images.unsplash.com/photo-1448375240586-882707db888b",
+    rating: 4.8,
+    reviews: 112,
+    activities: [
+      "Jungle Survival Training",
+      "Pink Dolphin Spotting",
+      "Night Canoeing",
+    ],
+  },
+  {
+    id: 2,
+    title: "New Zealand Extreme",
+    location: "Queenstown, Rotorua",
+    price: "₹1,28,999",
+    duration: "14D/13N",
+    image: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad",
+    rating: 4.9,
+    reviews: 187,
+    activities: ["Bungee Jumping", "White Water Rafting", "Glacier Hiking"],
+  },
+  {
+    id: 3,
+    title: "African Wildlife Safari",
+    location: "Kenya, Tanzania",
+    price: "₹95,999",
+    duration: "10D/9N",
+    image: "https://images.unsplash.com/photo-1509316785289-025f5b846b35",
+    rating: 4.9,
+    reviews: 156,
+    activities: [
+      "Great Migration Viewing",
+      "Hot Air Balloon Safari",
+      "Maasai Village Visit",
+    ],
+  },
+  {
+    id: 4,
+    title: "Himalayan Trekking Adventure",
+    location: "Nepal",
+    price: "₹45,999",
+    duration: "12D/11N",
+    image: "https://images.unsplash.com/photo-1580655653885-65763b2597d0",
+    rating: 4.7,
+    reviews: 89,
+    activities: [
+      "Everest Base Camp Trek",
+      "Helicopter Tour",
+      "Local Sherpa Culture Experience",
+    ],
+  },
+  {
+    id: 5,
+    title: "Japanese Cultural Immersion",
+    location: "Kyoto, Tokyo, Osaka",
+    price: "₹82,499",
+    duration: "10D/9N",
+    image: "https://images.unsplash.com/photo-1492571350019-22de08371fd3",
+    rating: 4.8,
+    reviews: 176,
+    activities: [
+      "Samurai Sword Training",
+      "Tea Ceremony",
+      "Bullet Train Experience",
+    ],
+  },
+];
+
+// --- Luxury Packages ---
+export const luxuryData = [
+  {
+    id: 1,
+    title: "Maldives Paradise",
+    location: "Maldives",
+    price: "₹2,45,999",
+    duration: "8D/7N",
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+    rating: 5.0,
+    reviews: 124,
+    highlights: ["Overwater Villa", "Private Chef", "Submarine Dining"],
+  },
+  {
+    id: 2,
+    title: "Greek Islands Luxury",
+    location: "Santorini, Mykonos",
+    price: "₹2,15,999",
+    duration: "9D/8N",
+    image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963",
+    rating: 4.9,
+    reviews: 98,
+    highlights: [
+      "Sunset Catamaran Cruise",
+      "Cave Pool Suite",
+      "Private Wine Tasting",
+    ],
+  },
+  {
+    id: 3,
+    title: "Dubai Royal Experience",
+    location: "Dubai",
+    price: "₹1,85,999",
+    duration: "6D/5N",
+    image: "https://images.unsplash.com/photo-1518684079-3c830dcef090",
+    rating: 4.8,
+    reviews: 145,
+    highlights: [
+      "Burj Khalifa Suite",
+      "Private Yacht Charter",
+      "Desert Glamping",
+    ],
+  },
+  {
+    id: 4,
+    title: "Seychelles Private Retreat",
+    location: "Seychelles",
+    price: "₹2,95,999",
+    duration: "10D/9N",
+    image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4",
+    rating: 5.0,
+    reviews: 87,
+    highlights: [
+      "Private Island Access",
+      "Personal Concierge",
+      "Helicopter Transfers",
+    ],
+  },
+];
+
+// --- Featured Package ---
+export const featuredPackage = {
+  id: 0,
+  title: "Bali Premium Retreat",
+  location: "Bali, Indonesia",
+  price: "₹1,35,999",
+  duration: "8D/7N",
+  image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5",
+  description:
+    "Indulge in ultimate Balinese luxury with private villas, personalized services, and exclusive cultural encounters in paradise.",
+  rating: 4.9,
+  reviews: 278,
+  highlights: [
+    "Cliffside Infinity Pool",
+    "24/7 Personal Butler",
+    "Volcano Sunrise Breakfast",
+    "Traditional Healer Session",
+    "Private Beach Dinner",
+  ],
+  discount: "20% OFF",
+};
