@@ -91,8 +91,13 @@ export const useChunkedPackageShare = () => {
    */
   const handleChunkMetadata = useCallback((event) => {
     console.log('📦 CUSTOMER: Received chunk metadata signal:', event);
+    console.log('📦 CUSTOMER: Event data:', event.data);
+    console.log('📦 CUSTOMER: Event type:', event.type);
     
     const session = openTokSessionSingleton.getSession();
+    console.log('📦 CUSTOMER: Session:', session);
+    console.log('📦 CUSTOMER: Session available:', !!session);
+    
     if (!session) {
       console.warn('📦 CUSTOMER: No session available for chunk metadata handling');
       return;
@@ -100,6 +105,8 @@ export const useChunkedPackageShare = () => {
     
     try {
       const metadata = JSON.parse(event.data);
+      console.log('📦 CUSTOMER: Parsed metadata:', metadata);
+      
       currentMessageRef.current = metadata.messageId;
       
       setIsReceiving(true);
@@ -113,17 +120,20 @@ export const useChunkedPackageShare = () => {
       setError(null);
 
       console.log(`📦 CUSTOMER: Starting to receive chunked package data: ${metadata.totalChunks} chunks, ${metadata.totalSize} bytes`);
+      console.log(`📦 CUSTOMER: Message ID: ${metadata.messageId}`);
 
+      // Start receiving chunks
       sessionManager.handleChunkMetadata(
         session,
         metadata,
         // Progress callback
-        (progress, receivedChunks, totalChunks) => { // eslint-disable-line no-unused-vars
+        (progress, receivedChunks, totalChunks) => {
           setReceivingProgress(progress);
           setReceivingDetails(prev => ({
             ...prev,
             chunksReceived: receivedChunks
           }));
+          console.log(`📦 CUSTOMER: Receiving progress: ${progress.toFixed(1)}% (${receivedChunks}/${totalChunks})`);
         },
         // Complete callback
         (assembledData) => {
@@ -131,10 +141,9 @@ export const useChunkedPackageShare = () => {
           setReceivingProgress(100);
           currentMessageRef.current = null;
           
-          console.log(`📦 CHUNKED HOOK: Successfully received and assembled package data: ${assembledData.packages?.length} packages`);
-          console.log('📦 CHUNKED HOOK: Assembled data structure:', assembledData);
-          console.log('📦 CHUNKED HOOK: Assembled data type:', typeof assembledData);
-          console.log('📦 CHUNKED HOOK: Assembled data keys:', Object.keys(assembledData));
+          console.log('📦 CUSTOMER: Successfully received and assembled package data:', assembledData);
+          console.log('📦 CUSTOMER: Assembled data keys:', Object.keys(assembledData));
+          console.log('📦 CUSTOMER: Packages count:', assembledData.packages?.length);
           
           // Trigger the original package-share logic
           if (assembledData.packages && Array.isArray(assembledData.packages)) {
@@ -167,11 +176,13 @@ export const useChunkedPackageShare = () => {
           setReceivingProgress(0);
           setError(error);
           currentMessageRef.current = null;
-          console.error('📦 Failed to receive chunked package data:', error);
+          console.error('📦 CUSTOMER: Failed to receive chunked package data:', error);
+          console.error('📦 CUSTOMER: Error stack:', error.stack);
         }
       );
     } catch (error) {
-      console.error('📦 Failed to parse chunk metadata:', error);
+      console.error('📦 CUSTOMER: Failed to parse chunk metadata:', error);
+      console.error('📦 CUSTOMER: Raw event data:', event.data);
       setError(error);
     }
   }, [sessionManager]);
@@ -181,8 +192,19 @@ export const useChunkedPackageShare = () => {
    */
   const handleChunk = useCallback((event) => {
     console.log('📦 CUSTOMER: Received chunk signal:', event);
+    console.log('📦 CUSTOMER: Chunk event data:', event.data);
+    console.log('📦 CUSTOMER: Chunk event type:', event.type);
+    
     try {
       const chunkData = JSON.parse(event.data);
+      console.log('📦 CUSTOMER: Parsed chunk data:', {
+        messageId: chunkData.messageId,
+        chunkIndex: chunkData.chunkIndex,
+        totalChunks: chunkData.totalChunks,
+        size: chunkData.size,
+        isLast: chunkData.isLast,
+        dataPreview: chunkData.data?.substring(0, 50) + '...'
+      });
       
       // Only process chunks for the current message
       if (chunkData.messageId !== currentMessageRef.current) {
@@ -191,12 +213,22 @@ export const useChunkedPackageShare = () => {
       }
 
       console.log(`📦 CUSTOMER: Processing chunk ${chunkData.chunkIndex + 1}/${chunkData.totalChunks} for message ${chunkData.messageId}`);
+      
+      const sessionManager = openTokSessionSingleton.getSessionManager();
+      console.log('📦 CUSTOMER: Session manager available for chunk processing:', !!sessionManager);
+      
+      if (!sessionManager) {
+        console.error('📦 CUSTOMER: No session manager available for chunk processing');
+        return;
+      }
+      
       sessionManager.handleChunk(chunkData);
     } catch (error) {
       console.error('📦 CUSTOMER: Failed to parse chunk data:', error);
+      console.error('📦 CUSTOMER: Raw chunk event data:', event.data);
       setError(error);
     }
-  }, [sessionManager]);
+  }, []);
 
   // Register signal handlers when session becomes available
   useEffect(() => {

@@ -47,6 +47,7 @@ import {
   Favorite as HeartIcon,
   Share as ShareIcon,
 } from '@mui/icons-material';
+import { useCoBrowseScrollSync } from '../../hooks/useCoBrowseScrollSync';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -59,10 +60,14 @@ const TourComparisonModal = ({
   onRemoveFromCompare,
   onClearComparison,
   getBestValue,
+  userType = 'agent',
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const bestValuePackage = getBestValue();
+
+  // Use scroll sync hook for comparison modal
+  const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
 
   const formatHighlights = (description) => {
     const sentences = description.split('.').filter(s => s.trim().length > 0);
@@ -1248,7 +1253,7 @@ const TourComparisonModal = ({
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ height: 'calc(100vh - 180px)', overflow: 'auto' }}>
+          <Box ref={scrollRef} sx={{ height: 'calc(100vh - 180px)', overflow: 'auto' }}>
             <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
               <Table stickyHeader>
                 <TableBody>

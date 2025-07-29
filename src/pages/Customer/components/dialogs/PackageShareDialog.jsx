@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -170,6 +170,7 @@ const PackageShareDialog = ({
         onRemoveFromCompare={removeFromCompare}
         onClearComparison={clearComparison}
         getBestValue={getBestValue}
+        userType="customer"
       />
     </>
   );

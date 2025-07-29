@@ -154,6 +154,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
       const { id, apiKey, sessionId, token } = res.data;
 
       const session = OT.initSession(apiKey, sessionId);
+      openTokSessionSingleton.initialize(session);
       sessionRef.current = session;
       setToken(token);
       setJoined(true);

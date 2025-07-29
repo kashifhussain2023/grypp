@@ -44,6 +44,11 @@ class OpenTokSessionSingleton {
     this.sessionRef.current = session;
     this.isInitialized = true;
 
+    // Add a general signal listener for debugging
+    session.on('signal', (event) => {
+      console.log('🔌 GENERAL SIGNAL RECEIVED:', event.type, event.data);
+    });
+
     // Notify all listeners that session is available
     this.notifyListeners('sessionInitialized', session);
   }
@@ -84,15 +89,19 @@ class OpenTokSessionSingleton {
     }
 
     console.log(`🔌 Registering signal handler: ${signalType}`);
+    console.log(`🔌 Handler function:`, handler);
+    console.log(`🔌 Session object:`, this.session);
     
     // Remove existing handler if any
     if (this.signalHandlers.has(signalType)) {
+      console.log(`🔌 Removing existing handler for: ${signalType}`);
       this.session.off(signalType, this.signalHandlers.get(signalType));
     }
 
     // Register new handler
     this.signalHandlers.set(signalType, handler);
     this.session.on(signalType, handler);
+    console.log(`🔌 Successfully registered handler for: ${signalType}`);
     
     return true;
   }
@@ -155,7 +164,7 @@ class OpenTokSessionSingleton {
    * @param {Object} signalData - Signal data object
    * @param {Function} callback - Optional callback function
    */
-  sendSignal(signalData, callback) {
+ async sendSignal(signalData, callback) {
     if (!this.isSessionAvailable()) {
       const error = new Error('Cannot send signal: No session available');
       console.error('🔌', error.message);
@@ -164,7 +173,17 @@ class OpenTokSessionSingleton {
     }
 
     console.log('🔌 Sending signal:', signalData.type);
-    this.session.signal(signalData, callback);
+    console.log('🔌 Signal data:', signalData);
+    console.log('🔌 Session available:', !!this.session);
+    
+    this.session.signal(signalData, (err) => {
+      if (err) {
+        console.error('🔌 Signal send error:', err);
+      } else {
+        console.log('🔌 Signal sent successfully:', signalData.type);
+      }
+      if (callback) callback(err);
+    });
     return true;
   }
 

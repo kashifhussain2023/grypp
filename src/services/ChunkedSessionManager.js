@@ -69,26 +69,55 @@ export class ChunkedSessionManager {
    * @param {Function} onError - Error callback function
    */
   sendChunkedData(session, data, signalType, onProgress, onComplete, onError) {
+    console.log('📦 ChunkedSessionManager.sendChunkedData called with:', {
+      sessionAvailable: !!session,
+      dataKeys: Object.keys(data),
+      signalType,
+      hasProgressCallback: !!onProgress,
+      hasCompleteCallback: !!onComplete,
+      hasErrorCallback: !!onError
+    });
+    
+    if (!session) {
+      const error = new Error('No session provided for chunked data transmission');
+      console.error('📦 ChunkedSessionManager: No session provided');
+      onError?.(error);
+      return;
+    }
+    
     const messageId = this.generateMessageId();
     const chunks = this.createChunks(data, messageId);
     
     console.log(`📦 Sending ${chunks.length} chunks for message ${messageId}`);
+    console.log('📦 Chunk details:', chunks.map(chunk => ({
+      chunkIndex: chunk.chunkIndex,
+      totalChunks: chunk.totalChunks,
+      size: chunk.size,
+      isLast: chunk.isLast
+    })));
     
     // Send metadata first
+    const metadata = {
+      messageId,
+      totalChunks: chunks.length,
+      totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
+      timestamp: Date.now()
+    };
+    
+    console.log('📦 Sending metadata:', metadata);
+    
     session.signal({
       type: `${signalType}-metadata`,
-      data: JSON.stringify({
-        messageId,
-        totalChunks: chunks.length,
-        totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
-        timestamp: Date.now()
-      })
+      data: JSON.stringify(metadata)
     }, (error) => {
       if (error) {
-        console.error('Failed to send metadata:', error);
+        console.error('📦 Failed to send metadata:', error);
+        console.error('📦 Metadata error stack:', error.stack);
         onError?.(error);
         return;
       }
+      
+      console.log('📦 Metadata sent successfully, starting chunk transmission');
       
       // Send chunks with delay to avoid overwhelming the connection
       this.sendChunksSequentially(session, chunks, signalType, 0, onProgress, onComplete, onError);
@@ -100,18 +129,27 @@ export class ChunkedSessionManager {
    */
   sendChunksSequentially(session, chunks, signalType, index, onProgress, onComplete, onError) {
     if (index >= chunks.length) {
+      console.log('📦 All chunks sent successfully, calling completion callback');
       onComplete?.();
       return;
     }
 
     const chunk = chunks[index];
+    console.log(`📦 Sending chunk ${index + 1}/${chunks.length}:`, {
+      messageId: chunk.messageId,
+      chunkIndex: chunk.chunkIndex,
+      size: chunk.size,
+      isLast: chunk.isLast,
+      dataPreview: chunk.data.substring(0, 50) + '...'
+    });
     
     session.signal({
       type: signalType,
       data: JSON.stringify(chunk)
     }, (error) => {
       if (error) {
-        console.error(`Failed to send chunk ${index}:`, error);
+        console.error(`📦 Failed to send chunk ${index + 1}:`, error);
+        console.error(`📦 Chunk ${index + 1} error stack:`, error.stack);
         onError?.(error);
         return;
       }
@@ -123,10 +161,12 @@ export class ChunkedSessionManager {
       
       if (index + 1 < chunks.length) {
         // Small delay between chunks to avoid overwhelming the connection
+        console.log(`📦 Waiting 50ms before sending next chunk...`);
         setTimeout(() => {
           this.sendChunksSequentially(session, chunks, signalType, index + 1, onProgress, onComplete, onError);
         }, 50);
       } else {
+        console.log('📦 All chunks sent, calling completion callback');
         onComplete?.();
       }
     });
@@ -171,19 +211,43 @@ export class ChunkedSessionManager {
    * @param {Object} chunkData - Chunk data object
    */
   handleChunk(chunkData) {
+    console.log('📦 ChunkedSessionManager.handleChunk called with:', chunkData);
+    
     const { messageId, chunkIndex, totalChunks, data } = chunkData;
+    
+    console.log('📦 Processing chunk:', {
+      messageId,
+      chunkIndex,
+      totalChunks,
+      dataSize: data?.length,
+      dataPreview: data?.substring(0, 50) + '...'
+    });
     
     const pending = this.pendingChunks.get(messageId);
     if (!pending) {
       console.warn(`📦 Received chunk for unknown message ${messageId}`);
+      console.warn('📦 Available pending messages:', Array.from(this.pendingChunks.keys()));
       return;
     }
+    
+    console.log('📦 Found pending message:', {
+      messageId,
+      receivedCount: pending.receivedCount,
+      totalChunks: pending.totalChunks,
+      chunksArrayLength: pending.chunks.length
+    });
     
     // Store chunk
     pending.chunks[chunkIndex] = data;
     pending.receivedCount++;
     
     console.log(`📦 Received chunk ${chunkIndex + 1}/${totalChunks} for message ${messageId}`);
+    console.log('📦 Updated pending message:', {
+      messageId,
+      receivedCount: pending.receivedCount,
+      totalChunks: pending.totalChunks,
+      missingChunks: pending.chunks.map((chunk, index) => chunk === undefined ? index : null).filter(index => index !== null)
+    });
     
     // Update progress
     const progress = (pending.receivedCount / totalChunks) * 100;
@@ -191,7 +255,10 @@ export class ChunkedSessionManager {
     
     // Check if all chunks received
     if (pending.receivedCount === totalChunks) {
+      console.log(`📦 All chunks received for message ${messageId}, starting assembly`);
       this.assembleChunks(messageId);
+    } else {
+      console.log(`📦 Still waiting for ${totalChunks - pending.receivedCount} more chunks for message ${messageId}`);
     }
   }
 
@@ -200,13 +267,34 @@ export class ChunkedSessionManager {
    * @param {string} messageId - Message identifier
    */
   assembleChunks(messageId) {
+    console.log(`📦 ChunkedSessionManager.assembleChunks called for message: ${messageId}`);
+    
     const pending = this.pendingChunks.get(messageId);
-    if (!pending) return;
+    if (!pending) {
+      console.error(`📦 No pending chunks found for message ${messageId}`);
+      return;
+    }
+    
+    console.log('📦 Assembling chunks:', {
+      messageId,
+      totalChunks: pending.totalChunks,
+      receivedCount: pending.receivedCount,
+      chunksArrayLength: pending.chunks.length,
+      missingChunks: pending.chunks.map((chunk, index) => chunk === undefined ? index : null).filter(index => index !== null)
+    });
     
     try {
       // Concatenate all chunks
       const fullData = pending.chunks.join('');
+      console.log('📦 Concatenated data length:', fullData.length);
+      console.log('📦 Concatenated data preview:', fullData.substring(0, 100) + '...');
+      
       const parsedData = JSON.parse(fullData);
+      console.log('📦 Successfully parsed assembled data:', {
+        dataType: typeof parsedData,
+        dataKeys: Object.keys(parsedData),
+        packagesCount: parsedData.packages?.length
+      });
       
       console.log(`📦 Successfully assembled message ${messageId}`);
       
@@ -215,16 +303,21 @@ export class ChunkedSessionManager {
       if (timeout) {
         clearTimeout(timeout);
         this.chunkTimeouts.delete(messageId);
+        console.log(`📦 Cleared timeout for message ${messageId}`);
       }
       
       // Call completion callback
+      console.log('📦 Calling completion callback with assembled data');
       pending.onComplete?.(parsedData);
       
       // Cleanup
       this.cleanupPendingChunks(messageId);
+      console.log(`📦 Cleaned up pending chunks for message ${messageId}`);
       
     } catch (error) {
       console.error(`📦 Failed to assemble chunks for message ${messageId}:`, error);
+      console.error('📦 Assembly error stack:', error.stack);
+      console.error('📦 Chunks array:', pending.chunks);
       pending.onError?.(error);
       this.cleanupPendingChunks(messageId);
     }

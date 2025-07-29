@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
     Drawer,
     Box,
@@ -31,7 +31,7 @@ import {
     TrendingUp as TrendingUpIcon,
     LocalOffer as OfferIcon
 } from '@mui/icons-material';
-import { openTokSessionSingleton } from '../../services/OpenTokSessionManager';
+import { useCoBrowseScrollSync } from '../../hooks/useCoBrowseScrollSync';
 
 const TourComparisonDrawer = ({
     open,
@@ -43,9 +43,9 @@ const TourComparisonDrawer = ({
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const scrollContainerRef = useRef(null);
-    const isScrollingRef = useRef(false);
-    const scrollTimeoutRef = useRef(null);
+    
+    // Use the unified scroll sync hook
+    const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
 
     // Helper function to get best priced package
     const getBestPricedPackage = () => {
@@ -73,94 +73,6 @@ const TourComparisonDrawer = ({
         const pkgPrice = pkg.price?.discounted || pkg.price;
         const bestPrice = bestPricedPackage.price?.discounted || bestPricedPackage.price;
         return Math.round(((pkgPrice - bestPrice) / pkgPrice) * 100);
-    };
-
-    // Scroll synchronization functions
-    const sendScrollPosition = useCallback((scrollTop) => {
-        const session = openTokSessionSingleton.getSession();
-        if (session && !isScrollingRef.current) {
-            console.log(`📊 [${userType}] Sending scroll position: ${scrollTop}`);
-            try {
-                openTokSessionSingleton.sendSignal({
-                    type: 'cobrowse-comparison-scroll-sync',
-                    data: JSON.stringify({ scrollTop, userType, timestamp: Date.now() })
-                });
-            } catch (err) {
-                console.error('Failed to send scroll signal:', err);
-            }
-        }
-    }, [userType]);
-
-    const handleScroll = useCallback((event) => {
-        if (!scrollContainerRef.current) {
-            console.log(`📊 [${userType}] No scroll container ref`);
-            return;
-        }
-
-        const scrollTop = event.target.scrollTop;
-        console.log(`📊 [${userType}] Scroll event: ${scrollTop}`);
-
-        isScrollingRef.current = true;
-
-        // Throttle scroll signals to prevent spam
-        if (scrollTimeoutRef.current) {
-            clearTimeout(scrollTimeoutRef.current);
-        }
-
-        scrollTimeoutRef.current = setTimeout(() => {
-            // Send scroll position to other user
-            sendScrollPosition(scrollTop);
-            isScrollingRef.current = false;
-        }, 100); // Increased throttle for better stability
-    }, [sendScrollPosition, userType]);
-
-    // Listen for incoming scroll signals
-    useEffect(() => {
-        const session = openTokSessionSingleton.getSession();
-        if (!session) {
-            console.log(`📊 [${userType}] No session available`);
-            return;
-        }
-
-        const handleIncomingScroll = (event) => {
-            console.log(`📊 [${userType}] Received signal:`, event);
-            try {
-                const data = JSON.parse(event.data);
-                console.log(`📊 [${userType}] Parsed data:`, data);
-
-                if (data.scrollTop !== undefined && data.userType !== userType && open) {
-                    console.log(`📊 [${userType}] Applying scroll from ${data.userType}: ${data.scrollTop}`);
-                    if (scrollContainerRef.current && !isScrollingRef.current) {
-                        // Set a flag to prevent feedback loop
-                        isScrollingRef.current = true;
-                        scrollContainerRef.current.scrollTop = data.scrollTop;
-                        
-                        // Reset flag after a short delay
-                        setTimeout(() => {
-                            isScrollingRef.current = false;
-                        }, 150);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to parse scroll signal:', err);
-            }
-        };
-
-        // Register scroll sync signal handler
-        session.on('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
-
-        return () => {
-            session.off('signal:cobrowse-comparison-scroll-sync', handleIncomingScroll);
-        };
-    }, [userType, open]);
-
-    // Test scroll sync function
-    const testScrollSync = () => {
-        if (scrollContainerRef.current) {
-            const testPosition = 100;
-            scrollContainerRef.current.scrollTop = testPosition;
-            sendScrollPosition(testPosition);
-        }
     };
 
     // Helper functions
@@ -273,7 +185,7 @@ const TourComparisonDrawer = ({
                     {/* Test Scroll Sync Button */}
                     <Tooltip title="Test scroll sync">
                         <IconButton
-                            onClick={testScrollSync}
+                            onClick={() => {}} // No longer needed for test
                             sx={{ color: 'white' }}
                             size="small"
                         >
@@ -288,7 +200,7 @@ const TourComparisonDrawer = ({
 
             {/* Content */}
             <Box
-                ref={scrollContainerRef}
+                ref={scrollRef}
                 id={`comparison-scroll-${userType}`}
                 sx={{
                     flex: 1,
@@ -311,7 +223,7 @@ const TourComparisonDrawer = ({
                         background: '#555',
                     },
                 }}
-                onScroll={handleScroll}
+                // onScroll={handleScroll} // No longer needed for scroll sync
             >
                 {compareList.length === 0 ? (
                     // Empty State

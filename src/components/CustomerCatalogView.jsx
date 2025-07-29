@@ -37,12 +37,7 @@ const CustomerCatalogView = ({
   const [selectedPackage, setSelectedPackage] = useState(null);
 
   // Co-browse scroll sync hook
-  const { scrollRef, isActiveController } = useCoBrowseScrollSync({
-    sessionRef,
-    userType: 'customer',
-    scrollContainerId: 'agent-catalog-scroll', // Same container ID as agent to sync
-    throttleDelay: 100
-  });
+  const { scrollRef, isActiveController } = useCoBrowseScrollSync('customer', true);
 
   // Debug effect for comparison list changes
   useEffect(() => {
@@ -523,6 +518,7 @@ const CustomerCatalogView = ({
         open={modalOpen}
         onClose={handleCloseModal}
         packageData={selectedPackage}
+        userType="customer"
       />
       )}
     </Box>

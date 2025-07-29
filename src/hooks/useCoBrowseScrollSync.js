@@ -5,25 +5,40 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
  * Custom hook for synchronizing scroll position between agent and customer
  * @param {string} userType - 'agent' or 'customer'
  * @param {boolean} enabled - Whether scroll sync is enabled
+ * @param {string} containerType - Type of scroll container ('catalog', 'comparison', 'details')
  * @returns {Object} - Scroll sync state and methods
  */
-export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
+export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, containerType = 'catalog') => {
   const [isActiveController, setIsActiveController] = useState(false);
   const [lastScrollPosition, setLastScrollPosition] = useState({ scrollTop: 0, scrollLeft: 0 });
   
   // Refs for tracking scroll state
+  const scrollRef = useRef(null);
   const lastScrollPositionRef = useRef({ scrollTop: 0, scrollLeft: 0 });
   const incomingScrollRef = useRef(false);
   const scrollAnimationRef = useRef(false);
   const isActiveControllerRef = useRef(false);
   const scrollTimeoutRef = useRef(null);
 
+  // Determine signal type based on container type
+  const getSignalType = useCallback(() => {
+    switch (containerType) {
+      case 'comparison':
+        return 'cobrowse-comparison-scroll-sync';
+      case 'details':
+        return 'cobrowse-details-scroll-sync';
+      case 'catalog':
+      default:
+        return 'cobrowse-scroll-sync';
+    }
+  }, [containerType]);
+
   // Debug logging function
   const log = useCallback((message, data = null) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📊 [${userType}] ${message}`, data || '');
+      console.log(`📊 [${userType}-${containerType}] ${message}`, data || '');
     }
-  }, [userType]);
+  }, [userType, containerType]);
 
   // Send scroll position to other party
   const sendScrollPosition = useCallback((scrollTop, scrollLeft) => {
@@ -34,12 +49,13 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
       scrollTop,
       scrollLeft,
       userType,
+      containerType,
       timestamp: Date.now()
     };
 
     openTokSessionSingleton.sendSignal(
       {
-        type: 'cobrowse-scroll-sync',
+        type: getSignalType(),
         data: JSON.stringify(scrollData)
       },
       (err) => {
@@ -48,7 +64,33 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
         }
       }
     );
-  }, [userType, enabled, log]);
+  }, [userType, enabled, log, getSignalType, containerType]);
+
+  // Apply scroll position to the scroll container
+  const applyScrollPosition = useCallback((scrollTop, scrollLeft) => {
+    if (!scrollRef.current) return;
+    
+    log('Applying scroll position:', { scrollTop, scrollLeft });
+    
+    // Mark that we're applying an incoming scroll
+    incomingScrollRef.current = true;
+    scrollAnimationRef.current = true;
+    
+    // Apply the scroll position
+    scrollRef.current.scrollTop = scrollTop;
+    scrollRef.current.scrollLeft = scrollLeft;
+    
+    // Update last scroll position
+    const newPosition = { scrollTop, scrollLeft };
+    setLastScrollPosition(newPosition);
+    lastScrollPositionRef.current = newPosition;
+    
+    // Reset flags after a short delay
+    setTimeout(() => {
+      incomingScrollRef.current = false;
+      scrollAnimationRef.current = false;
+    }, 100);
+  }, [log]);
 
   // Handle incoming scroll signals
   const handleScrollSignal = useCallback((event) => {
@@ -57,32 +99,20 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
     try {
       const data = JSON.parse(event.data);
       
-      // Ignore signals from same user type
-      if (data.userType === userType) {
+      // Ignore signals from same user type or different container type
+      if (data.userType === userType || data.containerType !== containerType) {
         return;
       }
 
       log('Received scroll signal:', data);
 
-      // Mark that we're receiving an incoming scroll
-      incomingScrollRef.current = true;
-      scrollAnimationRef.current = true;
-
-      // Update last scroll position
-      const newPosition = { scrollTop: data.scrollTop, scrollLeft: data.scrollLeft };
-      setLastScrollPosition(newPosition);
-      lastScrollPositionRef.current = newPosition;
-
-      // Reset flags after a short delay
-      setTimeout(() => {
-        incomingScrollRef.current = false;
-        scrollAnimationRef.current = false;
-      }, 100);
+      // Apply the scroll position to our container
+      applyScrollPosition(data.scrollTop, data.scrollLeft);
 
     } catch (err) {
       log('Failed to parse scroll signal:', err);
     }
-  }, [userType, enabled, log]);
+  }, [userType, enabled, log, applyScrollPosition, containerType]);
 
   // Handle scroll events from the local container
   const handleScroll = useCallback((event) => {
@@ -108,6 +138,10 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
 
     // Send scroll position to other party
     sendScrollPosition(scrollTop, scrollLeft);
+    
+    // Update last scroll position
+    lastScrollPositionRef.current = { scrollTop, scrollLeft };
+    setLastScrollPosition({ scrollTop, scrollLeft });
   }, [sendScrollPosition, log]);
 
   // Handle scroll timeout (when user stops scrolling)
@@ -122,6 +156,37 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
     }, 1500); // Increased delay to prevent rapid switching
   }, [log]);
 
+  // Set up scroll event listener on the scroll container
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || !enabled) return;
+
+    log('Setting up scroll event listener on container');
+    
+    const handleScrollEvent = (event) => {
+      handleScroll(event);
+      
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Set new timeout for scroll end
+      scrollTimeoutRef.current = setTimeout(() => {
+        handleScrollEnd();
+      }, 150);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScrollEvent, { passive: true });
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScrollEvent);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll, handleScrollEnd, enabled, log]);
+
   // Set up OpenTok signal listener
   useEffect(() => {
     const session = openTokSessionSingleton.getSession();
@@ -130,14 +195,15 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
       return;
     }
 
-    log('Setting up scroll sync signal listener');
-    openTokSessionSingleton.registerSignalHandler('signal:cobrowse-scroll-sync', handleScrollSignal);
+    const signalType = getSignalType();
+    log(`Setting up scroll sync signal listener for: ${signalType}`);
+    openTokSessionSingleton.registerSignalHandler(`signal:${signalType}`, handleScrollSignal);
 
     return () => {
-      log('Cleaning up scroll sync signal listener');
-      openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-scroll-sync');
+      log(`Cleaning up scroll sync signal listener for: ${signalType}`);
+      openTokSessionSingleton.unregisterSignalHandler(`signal:${signalType}`);
     };
-  }, [handleScrollSignal, enabled, log]);
+  }, [handleScrollSignal, enabled, log, getSignalType]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -149,10 +215,12 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true) => {
   }, []);
 
   return {
+    scrollRef,
     isActiveController,
     lastScrollPosition,
     handleScroll,
     handleScrollEnd,
+    applyScrollPosition,
     isIncomingScroll: incomingScrollRef.current,
     isScrollAnimating: scrollAnimationRef.current
   };

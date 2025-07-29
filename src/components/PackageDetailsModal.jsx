@@ -76,8 +76,9 @@ import {
   Email as EmailIcon,
   Language as WebIcon,
 } from '@mui/icons-material';
+import { useCoBrowseScrollSync } from '../hooks/useCoBrowseScrollSync';
 
-const PackageDetailsModal = ({ open, onClose, packageData }) => {
+const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer' }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
@@ -93,6 +94,9 @@ const PackageDetailsModal = ({ open, onClose, packageData }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dialogRef = useRef(null);
   const slideshowInterval = useRef(null);
+
+  // Use scroll sync hook for package details
+  const { scrollRef } = useCoBrowseScrollSync(userType, true, 'details');
 
   useEffect(() => {
     if (open) {
@@ -1674,7 +1678,7 @@ const PackageDetailsModal = ({ open, onClose, packageData }) => {
       {renderTopBanner()}
       
       <DialogContent
-          ref={dialogRef}
+          ref={scrollRef}
         sx={{
           p: 0,
           height: 'calc(100vh - 120px)',

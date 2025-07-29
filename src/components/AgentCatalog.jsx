@@ -57,7 +57,7 @@ const AgentCatalog = ({
   const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
 
   // Co-browse scroll sync hook
-  const { isActiveController } = useCoBrowseScrollSync('agent', true);
+  const { scrollRef, isActiveController } = useCoBrowseScrollSync('agent', true);
 
   // Filter packages based on price range and selected types
   useEffect(() => {
@@ -227,7 +227,7 @@ const AgentCatalog = ({
 
       {/* Scrollable Packages Grid */}
       <Box
-        ref={null} // Removed scrollRef as it's no longer managed by useCoBrowseScrollSync
+        ref={scrollRef}
         id="agent-catalog-scroll"
         sx={{
           flex: 1,

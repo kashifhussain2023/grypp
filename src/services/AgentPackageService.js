@@ -30,21 +30,33 @@ export class AgentPackageService {
       useChunking = 'auto'
     } = options;
 
+    console.log('📦 AgentPackageService.sendPackages called with:', {
+      packagesCount: packages?.length,
+      useChunking,
+      options: Object.keys(options)
+    });
+
     const session = openTokSessionSingleton.getSession();
+    console.log('📦 Session available:', !!session);
+    console.log('📦 Session object:', session);
+    
     if (!session) {
       const error = new Error('No active OpenTok session');
+      console.error('📦 No session available for package sharing');
       onError?.(error);
       throw error;
     }
 
     if (!packages || !Array.isArray(packages)) {
       const error = new Error('Packages must be an array');
+      console.error('📦 Invalid packages data:', packages);
       onError?.(error);
       throw error;
     }
 
     if (this.isSending) {
       const error = new Error('Another package transmission is already in progress');
+      console.error('📦 Another transmission already in progress');
       onError?.(error);
       throw error;
     }
@@ -61,10 +73,27 @@ export class AgentPackageService {
       const dataSize = new Blob([JSON.stringify(packageData)]).size;
       
       console.log(`📦 Agent preparing to send ${packages.length} packages (${this.formatFileSize(dataSize)})`);
+      console.log('📦 Package data structure:', {
+        hasPackages: !!packageData.packages,
+        packagesLength: packageData.packages?.length,
+        dataSize,
+        samplePackage: packageData.packages?.[0] ? {
+          id: packageData.packages[0].id,
+          name: packageData.packages[0].name,
+          price: packageData.packages[0].price
+        } : null
+      });
 
       // Determine if we should use chunking
       const shouldUseChunking = useChunking === true || 
         (useChunking === 'auto' && dataSize > 5000); // Use chunking for data > 5KB
+
+      console.log('📦 Chunking decision:', {
+        useChunking,
+        shouldUseChunking,
+        dataSize,
+        threshold: 5000
+      });
 
       if (shouldUseChunking) {
         console.log('📦 Using chunked transmission for large package data');
@@ -80,6 +109,7 @@ export class AgentPackageService {
       this.isSending = false;
       this.sendingProgress = 0;
       console.error('📦 Failed to send packages:', error);
+      console.error('📦 Error stack:', error.stack);
       this.onErrorCallback?.(error);
       throw error;
     }
@@ -93,7 +123,18 @@ export class AgentPackageService {
   async sendChunkedPackages(session, packageData) {
     return new Promise((resolve, reject) => {
       console.log('📦 Agent: Starting chunked package transmission');
+      console.log('📦 Agent: Session object:', session);
+      console.log('📦 Agent: Package data keys:', Object.keys(packageData));
+      
       const sessionManager = openTokSessionSingleton.getSessionManager();
+      console.log('📦 Agent: Session manager available:', !!sessionManager);
+      
+      if (!sessionManager) {
+        const error = new Error('Session manager not available');
+        console.error('📦 Agent: Session manager not available for chunked transmission');
+        reject(error);
+        return;
+      }
       
       sessionManager.sendChunkedData(
         session,
@@ -118,6 +159,7 @@ export class AgentPackageService {
           this.isSending = false;
           this.sendingProgress = 0;
           console.error('📦 Agent package sending failed:', error);
+          console.error('📦 Agent package sending error stack:', error.stack);
           this.onErrorCallback?.(error);
           reject(error);
         }
@@ -133,14 +175,26 @@ export class AgentPackageService {
   async sendStandardPackages(session, packageData) {
     return new Promise((resolve, reject) => {
       console.log('📦 Agent: Sending standard package signal:', packageData);
-      openTokSessionSingleton.sendSignal({
+      console.log('📦 Agent: Session object:', session);
+      console.log('📦 Agent: Package data size:', new Blob([JSON.stringify(packageData)]).size);
+      
+      const signalData = {
         type: 'package-share',
         data: JSON.stringify(packageData)
-      }, (error) => {
+      };
+      
+      console.log('📦 Agent: Signal data to send:', {
+        type: signalData.type,
+        dataSize: new Blob([signalData.data]).size,
+        dataPreview: signalData.data.substring(0, 100) + '...'
+      });
+      
+      openTokSessionSingleton.sendSignal(signalData, (error) => {
         this.isSending = false;
         
         if (error) {
           console.error('📦 Standard package sending failed:', error);
+          console.error('📦 Standard package sending error stack:', error.stack);
           this.onErrorCallback?.(error);
           reject(error);
         } else {

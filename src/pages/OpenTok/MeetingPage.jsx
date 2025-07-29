@@ -59,7 +59,6 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [remoteVideoOn, setRemoteVideoOn] = useState(false);
   const [remoteUserName, setRemoteUserName] = useState("Customer");
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [retryMedia, setRetryMedia] = useState(false);
   const [hasVideoInput, setHasVideoInput] = useState(false);
   const [hasAudioInput, setHasAudioInput] = useState(false);
   const [videoAssistActive, setVideoAssistActive] = useState(false);
@@ -101,14 +100,9 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     compareList,
     isDrawerOpen,
     setIsDrawerOpen,
-    addToCompare,
     removeFromCompare,
     clearComparison,
-    getBestValue,
-    isInComparison,
-    isComparisonFull,
-    comparisonCount,
-    toggleDrawer
+    getBestValue
   } = useComparePackages('agent');
 
   const ensureMediaAccess = async () => {
@@ -143,6 +137,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         sessionRef.current = session;
 
         // Initialize the singleton with the session
+        console.log("🔌 Initializing OpenTok session singleton",session);
         openTokSessionSingleton.initialize(session);
 
         session.connect(token, async (err) => {
@@ -218,7 +213,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           } catch (mediaErr) {
             console.error("Media error:", mediaErr);
             if (mediaErr.name === "NotReadableError") {
-              setRetryMedia(true);
+              //setRetryMedia(true);
             }
           }
         });
@@ -704,14 +699,15 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
       <Tooltip title="Browse Tour Packages">
         <IconButton
-          onClick={() => {
+          onClick={async () => {
             console.log("🎭 Agent clicked 'Browse Tour Packages'");
             setPackagesDialogOpen(true);
             // Send signal to customer to open their shared packages dialog
             const session = openTokSessionSingleton.getSession();
+            console.log("🔌 Session in handleBrowseTourPackages",session);
             if (session) {
               console.log("📡 Sending signal to customer to open shared packages dialog");
-              openTokSessionSingleton.sendSignal({
+              await openTokSessionSingleton.sendSignal({
                 type: "agent-request-shared-packages",
                 data: JSON.stringify({
                   action: "open-shared-packages-dialog",
@@ -1462,6 +1458,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         onRemoveFromCompare={removeFromCompare}
         onClearComparison={clearComparison}
         getBestValue={getBestValue}
+        userType="agent"
       />
 
       {/* Shared Packages Comparison Modal */}
