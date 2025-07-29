@@ -96,7 +96,7 @@ const ChunkedDataProgressDialog = ({
         <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
           <CloudDownload color="primary" />
           <Typography variant="h6" component="span">
-            Package Data Transfer
+            Packages List
           </Typography>
         </Box>
       </DialogTitle>

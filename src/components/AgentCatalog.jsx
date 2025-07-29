@@ -25,6 +25,8 @@ import {
 } from "@mui/icons-material";
 import { useCoBrowseScrollSync } from "../hooks/useCoBrowseScrollSync";
 import { samplePackageData } from "../data/samplePackageData";
+import PackageDetailsModal from "./PackageDetailsModal";
+import { openTokSessionSingleton } from "../services/OpenTokSessionManager";
 
 // Use centralized package data
 const tourPackages = samplePackageData;
@@ -41,14 +43,15 @@ const packageTypes = [
 ];
 
 const AgentCatalog = ({
-  sessionRef,
   selectedPackages,
   onPackageSelect,
   clearSelectedPackages,
   sharedPackages = [],
   isSharingPackages = false, // eslint-disable-line no-unused-vars
   sharingProgress = 0, // eslint-disable-line no-unused-vars
-  sharingStatus = '' // eslint-disable-line no-unused-vars
+  sharingStatus = '', // eslint-disable-line no-unused-vars
+  packageDetailsToOpen = null,
+  onPackageDetailsOpened = () => {}
 }) => {
   // Filter states
   const [priceRange, setPriceRange] = useState([3000, 90000]);
@@ -56,8 +59,27 @@ const AgentCatalog = ({
   const [filteredPackages, setFilteredPackages] = useState(tourPackages);
   const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
 
+  // Modal states
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
   // Co-browse scroll sync hook
   const { scrollRef, isActiveController } = useCoBrowseScrollSync('agent', true);
+
+  // Effect to handle opening modal from customer signal
+  // useEffect(() => {
+  //   if (packageDetailsToOpen) {
+  //     console.log("[Agent Catalog] Opening modal from customer signal with package:", packageDetailsToOpen.id);
+  //     setSelectedPackage(packageDetailsToOpen);
+  //     setModalOpen(true);
+  //     onPackageDetailsOpened(); // Clear the prop
+  //   } else if (packageDetailsToOpen === null && modalOpen) {
+  //     console.log("[Agent Catalog] Closing modal from customer signal");
+  //     // Close modal when packageDetailsToOpen is explicitly set to null
+  //     setModalOpen(false);
+  //     setSelectedPackage(null);
+  //   }
+  // }, [packageDetailsToOpen, onPackageDetailsOpened, modalOpen]);
 
   // Filter packages based on price range and selected types
   useEffect(() => {
@@ -79,6 +101,81 @@ const AgentCatalog = ({
     );
   };
 
+  // Modal handlers
+  const handleOpenModal = (pkg) => {
+    console.log("[Agent Catalog] handleOpenModal called with package:", pkg.id);
+    
+    // Set state in a single batch to prevent multiple re-renders
+    setSelectedPackage(pkg);
+    setModalOpen(true);
+    
+    // Send signal to customer to open the same modal using singleton
+    // Only send signal if not opened via signal from customer
+    if (packageDetailsToOpen !== pkg) {
+      console.log("[Agent Catalog] Sending signal to customer to open package details");
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "open-package-details",
+            data: JSON.stringify({
+              action: "open-modal",
+              packageData: pkg,
+              userType: "agent",
+              timestamp: new Date().toISOString(),
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Failed to send open-package-details signal:", err);
+            } else {
+              console.log("Successfully sent open-package-details signal to customer");
+            }
+          }
+        );
+      } else {
+        console.error("[Agent Catalog] No session available in singleton");
+      }
+    } else {
+      console.log("[Agent Catalog] Not sending signal - opened via customer signal");
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedPackage(null);
+    
+    // Send signal to customer to close the same modal using singleton
+    // Only send signal if not closed via signal from customer
+    if (packageDetailsToOpen !== null) {
+      console.log("[Agent Catalog] Sending signal to customer to close package details");
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "close-package-details",
+            data: JSON.stringify({
+              action: "close-modal",
+              userType: "agent",
+              timestamp: new Date().toISOString(),
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Failed to send close-package-details signal:", err);
+            } else {
+              console.log("Successfully sent close-package-details signal to customer");
+            }
+          }
+        );
+      } else {
+        console.error("[Agent Catalog] No session available in singleton");
+      }
+    } else {
+      console.log("[Agent Catalog] Not sending signal - closed via customer signal");
+    }
+  };
+
   console.log("[Agent Catalog] Scroll sync active controller:", isActiveController);
 
   return (
@@ -90,6 +187,12 @@ const AgentCatalog = ({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6" sx={{ color: "primary.main" }}>
             Tour Packages
+            <Chip
+              label={`${selectedPackages.length} selected`}
+              size="small"
+              color="primary"
+              sx={{ ml: 2, fontWeight: "bold" }}
+            />
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <IconButton
@@ -293,37 +396,89 @@ const AgentCatalog = ({
                         color: "secondary.main",
                         transform: "scale(1.05)",
                       },
+                      "& .view-details-button": {
+                        opacity: 1,
+                        transform: "translateY(0)",
+                      },
+                      "& .hover-overlay": {
+                        opacity: 1,
+                      },
                     },
                   }}
-                  onClick={() => onPackageSelect(pkg.id)}
                 >
                   {/* Selection Checkbox */}
                   <Checkbox
                     className="package-checkbox"
                     checked={selectedPackages.includes(pkg.id)}
-                    onChange={() => onPackageSelect(pkg.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      console.log("🔘 Checkbox clicked for package:", pkg.id, "Current selectedPackages:", selectedPackages);
+                      onPackageSelect(pkg.id);
+                    }}
                     sx={{
                       position: "absolute",
                       top: 12,
                       right: 12,
                       zIndex: 3,
-                      bgcolor: "rgba(255, 255, 255, 0.95)",
+                      bgcolor: selectedPackages.includes(pkg.id) 
+                        ? "rgba(76, 175, 80, 0.95)" 
+                        : "rgba(255, 255, 255, 0.95)",
+                      color: selectedPackages.includes(pkg.id) ? "white" : "primary.main",
                       borderRadius: "50%",
                       padding: "8px",
                       opacity: selectedPackages.includes(pkg.id) ? 1 : 0.7,
                       transition: "all 0.3s ease",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      boxShadow: selectedPackages.includes(pkg.id) 
+                        ? "0 4px 12px rgba(76, 175, 80, 0.4)" 
+                        : "0 4px 12px rgba(0,0,0,0.15)",
                       "&:hover": {
-                        bgcolor: "rgba(255, 255, 255, 1)",
+                        bgcolor: selectedPackages.includes(pkg.id) 
+                          ? "rgba(76, 175, 80, 1)" 
+                          : "rgba(255, 255, 255, 1)",
                         transform: "scale(1.1)",
                       },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onPackageSelect(pkg.id);
+                      "&.Mui-checked": {
+                        color: "white",
+                        bgcolor: "rgba(76, 175, 80, 0.95)",
+                      },
                     }}
                   />
 
+                  {/* View Details Button - Overlay on image */}
+                  <Box
+                    className="view-details-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenModal(pkg);
+                    }}
+                    sx={{
+                      position: "absolute",
+                      top: 12,
+                      left: 12,
+                      zIndex: 3,
+                      opacity: 0,
+                      transform: "translateY(-10px)",
+                      transition: "all 0.3s ease",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        bgcolor: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        backdropFilter: "blur(10px)",
+                        "&:hover": {
+                          bgcolor: "rgba(0, 0, 0, 0.8)",
+                          transform: "scale(1.05)",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </Box>
 
 
                   {/* Package Image */}
@@ -332,6 +487,11 @@ const AgentCatalog = ({
                       height: 180,
                       position: "relative",
                       overflow: "hidden",
+                      cursor: "pointer",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenModal(pkg);
                     }}
                   >
                     <CardMedia
@@ -346,6 +506,36 @@ const AgentCatalog = ({
                         transition: "transform 0.4s ease",
                       }}
                     />
+
+                    {/* Hover Overlay for Details */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        bgcolor: "rgba(0, 0, 0, 0.3)",
+                        opacity: 0,
+                        transition: "opacity 0.3s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                      className="hover-overlay"
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "white",
+                          fontWeight: "bold",
+                          textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+                        }}
+                      >
+                        Click to View Details
+                      </Typography>
+                    </Box>
 
                     {/* Type Badge */}
                     <Box
@@ -473,6 +663,33 @@ const AgentCatalog = ({
                         />
                       )}
                     </Box>
+
+                    {/* View Details Button */}
+                    <Box sx={{ mt: 2 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(pkg);
+                        }}
+                        sx={{
+                          fontWeight: 600,
+                          py: 1,
+                          borderWidth: 2,
+                          "&:hover": {
+                            bgcolor: "primary.main",
+                            color: "white",
+                            borderWidth: 2,
+                            transform: "scale(1.02)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Paper>
               </Grow>
@@ -492,6 +709,15 @@ const AgentCatalog = ({
         )}
       </Box>
 
+      {/* Package Details Modal */}
+      {modalOpen && (
+        <PackageDetailsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          packageData={selectedPackage}
+          userType="agent"
+        />
+      )}
     </DialogContent>
   );
 };

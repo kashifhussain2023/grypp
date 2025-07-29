@@ -19,10 +19,10 @@ import {
 } from "@mui/icons-material";
 import { useCoBrowseScrollSync } from "../hooks/useCoBrowseScrollSync";
 import PackageDetailsModal from "./PackageDetailsModal";
+import { openTokSessionSingleton } from "../services/OpenTokSessionManager";
 
 const CustomerCatalogView = ({
   sharedPackages = [],
-  sessionRef,
   onInterested = () => { },
   // Comparison props
   compareList = [],
@@ -31,6 +31,8 @@ const CustomerCatalogView = ({
   isInComparison = () => false,
   isComparisonFull = () => false,
   onComparePackages = () => { },
+  packageDetailsToOpen = null,
+  onPackageDetailsOpened = () => {}
 }) => {
   // Local state for modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,28 +41,106 @@ const CustomerCatalogView = ({
   // Co-browse scroll sync hook
   const { scrollRef, isActiveController } = useCoBrowseScrollSync('customer', true);
 
-  // Debug effect for comparison list changes
-  useEffect(() => {
-    console.log("[Customer Catalog] compareList changed:", compareList);
-    console.log("[Customer Catalog] compareList length:", compareList.length);
-  }, [compareList]);
+  // Effect to handle opening modal from agent signal
+  // useEffect(() => {
+  //   if (packageDetailsToOpen) {
+  //     console.log("[Customer Catalog] Opening modal from agent signal with package:", packageDetailsToOpen.id);
+  //     setSelectedPackage(packageDetailsToOpen);
+  //     setModalOpen(true);
+  //     onPackageDetailsOpened(); // Clear the prop
+  //   } else if (packageDetailsToOpen === null && modalOpen) {
+  //     console.log("[Customer Catalog] Closing modal from agent signal");
+  //     // Close modal when packageDetailsToOpen is explicitly set to null
+  //     setModalOpen(false);
+  //     setSelectedPackage(null);
+  //   }
+  // }, [packageDetailsToOpen, onPackageDetailsOpened, modalOpen]);
+
 
   // Modal handlers
   const handleOpenModal = (pkg) => {
+    console.log("[Customer Catalog] handleOpenModal called with package:", pkg.id);
+    
+    // Set state in a single batch to prevent multiple re-renders
     setSelectedPackage(pkg);
     setModalOpen(true);
+    
+    // Send signal to agent to open the same modal using singleton
+    // Only send signal if not opened via signal from agent
+    if (packageDetailsToOpen !== pkg) {
+      console.log("[Customer Catalog] Sending signal to agent to open package details");
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "open-package-details",
+            data: JSON.stringify({
+              action: "open-modal",
+              packageData: pkg,
+              userType: "customer",
+              timestamp: new Date().toISOString(),
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Failed to send open-package-details signal:", err);
+            } else {
+              console.log("Successfully sent open-package-details signal to agent");
+            }
+          }
+        );
+      } else {
+        console.error("[Customer Catalog] No session available in singleton");
+      }
+    } else {
+      console.log("[Customer Catalog] Not sending signal - opened via agent signal");
+    }
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedPackage(null);
+    
+    // Send signal to agent to close the same modal using singleton
+    // Only send signal if not closed via signal from agent
+    if (packageDetailsToOpen !== null) {
+      console.log("[Customer Catalog] Sending signal to agent to close package details");
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "close-package-details",
+            data: JSON.stringify({
+              action: "close-modal",
+              userType: "customer",
+              timestamp: new Date().toISOString(),
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Failed to send close-package-details signal:", err);
+            } else {
+              console.log("Successfully sent close-package-details signal to agent");
+            }
+          }
+        );
+      } else {
+        console.error("[Customer Catalog] No session available in singleton");
+      }
+    } else {
+      console.log("[Customer Catalog] Not sending signal - closed via agent signal");
+    }
   };
 
   console.log("[Customer Catalog] Scroll sync active controller:", isActiveController);
   console.log("[Customer Catalog] Shared packages:", sharedPackages.length);
-  console.log("[Customer Catalog] Shared packages data:", sharedPackages);
-  console.log("[Customer Catalog] Shared packages type:", typeof sharedPackages);
-  console.log("[Customer Catalog] Shared packages is array:", Array.isArray(sharedPackages));
+  // Remove excessive debugging that causes re-renders
+  // console.log("[Customer Catalog] Shared packages data:", sharedPackages);
+  // console.log("[Customer Catalog] Shared packages type:", typeof sharedPackages);
+  // console.log("[Customer Catalog] Shared packages is array:", Array.isArray(sharedPackages));
+  // console.log("[Customer Catalog] Modal state - modalOpen:", modalOpen);
+  // console.log("[Customer Catalog] Modal state - selectedPackage:", selectedPackage);
+  // console.log("[Customer Catalog] Modal state - packageDetailsToOpen:", packageDetailsToOpen);
 
   return (
     <Box sx={{ position: 'relative', height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -119,7 +199,7 @@ const CustomerCatalogView = ({
               }}
             />
           )} */}
-          {!isActiveController && sessionRef?.current && (
+          {!isActiveController && (
             <Chip
               label="Synced with agent"
               size="small"
@@ -161,9 +241,8 @@ const CustomerCatalogView = ({
         }}
       >
         <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-          {console.log("[Customer Catalog] Rendering packages:", sharedPackages.length)}
+          {/* Remove debugging logs that cause re-renders */}
           {sharedPackages.map((pkg, index) => {
-            console.log(`[Customer Catalog] Rendering package ${index}:`, pkg);
             return (
               <Grid sx={{ width: "250px" }} item xs={3} sm={3} md={3} lg={3} key={pkg.id}>
               <Grow
@@ -188,6 +267,10 @@ const CustomerCatalogView = ({
                       boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
                       "& .package-image": {
                         transform: "scale(1.05)",
+                      },
+                      "& .view-details-hint": {
+                        opacity: 1,
+                        transform: "translateY(0)",
                       },
                     },
                     "&::before": {
@@ -305,6 +388,36 @@ const CustomerCatalogView = ({
                         transition: "transform 0.4s ease",
                       }}
                     />
+
+                    {/* Hover Overlay for Details */}
+                    <Box
+                      className="view-details-hint"
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        bgcolor: "rgba(0, 0, 0, 0.3)",
+                        opacity: 0,
+                        transition: "opacity 0.3s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "white",
+                          fontWeight: "bold",
+                          textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+                        }}
+                      >
+                        Click to View Details
+                      </Typography>
+                    </Box>
 
                     {/* Recommended Badge */}
                     <Box
@@ -424,6 +537,33 @@ const CustomerCatalogView = ({
                         Interested
                       </Button>
                     </Box>
+
+                    {/* View Details Button */}
+                    <Box sx={{ mt: 2 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(pkg);
+                        }}
+                        sx={{
+                          fontWeight: 600,
+                          py: 1,
+                          borderWidth: 2,
+                          "&:hover": {
+                            bgcolor: "primary.main",
+                            color: "white",
+                            borderWidth: 2,
+                            transform: "scale(1.02)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grow>
@@ -513,6 +653,7 @@ const CustomerCatalogView = ({
       )}
 
       {/* Package Details Modal */}
+      {/* Remove debugging log that causes re-renders */}
       {modalOpen && (
       <PackageDetailsModal
         open={modalOpen}

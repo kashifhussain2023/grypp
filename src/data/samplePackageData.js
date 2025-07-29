@@ -7,7 +7,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "2N Manali",
@@ -26,7 +26,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -119,7 +119,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -138,7 +138,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -231,7 +231,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -247,7 +247,7 @@ export const samplePackageData = [
       "Khardung La Pass"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
@@ -342,7 +342,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -453,7 +453,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -470,7 +470,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
@@ -564,7 +564,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -676,7 +676,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -694,7 +694,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
     ],
@@ -788,7 +788,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -900,7 +900,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -918,7 +918,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
@@ -1012,7 +1012,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -1123,7 +1123,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -1234,7 +1234,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -1346,7 +1346,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -1364,7 +1364,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -1457,7 +1457,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -1568,7 +1568,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -1584,7 +1584,7 @@ export const samplePackageData = [
       "Monastery Visits"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
@@ -1679,7 +1679,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -1696,7 +1696,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
     ],
@@ -1790,7 +1790,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -1808,7 +1808,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -1901,7 +1901,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "2N Manali",
@@ -2013,7 +2013,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -2124,7 +2124,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -2141,7 +2141,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
     ],
@@ -2235,7 +2235,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -2346,7 +2346,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -2457,7 +2457,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -2569,7 +2569,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -2680,7 +2680,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -2791,7 +2791,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -2809,7 +2809,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -2902,7 +2902,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -3014,7 +3014,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -3125,7 +3125,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -3236,7 +3236,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -3347,7 +3347,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -3366,7 +3366,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -3459,7 +3459,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -3476,7 +3476,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
     ],
@@ -3570,7 +3570,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Srinagar",
       "2N Kargil",
@@ -3682,7 +3682,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -3699,7 +3699,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
     ],
@@ -3793,7 +3793,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -3809,7 +3809,7 @@ export const samplePackageData = [
       "Pangong Tso Lake"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
@@ -3904,7 +3904,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "2N Manali",
@@ -3922,7 +3922,7 @@ export const samplePackageData = [
     ],
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
@@ -4016,7 +4016,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "3N Leh",
@@ -4127,7 +4127,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -4238,7 +4238,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "2N Delhi",
       "2N Manali",
@@ -4257,7 +4257,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -4350,7 +4350,7 @@ export const samplePackageData = [
     "type": "Adventure",
     "currency": "USD",
     "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=90",
+    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
       "1N Manali",
       "3N Leh",
@@ -4368,7 +4368,7 @@ export const samplePackageData = [
     "images": [
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop",
+      
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
     ],
     "tabs": [

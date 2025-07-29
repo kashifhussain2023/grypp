@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,15 @@ import {
   SpeedDialAction,
   SpeedDialIcon,
   Fab,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -75,6 +84,13 @@ import {
   LocalPhone as PhoneIcon,
   Email as EmailIcon,
   Language as WebIcon,
+  CreditCard as CreditCardIcon,
+  Lock as LockIcon,
+  Payment as PaymentIcon,
+  VerifiedUser as VerifiedUserIcon,
+  AccountCircle as AccountIcon,
+  Home as HomeIcon,
+  Business as BusinessIcon,
 } from '@mui/icons-material';
 import { useCoBrowseScrollSync } from '../hooks/useCoBrowseScrollSync';
 
@@ -89,6 +105,9 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   const [scrollY, setScrollY] = useState(0);
   const [isFloatingButtonsVisible, setIsFloatingButtonsVisible] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState(false);
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -100,9 +119,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
   useEffect(() => {
     if (open) {
-      setIsLoading(true);
-      const timer = setTimeout(() => setIsLoading(false), 1000);
-      return () => clearTimeout(timer);
+      setIsLoading(false); // Set loading to false immediately
     }
   }, [open]);
 
@@ -136,7 +153,13 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     return () => clearInterval(slideshowInterval.current);
   }, [isImageSlideshow, packageData?.images?.length]);
 
-  if (!packageData) return null;
+  // Add debugging for packageData
+  useEffect(() => {
+    console.log("[PackageDetailsModal] Modal props:", { open, packageData: packageData?.id, userType });
+  }, [open, packageData?.id, userType]);
+
+  // Don't return null immediately, let the modal render and show loading state
+  // if (!packageData) return null;
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -176,6 +199,31 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     setIsWishlisted(!isWishlisted);
   };
 
+  const handlePaymentSuccess = () => {
+    setPaymentSuccess(true);
+    setPaymentError(false);
+    setIsPaymentModalOpen(false);
+  };
+
+  const handlePaymentError = () => {
+    setPaymentSuccess(false);
+    setPaymentError(true);
+  };
+
+  const handleClosePaymentModal = () => {
+    setIsPaymentModalOpen(false);
+    setPaymentSuccess(false);
+    setPaymentError(false);
+  };
+
+  const handleCloseSuccessSnackbar = () => {
+    setPaymentSuccess(false);
+  };
+
+  const handleCloseErrorSnackbar = () => {
+    setPaymentError(false);
+  };
+
   const renderLoadingScreen = () => (
     <Box
       sx={{
@@ -209,18 +257,18 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         background: `linear-gradient(135deg, ${theme.palette.primary.main}20, ${theme.palette.secondary.main}20)`,
         backdropFilter: 'blur(20px)',
         borderBottom: `1px solid ${theme.palette.divider}`,
-        px: 3,
-        py: 2,
+        px: { xs: 1, sm: 1.5, md: 2 },
+        py: { xs: 1, sm: 1.5 },
         transition: 'all 0.3s ease',
         transform: scrollY > 50 ? 'translateY(-10px)' : 'translateY(0)',
         boxShadow: scrollY > 50 ? theme.shadows[8] : theme.shadows[2],
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box flex={1}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" flexDirection={{ xs: 'column', sm: 'row' }} gap={{ xs: 1, sm: 0 }}>
+        <Box flex={1} width="100%">
           <Slide direction="right" in={!isLoading} timeout={800}>
             <Typography 
-              variant={isMobile ? "h5" : "h4"} 
+              variant={isMobile ? "h6" : "h5"} 
               fontWeight="bold" 
               color="primary.main" 
               gutterBottom
@@ -230,13 +278,16 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 textFillColor: 'transparent',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.3rem' },
+                textAlign: { xs: 'center', sm: 'left' },
+                mb: { xs: 1, sm: 0.5 },
               }}
             >
             {packageData.title}
           </Typography>
           </Slide>
           <Fade in={!isLoading} timeout={1000}>
-          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" justifyContent={{ xs: 'center', sm: 'flex-start' }}>
             <LocationIcon color="action" fontSize="small" />
             {packageData.route && packageData.route.map((location, index) => (
               <React.Fragment key={index}>
@@ -248,6 +299,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   color="primary"
                       sx={{
                         transition: 'all 0.3s ease',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
                         '&:hover': {
                           transform: 'scale(1.05)',
                           boxShadow: theme.shadows[4],
@@ -256,7 +308,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                     />
                   </Zoom>
                 {index < packageData.route.length - 1 && (
-                  <Typography variant="body2" color="text.secondary">•</Typography>
+                  <Typography variant="caption" color="text.secondary">•</Typography>
                 )}
               </React.Fragment>
             ))}
@@ -266,7 +318,8 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               color="secondary"
               size="small"
                   sx={{ 
-                    ml: 1,
+                    ml: { xs: 0, sm: 1 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
                     background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
                     color: 'white',
                     fontWeight: 'bold',
@@ -276,10 +329,11 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           </Box>
           </Fade>
         </Box>
-        <Box display="flex" gap={1}>
+        <Box display="flex" gap={1} justifyContent={{ xs: 'center', sm: 'flex-end' }} width={{ xs: '100%', sm: 'auto' }}>
           <Tooltip title="Add to Wishlist">
             <IconButton
               onClick={toggleWishlist}
+              size="small"
               sx={{
                 bgcolor: isWishlisted ? 'error.main' : 'grey.100',
                 color: isWishlisted ? 'white' : 'grey.700',
@@ -290,11 +344,12 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 transition: 'all 0.3s ease',
               }}
             >
-              <FavoriteIcon />
+              <FavoriteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Share Package">
             <IconButton
+              size="small"
               sx={{
                 bgcolor: 'grey.100',
                 '&:hover': { 
@@ -304,12 +359,13 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 transition: 'all 0.3s ease',
               }}
             >
-              <ShareIcon />
+              <ShareIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Close">
         <IconButton
           onClick={onClose}
+          size="small"
           sx={{
             bgcolor: 'grey.100',
                 '&:hover': { 
@@ -320,7 +376,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 transition: 'all 0.3s ease',
           }}
         >
-          <CloseIcon />
+          <CloseIcon fontSize="small" />
         </IconButton>
           </Tooltip>
         </Box>
@@ -329,15 +385,15 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 
   const renderImageGallery = () => (
-    <Box sx={{ mb: 4, position: 'relative' }}>
-      <Grid container spacing={2}>
-      <Grid item xs={12} md={9}>
+    <Box sx={{ mb: { xs: 2, sm: 3 }, position: 'relative' }}>
+      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+        <Grid item xs={12} md={9}>
           <Card 
-            elevation={8}
+            elevation={6}
             sx={{
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: 3,
+              borderRadius: { xs: 1, sm: 2 },
               '&:hover .image-controls': {
                 opacity: 1,
               },
@@ -346,17 +402,17 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             <Box
               sx={{
                 position: 'relative',
-                height: isMobile ? 300 : 500,
+                height: { xs: 200, sm: 250, md: 400 },
                 overflow: 'hidden',
                 cursor: 'pointer',
               }}
               onClick={toggleImageFullscreen}
             >
-          <CardMedia
-            component="img"
+              <CardMedia
+                component="img"
                 height="100%"
-            image={packageData.images[selectedImageIndex]}
-            alt="Package main image"
+                image={packageData.images[selectedImageIndex]}
+                alt="Package main image"
                 sx={{ 
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
@@ -374,15 +430,24 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: '30%',
+                  height: { xs: '20%', sm: '25%' },
                   background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
                   display: 'flex',
                   alignItems: 'flex-end',
-                  p: 3,
+                  p: { xs: 1.5, sm: 2 },
                 }}
               >
-                <Typography variant="h6" color="white" fontWeight="bold">
+                <Typography variant="body2" color="white" fontWeight="bold" sx={{ 
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  display: { xs: 'none', sm: 'block' }
+                }}>
                   {packageData.images.length} Photos • Click to view fullscreen
+                </Typography>
+                <Typography variant="caption" color="white" fontWeight="bold" sx={{ 
+                  fontSize: '0.7rem',
+                  display: { xs: 'block', sm: 'none' }
+                }}>
+                  {packageData.images.length} Photos
                 </Typography>
               </Box>
 
@@ -396,7 +461,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   right: 0,
                   display: 'flex',
                   justifyContent: 'space-between',
-                  px: 2,
+                  px: { xs: 1, sm: 1.5 },
                   opacity: 0,
                   transition: 'opacity 0.3s ease',
                 }}
@@ -406,26 +471,28 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                     e.stopPropagation();
                     navigateImage('prev');
                   }}
+                  size="small"
                   sx={{
                     bgcolor: 'rgba(0,0,0,0.5)',
                     color: 'white',
                     '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                   }}
                 >
-                  <PrevIcon />
+                  <PrevIcon fontSize="small" />
                 </IconButton>
                 <IconButton
                   onClick={(e) => {
                     e.stopPropagation();
                     navigateImage('next');
                   }}
+                  size="small"
                   sx={{
                     bgcolor: 'rgba(0,0,0,0.5)',
                     color: 'white',
                     '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                   }}
                 >
-                  <NextIcon />
+                  <NextIcon fontSize="small" />
                 </IconButton>
               </Box>
 
@@ -434,10 +501,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 className="image-controls"
                 sx={{
                   position: 'absolute',
-                  top: 16,
-                  right: 16,
+                  top: { xs: 8, sm: 12 },
+                  right: { xs: 8, sm: 12 },
                   display: 'flex',
-                  gap: 1,
+                  gap: { xs: 0.25, sm: 0.5 },
                   opacity: 0,
                   transition: 'opacity 0.3s ease',
                 }}
@@ -448,13 +515,14 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                       e.stopPropagation();
                       toggleSlideshow();
                     }}
+                    size="small"
                     sx={{
                       bgcolor: 'rgba(0,0,0,0.5)',
                       color: 'white',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                     }}
                   >
-                    {isImageSlideshow ? <PauseIcon /> : <PlayIcon />}
+                    {isImageSlideshow ? <PauseIcon fontSize="small" /> : <PlayIcon fontSize="small" />}
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Fullscreen">
@@ -463,13 +531,14 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                       e.stopPropagation();
                       toggleImageFullscreen();
                     }}
+                    size="small"
                     sx={{
                       bgcolor: 'rgba(0,0,0,0.5)',
                       color: 'white',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
                     }}
                   >
-                    <FullscreenIcon />
+                    <FullscreenIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -478,80 +547,109 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               <Box
                 sx={{
                   position: 'absolute',
-                  bottom: 16,
-                  right: 16,
+                  bottom: { xs: 8, sm: 12 },
+                  right: { xs: 8, sm: 12 },
                   bgcolor: 'rgba(0,0,0,0.7)',
                   color: 'white',
-                  px: 2,
-                  py: 1,
-                  borderRadius: 2,
+                  px: { xs: 1, sm: 1.5 },
+                  py: { xs: 0.25, sm: 0.5 },
+                  borderRadius: { xs: 1, sm: 1.5 },
                   backdropFilter: 'blur(10px)',
                 }}
               >
-                <Typography variant="body2">
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                   {selectedImageIndex + 1} / {packageData.images.length}
                 </Typography>
               </Box>
             </Box>
-        </Card>
-      </Grid>
+          </Card>
+        </Grid>
         
-      <Grid item xs={12} md={3}>
-          <Stack spacing={1} sx={{ height: isMobile ? 'auto' : 500, overflowY: 'auto' }}>
-          {packageData.images.map((image, index) => (
-              <Zoom key={index} in={!isLoading} timeout={600 + index * 50}>
-            <Card
-                  elevation={selectedImageIndex === index ? 8 : 2}
+        <Grid item xs={12} md={3}>
+          <Card
+            elevation={6}
+            sx={{
+              height: { xs: 'auto', md: 400 },
+              maxHeight: { xs: 300, sm: 400, md: 400 },
+              overflowY: 'auto',
+              border: `2px solid ${theme.palette.primary.main}`,
+              borderRadius: { xs: 1, sm: 1.5 },
+              overflow: 'hidden',
+              background: theme.palette.background.paper,
+              boxShadow: theme.shadows[12],
+            }}
+          >
+            <Box
               sx={{
-                cursor: 'pointer',
-                    border: selectedImageIndex === index ? 3 : 0,
-                borderColor: 'primary.main',
-                transition: 'all 0.3s ease',
-                    '&:hover': { 
-                      elevation: 6,
-                      transform: 'scale(1.02)',
-                    },
-                    position: 'relative',
-                    overflow: 'hidden',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                p: { xs: 0.5, sm: 0.75 },
+                color: 'white',
               }}
-              onClick={() => handleImageSelect(index)}
             >
-              <CardMedia
-                component="img"
-                height="90"
-                image={image}
-                alt={`Package image ${index + 1}`}
-                    sx={{ 
-                      objectFit: 'cover',
-                      transition: 'transform 0.3s ease',
-                      '&:hover': { transform: 'scale(1.1)' },
-                    }}
-                  />
-                  {selectedImageIndex === index && (
-                    <Box
+              <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
+                📷 Gallery
+              </Typography>
+            </Box>
+
+            <CardContent sx={{ p: { xs: 0.5, sm: 0.75 } }}>
+              <Stack spacing={{ xs: 0.5, sm: 0.75 }}>
+                {packageData.images.map((image, index) => (
+                  <Zoom key={index} in={!isLoading} timeout={600 + index * 50}>
+                    <Card
+                      elevation={selectedImageIndex === index ? 6 : 2}
                       sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        bgcolor: 'primary.main',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: 24,
-                        height: 24,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        border: selectedImageIndex === index ? 2 : 0,
+                        borderColor: 'primary.main',
+                        transition: 'all 0.3s ease',
+                        '&:hover': { 
+                          elevation: 4,
+                          transform: 'scale(1.05)',
+                        },
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: { xs: 0.5, sm: 0.75 },
                       }}
+                      onClick={() => handleImageSelect(index)}
                     >
-                      <CheckIcon fontSize="small" />
-                    </Box>
-                  )}
-            </Card>
-              </Zoom>
-          ))}
-        </Stack>
+                      <CardMedia
+                        component="img"
+                        height={{ xs: 50, sm: 60 }}
+                        image={image}
+                        alt={`Package image ${index + 1}`}
+                        sx={{ 
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease',
+                          '&:hover': { transform: 'scale(1.1)' },
+                        }}
+                      />
+                      {selectedImageIndex === index && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: { xs: 2, sm: 3 },
+                            right: { xs: 2, sm: 3 },
+                            bgcolor: 'primary.main',
+                            color: 'white',
+                            borderRadius: '50%',
+                            width: { xs: 12, sm: 16 },
+                            height: { xs: 12, sm: 16 },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <CheckIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }} />
+                        </Box>
+                      )}
+                    </Card>
+                  </Zoom>
+                ))}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-    </Grid>
     </Box>
   );
 
@@ -668,54 +766,61 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
   const renderHighlightsBadges = () => (
     <Fade in={!isLoading} timeout={1400}>
-      <Box sx={{ mb: 4 }}>
-        <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
+      <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card
-              elevation={4}
+              elevation={3}
             sx={{
               height: '100%',
                 background: `linear-gradient(135deg, ${theme.palette.primary.light}20, ${theme.palette.primary.main}20)`,
-                border: `2px solid ${theme.palette.primary.light}`,
-                borderRadius: 3,
+                border: `1px solid ${theme.palette.primary.light}`,
+                borderRadius: { xs: 1.5, sm: 2 },
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: theme.shadows[12],
+                  transform: 'translateY(-4px)',
+                  boxShadow: theme.shadows[8],
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }}>
-                <Box display="flex" alignItems="center" gap={2} mb={3}>
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1.5, sm: 2 }}>
                   <Avatar
                     sx={{
                       bgcolor: 'primary.main',
-                      width: 48,
-                      height: 48,
+                      width: { xs: 32, sm: 36 },
+                      height: { xs: 32, sm: 36 },
                     }}
                   >
-                    <HighlightIcon />
+                    <HighlightIcon fontSize="small" />
                   </Avatar>
-                <Typography variant="h6" fontWeight="bold" color="primary.main">
+                <Typography variant="subtitle2" fontWeight="bold" color="primary.main" sx={{ 
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  lineHeight: { xs: 1.2, sm: 1.4 }
+                }}>
                   PACKAGE HIGHLIGHTS
                 </Typography>
               </Box>
-                <Stack spacing={2}>
+                <Stack spacing={{ xs: 1, sm: 1.5 }}>
                 {packageData.highlights.map((highlight, index) => (
                     <Slide key={index} direction="right" in={!isLoading} timeout={800 + index * 100}>
-                      <Box display="flex" alignItems="flex-start" gap={2}>
+                      <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                         <CheckIcon 
                           color="success" 
-                          fontSize="small" 
                           sx={{ 
                             mt: 0.2,
-                            p: 0.5,
+                            p: 0.3,
                             bgcolor: 'success.light',
                             borderRadius: '50%',
                             color: 'white',
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
                           }} 
                         />
-                        <Typography variant="body2" sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ 
+                          flex: 1, 
+                          fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                          lineHeight: { xs: 1.3, sm: 1.4 }
+                        }}>
                           {highlight}
                         </Typography>
                   </Box>
@@ -726,48 +831,57 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           </Card>
         </Grid>
           
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card
-              elevation={4}
+              elevation={3}
             sx={{
               height: '100%',
                 background: `linear-gradient(135deg, ${theme.palette.success.light}20, ${theme.palette.success.main}20)`,
-                border: `2px solid ${theme.palette.success.light}`,
-                borderRadius: 3,
+                border: `1px solid ${theme.palette.success.light}`,
+                borderRadius: { xs: 1.5, sm: 2 },
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: theme.shadows[12],
+                  transform: 'translateY(-4px)',
+                  boxShadow: theme.shadows[8],
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }}>
-                <Box display="flex" alignItems="center" gap={2} mb={3}>
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1.5, sm: 2 }}>
                   <Avatar
                     sx={{
                       bgcolor: 'success.main',
-                      width: 48,
-                      height: 48,
+                      width: { xs: 32, sm: 36 },
+                      height: { xs: 32, sm: 36 },
                     }}
                   >
-                    <ActivityIcon />
+                    <ActivityIcon fontSize="small" />
                   </Avatar>
-                <Typography variant="h6" fontWeight="bold" color="success.main">
+                <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  lineHeight: { xs: 1.2, sm: 1.4 }
+                }}>
                   ACTIVITIES
                 </Typography>
               </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ 
+                  mb: { xs: 1.5, sm: 2 }, 
+                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                  lineHeight: { xs: 1.3, sm: 1.4 }
+                }}>
                 Exciting activities and experiences included in this package
               </Typography>
               <Button
-                startIcon={<AddIcon />}
+                startIcon={<AddIcon fontSize="small" />}
                   variant="contained"
                   color="success"
                   fullWidth
+                  size="small"
                   sx={{
-                    borderRadius: 2,
-                    py: 1.5,
+                    borderRadius: { xs: 1, sm: 1.5 },
+                    py: { xs: 0.75, sm: 1 },
                     fontWeight: 'bold',
+                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
                     '&:hover': {
                       transform: 'scale(1.02)',
                     },
@@ -780,72 +894,20 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           </Card>
         </Grid>
           
-        <Grid item xs={12} md={4}>
-          <Card
-              elevation={4}
-            sx={{
-              height: '100%',
-                background: `linear-gradient(135deg, ${theme.palette.warning.light}20, ${theme.palette.warning.main}20)`,
-                border: `2px solid ${theme.palette.warning.light}`,
-                borderRadius: 3,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: theme.shadows[12],
-                },
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Box display="flex" alignItems="center" gap={2} mb={3}>
-                  <Avatar
-                    sx={{
-                      bgcolor: 'warning.main',
-                      width: 48,
-                      height: 48,
-                    }}
-                  >
-                    <PhotoIcon />
-                  </Avatar>
-                <Typography variant="h6" fontWeight="bold" color="warning.main">
-                  PROPERTY PHOTOS
-                </Typography>
-              </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                View photos of hotels and properties in this package
-              </Typography>
-              <Button
-                startIcon={<PhotoIcon />}
-                  variant="contained"
-                  color="warning"
-                  fullWidth
-                  sx={{
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                    '&:hover': {
-                      transform: 'scale(1.02)',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-              >
-                View Gallery
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
+       
       </Grid>
     </Box>
     </Fade>
   );
 
   const renderTabSection = () => (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: { xs: 2, sm: 3 } }}>
       <Paper
         elevation={2}
         sx={{
-          borderRadius: 3,
+          borderRadius: { xs: 1.5, sm: 2 },
           overflow: 'hidden',
-          mb: 3,
+          mb: { xs: 1.5, sm: 2 },
         }}
       >
       <Tabs
@@ -857,9 +919,9 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             bgcolor: 'grey.50',
           '& .MuiTab-root': {
             fontWeight: 'bold',
-            fontSize: '1rem',
-              py: 2,
-              px: 3,
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              py: { xs: 1, sm: 1.5 },
+              px: { xs: 1.5, sm: 2 },
               transition: 'all 0.3s ease',
               '&:hover': {
                 bgcolor: 'primary.light',
@@ -889,7 +951,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 
   const renderItineraryContent = () => (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 1.5, sm: 2 }}>
       <Grid item xs={12} md={8}>
         <Stepper orientation="vertical" activeStep={selectedDay}>
           {packageData.itinerary.map((day, index) => (
@@ -901,12 +963,15 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   '& .MuiStepLabel-label': {
                     fontWeight: selectedDay === index ? 'bold' : 'normal',
                     color: selectedDay === index ? 'primary.main' : 'text.primary',
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
                   }
                 }}
               >
-                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                  <Typography variant="h6" fontWeight="bold">
+                <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} flexWrap="wrap">
+                  <Typography variant="subtitle1" fontWeight="bold" sx={{ 
+                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                    lineHeight: { xs: 1.2, sm: 1.4 }
+                  }}>
                     {day.day} - {day.city}
                   </Typography>
                   <Chip 
@@ -916,6 +981,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                     variant="outlined"
                     sx={{
                       fontWeight: 'bold',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
                       '&:hover': { bgcolor: 'primary.light', color: 'white' },
                       transition: 'all 0.3s ease',
                     }}
@@ -925,14 +991,14 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               <StepContent>
                 <Collapse in={selectedDay === index} timeout={500}>
                 <Card
-                    elevation={selectedDay === index ? 8 : 2}
+                    elevation={selectedDay === index ? 6 : 2}
                   sx={{
-                      p: 3,
-                      border: selectedDay === index ? 3 : 0,
+                      p: { xs: 1.5, sm: 2 },
+                      border: selectedDay === index ? 2 : 0,
                     borderColor: 'primary.main',
-                      borderRadius: 3,
+                      borderRadius: { xs: 1.5, sm: 2 },
                       transition: 'all 0.5s ease',
-                    mb: 2,
+                    mb: { xs: 1, sm: 1.5 },
                       background: selectedDay === index 
                         ? `linear-gradient(135deg, ${theme.palette.primary.light}10, ${theme.palette.background.paper})`
                         : 'background.paper',
@@ -941,26 +1007,33 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   {/* Flight Information */}
                   {day.flightNote && (
                       <Fade in={selectedDay === index} timeout={800}>
-                        <Box sx={{ mb: 3 }}>
-                          <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: 'info.main', width: 32, height: 32 }}>
-                              <FlightIcon fontSize="small" />
+                        <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
+                          <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1, sm: 1.5 }}>
+                            <Avatar sx={{ bgcolor: 'info.main', width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 } }}>
+                              <FlightIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
                             </Avatar>
-                            <Typography variant="subtitle1" fontWeight="bold" color="info.main">
+                            <Typography variant="subtitle2" fontWeight="bold" color="info.main" sx={{ 
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            }}>
                           FLIGHT
                         </Typography>
                       </Box>
                           <Paper 
                             elevation={2} 
                             sx={{ 
-                              p: 2.5, 
+                              p: { xs: 1.5, sm: 2 }, 
                               bgcolor: 'info.50',
-                              borderRadius: 2,
+                              borderRadius: { xs: 1, sm: 1.5 },
                               border: `1px solid ${theme.palette.info.light}`,
                             }}
                           >
-                            <Typography variant="body2" color="info.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <InfoIcon fontSize="small" />
+                            <Typography variant="body2" color="info.main" sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 1, 
+                              fontSize: { xs: '0.75rem', sm: '0.8rem' }
+                            }}>
+                              <InfoIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
                           {day.flightNote}
                         </Typography>
                       </Paper>
@@ -972,36 +1045,48 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   {day.hotel && (
                       <Fade in={selectedDay === index} timeout={1000}>
                     <Box>
-                          <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: 'success.main', width: 32, height: 32 }}>
-                              <HotelIcon fontSize="small" />
+                          <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1, sm: 1.5 }}>
+                            <Avatar sx={{ bgcolor: 'success.main', width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 } }}>
+                              <HotelIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
                             </Avatar>
-                            <Typography variant="subtitle1" fontWeight="bold" color="success.main">
+                            <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            }}>
                           HOTEL
                         </Typography>
                       </Box>
-                          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-                            <Grid container spacing={3}>
+                          <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: { xs: 1, sm: 1.5 } }}>
+                            <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                               <Grid item xs={12} md={8}>
-                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ 
+                                  fontSize: { xs: '0.85rem', sm: '0.95rem' }
+                                }}>
                               {day.hotel.name}
                             </Typography>
-                                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                                <Box display="flex" alignItems="center" gap={1} mb={{ xs: 1, sm: 1.5 }}>
                               <Rating value={day.hotel.stars} readOnly size="small" />
-                                  <Typography variant="body2" fontWeight="bold">
+                                  <Typography variant="body2" fontWeight="bold" sx={{ 
+                                    fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                  }}>
                                 ({day.hotel.rating})
                               </Typography>
                             </Box>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ 
+                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                            }}>
                                   📍 {day.hotel.location}
                             </Typography>
-                            <Typography variant="body2" fontWeight="bold" gutterBottom>
+                            <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ 
+                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                            }}>
                                   🛏️ {day.hotel.stay}
                             </Typography>
-                            <Typography variant="body2" gutterBottom>
+                            <Typography variant="body2" gutterBottom sx={{ 
+                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                            }}>
                                   🏨 {day.hotel.type}
                             </Typography>
-                                <Box sx={{ mt: 2 }}>
+                                <Box sx={{ mt: { xs: 1, sm: 1.5 } }}>
                             {day.hotel.inclusions.map((inclusion, idx) => (
                               <Chip
                                 key={idx}
@@ -1010,8 +1095,9 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                                 color="success"
                                 variant="outlined"
                                       sx={{ 
-                                        mr: 1, 
-                                        mb: 1,
+                                        mr: { xs: 0.25, sm: 0.5 }, 
+                                        mb: { xs: 0.25, sm: 0.5 },
+                                        fontSize: { xs: '0.65rem', sm: '0.7rem' },
                                         '&:hover': { bgcolor: 'success.light', color: 'white' },
                                         transition: 'all 0.3s ease',
                                       }}
@@ -1020,10 +1106,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                                 </Box>
                           </Grid>
                               <Grid item xs={12} md={4}>
-                                <Card elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                                <Card elevation={2} sx={{ borderRadius: { xs: 1, sm: 1.5 }, overflow: 'hidden' }}>
                             <CardMedia
                               component="img"
-                                    height="120"
+                                    height={{ xs: 80, sm: 100 }}
                                     image={day.hotel.image || '/api/placeholder/150/120'}
                               alt={day.hotel.name}
                                     sx={{
@@ -1049,25 +1135,30 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
       {/* Enhanced Sidebar */}
       <Grid item xs={12} md={4}>
         <Card 
-          elevation={6} 
+          elevation={4} 
           sx={{ 
             position: 'sticky', 
-            top: 120,
-            borderRadius: 3,
+            top: { xs: 80, sm: 100 },
+            borderRadius: { xs: 1.5, sm: 2 },
             overflow: 'hidden',
           }}
         >
           <Box
             sx={{
               background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              p: 3,
+              p: { xs: 1.5, sm: 2 },
               color: 'white',
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ 
+              fontSize: { xs: '0.85rem', sm: '0.95rem' }
+            }}>
               Trip Timeline
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            <Typography variant="body2" sx={{ 
+              opacity: 0.9, 
+              fontSize: { xs: '0.7rem', sm: '0.8rem' }
+            }}>
               Click on any day to view details
             </Typography>
           </Box>
@@ -1080,9 +1171,9 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   selected={selectedDay === index}
                   onClick={() => handleDaySelect(index)}
                   sx={{
-                    py: 2,
-                    px: 3,
-                    borderLeft: selectedDay === index ? 4 : 0,
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 1.5, sm: 2 },
+                    borderLeft: selectedDay === index ? 3 : 0,
                     borderColor: 'primary.main',
                     bgcolor: selectedDay === index ? 'primary.50' : 'transparent',
                     '&:hover': {
@@ -1094,11 +1185,11 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   <ListItemIcon>
                     <Avatar
                       sx={{
-                        width: 32,
-                        height: 32,
+                        width: { xs: 24, sm: 28 },
+                        height: { xs: 24, sm: 28 },
                         bgcolor: selectedDay === index ? 'primary.main' : 'grey.300',
                         color: selectedDay === index ? 'white' : 'grey.600',
-                        fontSize: '0.875rem',
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
                         fontWeight: 'bold',
                       }}
                     >
@@ -1110,45 +1201,51 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                     primaryTypographyProps={{
                       fontWeight: selectedDay === index ? 'bold' : 'normal',
                       color: selectedDay === index ? 'primary.main' : 'text.primary',
+                      fontSize: { xs: '0.75rem', sm: '0.8rem' },
                     }}
                   />
                 </ListItem>
               ))}
             </List>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: { xs: 1, sm: 1.5 } }} />
 
             {/* Enhanced Best Deals Section */}
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
               <Paper 
                 elevation={3} 
                 sx={{ 
-                  p: 3, 
+                  p: { xs: 1.5, sm: 2 }, 
                   background: `linear-gradient(135deg, ${theme.palette.success.light}20, ${theme.palette.success.main}20)`,
-                  border: `2px solid ${theme.palette.success.light}`,
-                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.success.light}`,
+                  borderRadius: { xs: 1, sm: 1.5 },
                 }}
               >
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <OfferIcon color="success" />
-                  <Typography variant="subtitle1" fontWeight="bold" color="success.main">
+                <Box display="flex" alignItems="center" gap={1} mb={{ xs: 1, sm: 1.5 }}>
+                  <OfferIcon color="success" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }} />
+                  <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                  }}>
                 {packageData.sidebar.bestDeals.message}
               </Typography>
                 </Box>
-                <Stack spacing={1.5}>
+                <Stack spacing={{ xs: 0.75, sm: 1 }}>
                 {packageData.sidebar.bestDeals.actions.map((action, index) => (
-                    <Box key={index} display="flex" alignItems="center" gap={1.5}>
+                    <Box key={index} display="flex" alignItems="center" gap={1}>
                       <CheckIcon 
                         color="success" 
-                        fontSize="small"
                         sx={{
-                          p: 0.3,
+                          p: 0.2,
                           bgcolor: 'success.main',
                           borderRadius: '50%',
                           color: 'white',
+                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
                         }}
                       />
-                      <Typography variant="body2" sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ 
+                        flex: 1, 
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                      }}>
                         {action}
                       </Typography>
                   </Box>
@@ -1163,38 +1260,38 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 
   const renderPoliciesContent = () => (
-    <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
-      <Box display="flex" alignItems="center" gap={2} mb={4}>
-        <Avatar sx={{ bgcolor: 'info.main', width: 48, height: 48 }}>
-          <SecurityIcon />
+    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: { xs: 1.5, sm: 2 } }}>
+      <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 2, sm: 3 }}>
+        <Avatar sx={{ bgcolor: 'info.main', width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 } }}>
+          <SecurityIcon fontSize="small" />
         </Avatar>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
         Cancellation & Payment Policies
       </Typography>
       </Box>
       
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom color="error.main">
+          <Card elevation={2} sx={{ p: { xs: 2, sm: 2.5 }, height: '100%', borderRadius: { xs: 1, sm: 1.5 } }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="error.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
             Cancellation Policy
           </Typography>
-            <Stack spacing={2}>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <CheckIcon color="success" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <CheckIcon color="success" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>Free cancellation</strong> up to 7 days before departure
           </Typography>
               </Box>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <InfoIcon color="warning" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <InfoIcon color="warning" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>50% refund</strong> for cancellations between 3-7 days before departure
           </Typography>
               </Box>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <CloseIcon color="error" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <CloseIcon color="error" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>No refund</strong> for cancellations within 3 days of departure
           </Typography>
         </Box>
@@ -1203,26 +1300,26 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         </Grid>
         
         <Grid item xs={12} md={6}>
-          <Card elevation={2} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom color="success.main">
+          <Card elevation={2} sx={{ p: { xs: 2, sm: 2.5 }, height: '100%', borderRadius: { xs: 1, sm: 1.5 } }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="success.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
             Payment Policy
           </Typography>
-            <Stack spacing={2}>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <MoneyIcon color="primary" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <MoneyIcon color="primary" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>30% advance payment</strong> required to confirm booking
           </Typography>
               </Box>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <ScheduleIcon color="warning" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <ScheduleIcon color="warning" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>Balance payment</strong> due 15 days before departure
           </Typography>
               </Box>
-              <Box display="flex" alignItems="flex-start" gap={2}>
-                <CheckIcon color="success" fontSize="small" sx={{ mt: 0.5 }} />
-                <Typography variant="body2">
+              <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
+                <CheckIcon color="success" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>EMI options available</strong> with 0% interest for 6 months
           </Typography>
         </Box>
@@ -1231,11 +1328,17 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4, p: 3, bgcolor: 'info.50', borderRadius: 2, border: `1px solid ${theme.palette.info.light}` }}>
-        <Typography variant="body2" color="info.main" fontWeight="bold" gutterBottom>
+      <Box sx={{ 
+        mt: { xs: 2, sm: 3 }, 
+        p: { xs: 1.5, sm: 2 }, 
+        bgcolor: 'info.50', 
+        borderRadius: { xs: 1, sm: 1.5 }, 
+        border: `1px solid ${theme.palette.info.light}` 
+      }}>
+        <Typography variant="body2" color="info.main" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
           💡 Pro Tip:
         </Typography>
-        <Typography variant="body2" color="info.main">
+        <Typography variant="body2" color="info.main" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
           Book early to secure the best rates and ensure availability. Our flexible payment options make it easy to plan your dream vacation.
         </Typography>
       </Box>
@@ -1243,32 +1346,32 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 
   const renderSummaryContent = () => (
-    <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
-      <Box display="flex" alignItems="center" gap={2} mb={4}>
-        <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
-          <InfoIcon />
+    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: { xs: 1.5, sm: 2 } }}>
+      <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 2, sm: 3 }}>
+        <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 } }}>
+          <InfoIcon fontSize="small" />
         </Avatar>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
         Package Summary
       </Typography>
       </Box>
       
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         <Grid item xs={12} md={6}>
           <Card 
-            elevation={3} 
+            elevation={2} 
             sx={{ 
-              p: 3, 
+              p: { xs: 2, sm: 2.5 }, 
               height: '100%', 
-              borderRadius: 2,
-              border: `2px solid ${theme.palette.success.light}`,
+              borderRadius: { xs: 1, sm: 1.5 },
+              border: `1px solid ${theme.palette.success.light}`,
               bgcolor: 'success.50',
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom color="success.main">
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="success.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
               ✅ Package Includes
           </Typography>
-            <Stack spacing={2}>
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
               {[
                 'Accommodation as per itinerary',
                 'Daily breakfast at hotels',
@@ -1276,19 +1379,19 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 'Sightseeing as per itinerary',
                 'Professional tour guide'
               ].map((item, index) => (
-                <Box key={index} display="flex" alignItems="flex-start" gap={2}>
+                <Box key={index} display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                   <CheckIcon 
                     color="success" 
-                    fontSize="small" 
                     sx={{ 
                       mt: 0.5,
-                      p: 0.3,
+                      p: 0.2,
                       bgcolor: 'success.main',
                       borderRadius: '50%',
                       color: 'white',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
                     }} 
                   />
-                  <Typography variant="body2">{item}</Typography>
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>{item}</Typography>
             </Box>
               ))}
           </Stack>
@@ -1297,19 +1400,19 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         
         <Grid item xs={12} md={6}>
           <Card 
-            elevation={3} 
+            elevation={2} 
             sx={{ 
-              p: 3, 
+              p: { xs: 2, sm: 2.5 }, 
               height: '100%', 
-              borderRadius: 2,
-              border: `2px solid ${theme.palette.error.light}`,
+              borderRadius: { xs: 1, sm: 1.5 },
+              border: `1px solid ${theme.palette.error.light}`,
               bgcolor: 'error.50',
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom color="error.main">
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="error.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
               ❌ Package Excludes
           </Typography>
-            <Stack spacing={2}>
+            <Stack spacing={{ xs: 1, sm: 1.5 }}>
               {[
                 'International/Domestic flights',
                 'Personal expenses',
@@ -1317,19 +1420,19 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 'Entry fees to monuments',
                 'Tips and gratuities'
               ].map((item, index) => (
-                <Box key={index} display="flex" alignItems="flex-start" gap={2}>
+                <Box key={index} display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                   <CloseIcon 
                     color="error" 
-                    fontSize="small" 
                     sx={{ 
                       mt: 0.5,
-                      p: 0.3,
+                      p: 0.2,
                       bgcolor: 'error.main',
                       borderRadius: '50%',
                       color: 'white',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
                     }} 
                   />
-                  <Typography variant="body2">{item}</Typography>
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>{item}</Typography>
             </Box>
               ))}
           </Stack>
@@ -1337,37 +1440,37 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
-              <PhoneIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+          <Grid item xs={12} sm={4}>
+            <Card elevation={2} sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center', borderRadius: { xs: 1, sm: 1.5 } }}>
+              <PhoneIcon color="primary" sx={{ fontSize: { xs: 28, sm: 32 }, mb: 1 }} />
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 24/7 Support
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Round-the-clock assistance for your peace of mind
               </Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
-              <SecurityIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Grid item xs={12} sm={4}>
+            <Card elevation={2} sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center', borderRadius: { xs: 1, sm: 1.5 } }}>
+              <SecurityIcon color="success" sx={{ fontSize: { xs: 28, sm: 32 }, mb: 1 }} />
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 Secure Booking
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Your data and payments are completely secure
               </Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Card elevation={2} sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
-              <StarIcon color="warning" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Grid item xs={12} sm={4}>
+            <Card elevation={2} sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center', borderRadius: { xs: 1, sm: 1.5 } }}>
+              <StarIcon color="warning" sx={{ fontSize: { xs: 28, sm: 32 }, mb: 1 }} />
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 Best Value
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Guaranteed best prices with premium service
               </Typography>
             </Card>
@@ -1377,158 +1480,120 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     </Paper>
   );
 
-  const renderCouponSection = () => (
-    <Card elevation={4} sx={{ mb: 3, borderRadius: 3, overflow: 'hidden' }}>
-      <Box
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})`,
-          p: 3,
-          color: 'white',
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={2}>
-          <OfferIcon sx={{ fontSize: 32 }} />
-          <Typography variant="h6" fontWeight="bold">
-            🎉 Available Offers
-        </Typography>
-        </Box>
-      </Box>
-      <CardContent sx={{ p: 3 }}>
-        <Stack spacing={3}>
-          {packageData.coupons.map((coupon, index) => (
-            <Fade key={index} in={!isLoading} timeout={800 + index * 200}>
-            <Paper
-                elevation={3}
-              sx={{
-                  p: 3,
-                  border: coupon.applied ? 3 : 1,
-                borderColor: coupon.applied ? 'success.main' : 'divider',
-                  borderRadius: 2,
-                  background: coupon.applied 
-                    ? `linear-gradient(135deg, ${theme.palette.success.light}20, ${theme.palette.success.main}20)`
-                    : 'background.paper',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: theme.shadows[8],
-                  },
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box flex={1}>
-                    <Box display="flex" alignItems="center" gap={2} mb={1}>
-                      <Chip
-                        label={coupon.code}
-                        color="primary"
-                        variant="filled"
-                        sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}
-                      />
-                      {coupon.applied && (
-                        <Chip
-                          label="APPLIED"
-                          color="success"
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      )}
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {coupon.desc}
-                  </Typography>
-                    <Typography variant="h6" color="success.main" fontWeight="bold">
-                      💰 Save ₹{Math.abs(coupon.value).toLocaleString()}
-                  </Typography>
-                </Box>
-                <Button
-                  variant={coupon.applied ? "contained" : "outlined"}
-                  color={coupon.applied ? "success" : "primary"}
-                    size="large"
-                  disabled={coupon.applied}
-                    sx={{
-                      minWidth: 120,
-                      borderRadius: 2,
-                      fontWeight: 'bold',
-                      '&:hover': {
-                        transform: coupon.applied ? 'none' : 'scale(1.05)',
-                      },
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {coupon.applied ? "✓ Applied" : "Apply Now"}
-                </Button>
-              </Box>
-            </Paper>
-            </Fade>
-          ))}
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-
   const renderPriceBox = () => (
     <Card
-      elevation={8}
+      elevation={6}
       sx={{
-        position: 'sticky',
-        top: 120,
-        border: `3px solid ${theme.palette.primary.main}`,
-        borderRadius: 3,
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: '100%',
+        maxHeight: { xs: 'auto', sm: 'auto' },
+        overflowY: 'auto',
+        border: `2px solid ${theme.palette.primary.main}`,
+        borderRadius: 0,
         overflow: 'hidden',
-        background: `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.primary.light}10)`,
+        background: theme.palette.background.paper,
+        zIndex: 1000,
+        boxShadow: theme.shadows[12],
       }}
     >
       <Box
         sx={{
           background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-          p: 3,
+          p: { xs: 0.75, sm: 1 },
           color: 'white',
         }}
       >
-        <Typography variant="h6" fontWeight="bold">
+        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
           💳 Price Summary
         </Typography>
-      </Box>
-
-      <CardContent sx={{ p: 3 }}>
-        {/* Original Price */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="body2">Original Price</Typography>
-          <Typography
-            variant="h6"
-            sx={{ textDecoration: 'line-through' }}
-            color="text.secondary"
-          >
-            ₹{packageData.price.original.toLocaleString()}
-          </Typography>
         </Box>
 
-        {/* Discounted Price */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6" fontWeight="bold" color="primary.main">
-            Final Price
-          </Typography>
-          <Typography variant="h4" fontWeight="bold" color="primary.main">
+      <CardContent sx={{ p: { xs: 1, sm: 1.5 } }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" gap={{ xs: 1, sm: 2 }}>
+          {/* Left Side - Price Details */}
+          <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} flexWrap="wrap" flex={1}>
+            {/* Original Price */}
+            <Box 
+              sx={{
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                p: { xs: 0.5, sm: 0.75 },
+                bgcolor: 'grey.100',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'grey.300',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                  bgcolor: 'grey.200',
+                  transform: 'scale(1.02)',
+                }
+              }}
+            >
+              <Typography variant="caption" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' }, color: 'text.secondary' }}>
+                Original:
+                  </Typography>
+              <Typography
+                variant="caption"
+                    sx={{
+                  textDecoration: 'line-through', 
+                  fontSize: { xs: '0.55rem', sm: '0.6rem' },
+                      fontWeight: 'bold',
+                  color: 'text.secondary'
+                    }}
+                  >
+                ₹{packageData.price.original.toLocaleString()}
+              </Typography>
+              </Box>
+            
+            {/* Final Price */}
+      <Box
+        sx={{
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                p: { xs: 0.5, sm: 0.75 },
+                bgcolor: 'primary.50',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'primary.light',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  bgcolor: 'primary.100',
+                  transform: 'scale(1.02)',
+                }
+              }}
+            >
+              <Typography variant="caption" fontWeight="bold" color="primary.main" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' } }}>
+                Final:
+        </Typography>
+              <Typography variant="body2" fontWeight="bold" color="primary.main" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
             ₹{packageData.price.discounted.toLocaleString()}
           </Typography>
         </Box>
-
-        <Typography variant="body2" color="text.secondary" gutterBottom textAlign="center">
-          Per {packageData.price.per} • {packageData.price.notes}
-        </Typography>
 
         {/* Savings */}
         <Box
           sx={{
             bgcolor: 'success.main',
             color: 'white',
-            p: 2,
-            borderRadius: 2,
-            mb: 3,
+                px: { xs: 0.75, sm: 1 },
+                py: { xs: 0.5, sm: 0.75 },
+                borderRadius: 1,
             textAlign: 'center',
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold">
-            🎉 You Save: ₹{(packageData.price.original - packageData.price.discounted).toLocaleString()}
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  bgcolor: 'success.dark',
+                  transform: 'scale(1.05)',
+                  boxShadow: theme.shadows[4],
+                }
+              }}
+            >
+              <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' } }}>
+                🎉 Save ₹{(packageData.price.original - packageData.price.discounted).toLocaleString()}
           </Typography>
         </Box>
 
@@ -1536,82 +1601,65 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         <Box
           sx={{
             bgcolor: 'info.50',
-            p: 2,
-            borderRadius: 2,
-            mb: 3,
+                px: { xs: 0.75, sm: 1 },
+                py: { xs: 0.5, sm: 0.75 },
+                borderRadius: 1,
             border: `1px solid ${theme.palette.info.light}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  bgcolor: 'info.100',
+                  transform: 'scale(1.02)',
+                }
           }}
         >
-          <Typography variant="body2" color="info.main" fontWeight="bold" textAlign="center">
-            💳 EMI starting from {packageData.price.emi}
+              <Typography variant="caption" color="info.main" fontWeight="bold" sx={{ fontSize: { xs: '0.5rem', sm: '0.55rem' } }}>
+                💳 EMI from {packageData.price.emi}
           </Typography>
+            </Box>
         </Box>
 
-        {/* CTA Buttons */}
-        <Stack spacing={2}>
+          {/* Right Side - Payment Button */}
+          <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1 }}>
+            {/* Trust Badges */}
+           
+
+            {/* Proceed to Payment Button */}
         <Button
           variant="contained"
-          fullWidth
-          size="large"
+              size="small"
+              onClick={() => setIsPaymentModalOpen(true)}
           sx={{
-              py: 2,
-              fontSize: '1.2rem',
+                py: { xs: 0.75, sm: 1 },
+                px: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
             fontWeight: 'bold',
-              borderRadius: 2,
+                borderRadius: { xs: 0.5, sm: 0.75 },
               background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                boxShadow: theme.shadows[4],
               '&:hover': {
-                transform: 'scale(1.02)',
-                boxShadow: theme.shadows[12],
+                  transform: 'scale(1.05)',
+                  boxShadow: theme.shadows[8],
+                  background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
               },
               transition: 'all 0.3s ease',
+                minWidth: { xs: 'auto', sm: '140px' },
             }}
           >
-            🚀 Proceed to Payment
+              Proceed to Payment
         </Button>
-
-        <Button
-          variant="outlined"
-          fullWidth
-            size="large"
-            startIcon={<FavoriteIcon />}
-            sx={{ 
-              py: 1.5,
-              borderRadius: 2,
-              borderWidth: 2,
-              fontWeight: 'bold',
-              '&:hover': {
-                borderWidth: 2,
-                transform: 'scale(1.02)',
-              },
-              transition: 'all 0.3s ease',
-            }}
-        >
-          Add to Wishlist
-        </Button>
-        </Stack>
-
-        <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
-          <Stack direction="row" spacing={3} justifyContent="center">
-            <Box textAlign="center">
-              <SecurityIcon color="success" fontSize="small" />
-              <Typography variant="caption" display="block" color="text.secondary">
-                Secure
-        </Typography>
             </Box>
-            <Box textAlign="center">
-              <PhoneIcon color="primary" fontSize="small" />
-              <Typography variant="caption" display="block" color="text.secondary">
-                24/7 Support
+            </Box>
+        
+        {/* Additional Info */}
+        <Typography variant="caption" color="text.secondary" sx={{ 
+          fontSize: { xs: '0.5rem', sm: '0.55rem' },
+          display: 'block',
+          mt: { xs: 0.5, sm: 0.75 },
+          textAlign: 'center',
+          opacity: 0.8,
+        }}>
+          Per {packageData.price.per} • {packageData.price.notes}
               </Typography>
-            </Box>
-            <Box textAlign="center">
-              <CheckIcon color="success" fontSize="small" />
-              <Typography variant="caption" display="block" color="text.secondary">
-                Easy Cancel
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
       </CardContent>
     </Card>
   );
@@ -1656,6 +1704,323 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     </Fade>
   );
 
+  const renderPaymentModal = () => (
+    <Dialog
+      open={isPaymentModalOpen}
+      onClose={handleClosePaymentModal}
+      maxWidth="md"
+      fullWidth
+      TransitionComponent={Slide}
+      TransitionProps={{ direction: "up" }}
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: { xs: 1, sm: 2 },
+          background: `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.grey[50]})`,
+        },
+      }}
+    >
+      <Box
+        sx={{
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+          p: { xs: 2, sm: 3 },
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={2}>
+          <PaymentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+              Secure Payment
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+              Complete your booking with confidence
+            </Typography>
+          </Box>
+        </Box>
+        <IconButton
+          onClick={handleClosePaymentModal}
+          sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={3}>
+          {/* Payment Form */}
+          <Grid item xs={12} md={8}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: { xs: 1, sm: 2 } }}>
+              <Box display="flex" alignItems="center" gap={2} mb={3}>
+                <CreditCardIcon color="primary" sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                  Card Details
+                </Typography>
+              </Box>
+
+              <Grid container spacing={2}>
+                {/* Card Number */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Card Number"
+                    placeholder="1234 5678 9012 3456"
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                      startAdornment: <CreditCardIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+
+                {/* Cardholder Name */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Cardholder Name"
+                    placeholder="John Doe"
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                      startAdornment: <AccountIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                  />
+                </Grid>
+
+                {/* Expiry Date and CVV */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Expiry Date"
+                    placeholder="MM/YY"
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                      startAdornment: <CalendarIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="CVV"
+                    placeholder="123"
+                    variant="outlined"
+                    size="small"
+                    type="password"
+                    InputProps={{
+                      startAdornment: <LockIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                  />
+                </Grid>
+
+                {/* Billing Address */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Billing Address
+                    </Typography>
+                  </Divider>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Street Address"
+                    placeholder="123 Main Street"
+                    variant="outlined"
+                    size="small"
+                    InputProps={{
+                      startAdornment: <HomeIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    placeholder="New York"
+                    variant="outlined"
+                    size="small"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="State/Province"
+                    placeholder="NY"
+                    variant="outlined"
+                    size="small"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="ZIP/Postal Code"
+                    placeholder="10001"
+                    variant="outlined"
+                    size="small"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Country</InputLabel>
+                    <Select label="Country" defaultValue="US">
+                      <MenuItem value="US">United States</MenuItem>
+                      <MenuItem value="CA">Canada</MenuItem>
+                      <MenuItem value="UK">United Kingdom</MenuItem>
+                      <MenuItem value="IN">India</MenuItem>
+                      <MenuItem value="AU">Australia</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* Terms and Conditions */}
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={<Checkbox color="primary" />}
+                    label={
+                      <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        I agree to the{' '}
+                        <Typography component="span" color="primary" sx={{ textDecoration: 'underline', cursor: 'pointer' }}>
+                          Terms & Conditions
+                        </Typography>{' '}
+                        and{' '}
+                        <Typography component="span" color="primary" sx={{ textDecoration: 'underline', cursor: 'pointer' }}>
+                          Privacy Policy
+                        </Typography>
+                      </Typography>
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Order Summary */}
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: { xs: 1, sm: 2 }, height: 'fit-content' }}>
+              <Box display="flex" alignItems="center" gap={2} mb={3}>
+                <VerifiedUserIcon color="success" sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                  Order Summary
+                </Typography>
+              </Box>
+
+              <Stack spacing={2}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="text.secondary">Package:</Typography>
+                  <Typography variant="body2" fontWeight="bold">{packageData.title}</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="text.secondary">Duration:</Typography>
+                  <Typography variant="body2">{packageData.duration}</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="text.secondary">Original Price:</Typography>
+                  <Typography variant="body2" sx={{ textDecoration: 'line-through' }}>
+                    ₹{packageData.price.original.toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="text.secondary">Discount:</Typography>
+                  <Typography variant="body2" color="success.main" fontWeight="bold">
+                    -₹{(packageData.price.original - packageData.price.discounted).toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h6" fontWeight="bold">Total Amount:</Typography>
+                  <Typography variant="h6" fontWeight="bold" color="primary.main">
+                    ₹{packageData.price.discounted.toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    bgcolor: 'success.50',
+                    p: 2,
+                    borderRadius: 1,
+                    border: `1px solid ${theme.palette.success.light}`,
+                  }}
+                >
+                  <Typography variant="body2" color="success.main" fontWeight="bold" textAlign="center">
+                    🎉 You Save ₹{(packageData.price.original - packageData.price.discounted).toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={handlePaymentSuccess}
+                  sx={{
+                    py: 1.5,
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    fontWeight: 'bold',
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      boxShadow: theme.shadows[8],
+                    },
+                    transition: 'all 0.3s ease',
+                    mb: 1,
+                  }}
+                >
+                  💳 Pay ₹{packageData.price.discounted.toLocaleString()}
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  onClick={handlePaymentError}
+                  sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    color: 'error.main',
+                    borderColor: 'error.main',
+                    '&:hover': {
+                      borderColor: 'error.dark',
+                      bgcolor: 'error.50',
+                    },
+                  }}
+                >
+                  Test Error
+                </Button>
+
+                <Box display="flex" alignItems="center" gap={1} justifyContent="center">
+                  <SecurityIcon color="success" fontSize="small" />
+                  <Typography variant="caption" color="text.secondary">
+                    Secure payment powered by Stripe
+                  </Typography>
+                </Box>
+              </Stack>
+            </Paper>
+          </Grid>
+        </Grid>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <>
       {isLoading && renderLoadingScreen()}
@@ -1675,40 +2040,86 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         },
       }}
     >
-      {renderTopBanner()}
-      
-      <DialogContent
-          ref={scrollRef}
-        sx={{
-          p: 0,
-          height: 'calc(100vh - 120px)',
-          overflow: 'auto',
-            scrollBehavior: 'smooth',
-        }}
-      >
-          <Box sx={{ px: isMobile ? 2 : 4, py: 3 }}>
-          {renderImageGallery()}
-          {renderHighlightsBadges()}
+      {packageData ? (
+        <>
+          {renderTopBanner()}
           
-            <Grid container spacing={4}>
-            <Grid item xs={12} lg={8}>
-              {renderTabSection()}
-            </Grid>
-            <Grid item xs={12} lg={4}>
-                <Stack spacing={3}>
-                {renderCouponSection()}
-                {renderPriceBox()}
-              </Stack>
-            </Grid>
-          </Grid>
-        </Box>
-      </DialogContent>
+          {renderPriceBox()}
+          
+         
+          
+          <DialogContent
+              ref={scrollRef}
+            sx={{
+              p: 0,
+              height: 'calc(100vh - 100px)',
+              overflow: 'auto',
+                scrollBehavior: 'smooth',
+            }}
+          >
+              <Box sx={{ px: isMobile ? 1.5 : 3, py: 2 }}>
+              {renderImageGallery()}
+              {renderHighlightsBadges()}
+              
+                <Grid container spacing={3}>
+                <Grid item xs={12} lg={12}>
+                  {renderTabSection()}
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+        </>
+      ) : (
+        <DialogContent
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+          }}
+        >
+          <Box textAlign="center">
+            <CircularProgress size={60} sx={{ mb: 2 }} />
+            <Typography variant="h6" color="text.secondary">
+              Loading package details...
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Please wait while we prepare the package information.
+            </Typography>
+          </Box>
+        </DialogContent>
+      )}
     </Dialog>
 
-      {renderImageFullscreen()}
-      {renderFloatingActions()}
+      {packageData && renderImageFullscreen()}
+      {packageData && renderFloatingActions()}
+      {packageData && renderPaymentModal()}
+      
+      {/* Success Notification */}
+      <Snackbar
+        open={paymentSuccess}
+        autoHideDuration={6000}
+        onClose={handleCloseSuccessSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSuccessSnackbar} severity="success" sx={{ width: '100%' }}>
+          Payment successful! Your booking has been confirmed.
+        </Alert>
+      </Snackbar>
+
+      {/* Error Notification */}
+      <Snackbar
+        open={paymentError}
+        autoHideDuration={6000}
+        onClose={handleCloseErrorSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseErrorSnackbar} severity="error" sx={{ width: '100%' }}>
+          Payment failed. Please try again or contact support.
+        </Alert>
+      </Snackbar>
     </>
   );
 };
 
-export default PackageDetailsModal; 
+export default memo(PackageDetailsModal); 

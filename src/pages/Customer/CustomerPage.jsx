@@ -62,6 +62,7 @@ const CustomerPage = ({
   const [isUploading, setIsUploading] = useState(false);
   const [sharedPackages, setSharedPackages] = useState([]);
   const [showPackagesDialog, setShowPackagesDialog] = useState(false);
+  const [packageDetailsToOpen, setPackageDetailsToOpen] = useState(null);
 
   // Chunked package sharing states
   const [showChunkedProgressDialog, setShowChunkedProgressDialog] =
@@ -265,6 +266,33 @@ const CustomerPage = ({
         );
         console.log("📦 CUSTOMER: Chunk event:", event);
         handleChunk(event);
+      },
+      "signal:open-package-details": (event) => {
+        console.log("🎭 Customer received open-package-details signal:", event);
+        try {
+          const data = JSON.parse(event.data);
+          if (data.action === "open-modal" && data.packageData) {
+            console.log("🎭 Agent requested to open package details modal");
+            // This will be handled by the CustomerCatalogView component
+            // We need to pass this data to the CustomerCatalogView
+            setPackageDetailsToOpen(data.packageData);
+          }
+        } catch (err) {
+          console.error("🎭 Customer failed to parse open-package-details signal:", err);
+        }
+      },
+      "signal:close-package-details": (event) => {
+        console.log("🎭 Customer received close-package-details signal:", event);
+        try {
+          const data = JSON.parse(event.data);
+          if (data.action === "close-modal") {
+            console.log("🎭 Agent requested to close package details modal");
+            // This will be handled by the CustomerCatalogView component
+            setPackageDetailsToOpen(null);
+          }
+        } catch (err) {
+          console.error("🎭 Customer failed to parse close-package-details signal:", err);
+        }
       },
     }),
     []
@@ -880,6 +908,8 @@ const CustomerPage = ({
           onClose={() => setShowPackagesDialog(false)}
           sharedPackages={sharedPackages}
           userType="customer"
+          packageDetailsToOpen={packageDetailsToOpen}
+          onPackageDetailsOpened={() => setPackageDetailsToOpen(null)}
         />
 
         {/* Simple test dialog to verify MUI Dialog works */}

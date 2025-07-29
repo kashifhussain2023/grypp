@@ -26,6 +26,8 @@ const PackageShareDialog = ({
   onClose,
   sharedPackages,
   userType = "customer",
+  packageDetailsToOpen = null,
+  onPackageDetailsOpened = () => {}
 }) => {
   // Use the comparison hook
   const {
@@ -154,62 +156,59 @@ const PackageShareDialog = ({
       <Dialog
         open={open}
         onClose={onClose}
-        maxWidth="lg"
+        maxWidth="xl"
         fullWidth
-        PaperProps={{
-          sx: {
-            height: "90vh",
-            maxHeight: "90vh",
-            borderRadius: 2,
+        sx={{
+          "& .MuiDialog-paper": {
+            minHeight: "90vh",
+            maxHeight: "95vh",
           },
         }}
       >
         <DialogTitle
           sx={{
+            bgcolor: "primary.main",
+            color: "white",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid",
-            borderColor: "divider",
-            pb: 2,
+            gap: 2,
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <ShareIcon color="primary" />
-            <Typography variant="h6" component="span">
-              Shared Packages
-            </Typography>
-            {sharedPackages.length > 0 && (
+          <ShareIcon />
+          Shared Tour Packages ({sharedPackages.length})
+          {compareList.length > 0 && (
+            <Box sx={{ display: "flex", gap: 1, ml: "auto" }}>
               <Chip
-                label={sharedPackages.length}
+                label={`${compareList.length} to compare`}
                 size="small"
-                color="primary"
-                variant="outlined"
+                sx={{
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  color: "white",
+                }}
               />
-            )}
-          </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            {sharedPackages.length > 1 && (
-              <Tooltip title="Compare Packages">
+              <Tooltip title="Open Comparison">
                 <IconButton
                   onClick={handleOpenComparison}
-                  color="primary"
-                  size="small"
+                  sx={{
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
                 >
                   <CompareIcon />
                 </IconButton>
               </Tooltip>
-            )}
-            <IconButton onClick={onClose} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
+            </Box>
+          )}
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden" }}>
           <CustomerCatalogView
             sharedPackages={sharedPackages}
-            sessionRef={null} // Customer doesn't need session ref for scroll sync
             onInterested={() => {}} // Customer doesn't need interested handler
             // Comparison props
             compareList={compareList}
@@ -218,6 +217,8 @@ const PackageShareDialog = ({
             isInComparison={isInComparison}
             isComparisonFull={isComparisonFull}
             onComparePackages={handleComparePackages}
+            packageDetailsToOpen={packageDetailsToOpen}
+            onPackageDetailsOpened={onPackageDetailsOpened}
           />
         </DialogContent>
 

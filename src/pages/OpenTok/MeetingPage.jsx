@@ -87,6 +87,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [isSharingPackages, setIsSharingPackages] = useState(false);
   const [sharingProgress, setSharingProgress] = useState(0);
   const [sharingStatus, setSharingStatus] = useState('');
+  const [packageDetailsToOpen, setPackageDetailsToOpen] = useState(null);
 
   const fileInputRef = useRef(null);
   const sessionRef = useRef(null);
@@ -269,6 +270,33 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
               } catch (err) {
                 console.error("🎭 Agent failed to parse customer-request-packages signal:", err);
               }
+            },
+            "signal:open-package-details": (event) => {
+              console.log("🎭 Agent received open-package-details signal:", event);
+              try {
+                const data = JSON.parse(event.data);
+                if (data.action === "open-modal" && data.packageData) {
+                  console.log("🎭 Customer requested to open package details modal");
+                  // This will be handled by the AgentCatalog component
+                  // We need to pass this data to the AgentCatalog
+                  setPackageDetailsToOpen(data.packageData);
+                }
+              } catch (err) {
+                console.error("🎭 Agent failed to parse open-package-details signal:", err);
+              }
+            },
+            "signal:close-package-details": (event) => {
+              console.log("🎭 Agent received close-package-details signal:", event);
+              try {
+                const data = JSON.parse(event.data);
+                if (data.action === "close-modal") {
+                  console.log("🎭 Customer requested to close package details modal");
+                  // This will be handled by the AgentCatalog component
+                  setPackageDetailsToOpen(null);
+                }
+              } catch (err) {
+                console.error("🎭 Agent failed to parse close-package-details signal:", err);
+              }
             }
              
           });
@@ -434,6 +462,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       openTokSessionSingleton.unregisterSignalHandler("signal:file-for-signing");
       openTokSessionSingleton.unregisterSignalHandler("signal:shared-comparison-open");
       openTokSessionSingleton.unregisterSignalHandler("signal:customer-request-packages");
+      openTokSessionSingleton.unregisterSignalHandler("signal:open-package-details");
+      openTokSessionSingleton.unregisterSignalHandler("signal:close-package-details");
       
       // Cleanup scroll sync manager
       scrollSyncManager.cleanup();
@@ -907,11 +937,15 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
   // Packages functions
   const handlePackageSelect = (packageId) => {
-    setSelectedPackages((prev) =>
-      prev.includes(packageId)
+    console.log("📦 handlePackageSelect called with packageId:", packageId);
+    console.log("📦 Current selectedPackages before update:", selectedPackages);
+    setSelectedPackages((prev) => {
+      const newSelection = prev.includes(packageId)
         ? prev.filter((id) => id !== packageId)
-        : [...prev, packageId]
-    );
+        : [...prev, packageId];
+      console.log("📦 New selectedPackages after update:", newSelection);
+      return newSelection;
+    });
   };
 
   const clearSelectedPackages = () => {
@@ -1526,7 +1560,6 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         </DialogTitle>
 
         <AgentCatalog
-          sessionRef={sessionRef}
           selectedPackages={selectedPackages}
           onPackageSelect={handlePackageSelect}
           clearSelectedPackages={clearSelectedPackages}
@@ -1534,6 +1567,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           isSharingPackages={isSharingPackages}
           sharingProgress={sharingProgress}
           sharingStatus={sharingStatus}
+          packageDetailsToOpen={packageDetailsToOpen}
+          onPackageDetailsOpened={() => setPackageDetailsToOpen(null)}
         />
 
         <DialogActions
