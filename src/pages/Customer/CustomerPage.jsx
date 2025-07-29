@@ -99,23 +99,29 @@ const CustomerPage = ({
         setFileUploadRequested(true);
       },
       "signal:file-share": (event) => {
+        console.log("📄 Customer received file-share signal:", event);
         try {
           const parsed = JSON.parse(event.data);
+          console.log("📄 Customer parsed file-share data:", parsed);
           setFilePreviewUrl(parsed.url);
           setFilePreviewName(parsed.name);
           setShowUploadedDialog(true);
+          console.log("📄 Customer set file preview dialog to open from file-share");
         } catch (err) {
-          console.error("Failed to parse file signal:", err);
+          console.error("📄 Customer failed to parse file-share signal:", err);
         }
       },
       "signal:file-preview": (event) => {
+        console.log("📄 Customer received file-preview signal:", event);
         try {
           const parsed = JSON.parse(event.data);
+          console.log("📄 Customer parsed file data:", parsed);
           setFilePreviewUrl(parsed.url);
           setFilePreviewName(parsed.name);
           setShowUploadedDialog(true);
+          console.log("📄 Customer set file preview dialog to open");
         } catch (err) {
-          console.error("Failed to parse file signal:", err);
+          console.error("📄 Customer failed to parse file signal:", err);
         }
       },
       "signal:file-preview-closed": () => {
@@ -292,6 +298,14 @@ const CustomerPage = ({
     if (openTokSessionSingleton.isSessionAvailable() && signalHandlers) {
       console.log('🔌 Re-registering signal handlers after singleton initialization:', Object.keys(signalHandlers));
       openTokSessionSingleton.registerSignalHandlers(signalHandlers);
+      
+      // Add a general signal listener for debugging
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        session.on('signal', (event) => {
+          console.log("🔌 Customer received general signal:", event.type, event.data);
+        });
+      }
     }
   }, [signalHandlers, sessionRef]);
 
@@ -534,6 +548,7 @@ const CustomerPage = ({
       };
 
       const session = openTokSessionSingleton.getSession();
+      console.log("session",session);
       if (session) {
         session.signal(
           {

@@ -147,6 +147,90 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           }
           console.log("✅ Agent connected to session");
 
+          // Register signal handlers for file preview functionality
+          openTokSessionSingleton.registerSignalHandlers({
+            "signal:file-share": (event) => {
+              console.log("📄 Agent received file-share signal from customer:", event);
+              try {
+                const parsed = JSON.parse(event.data);
+                console.log("📄 Agent parsed file-share data:", parsed);
+                setCustomerFileUrl(parsed.url);
+                setCustomerFileName(parsed.name);
+                setCustomerFileDialogOpen(true);
+                console.log("📄 Agent set customer file dialog to open");
+              } catch (err) {
+                console.error("📄 Agent failed to parse file-share signal:", err);
+              }
+            },
+            "signal:file-preview": (event) => {
+              console.log("📄 Agent received file-preview signal from customer:", event);
+              try {
+                const parsed = JSON.parse(event.data);
+                console.log("📄 Agent parsed file-preview data:", parsed);
+                setCustomerFileUrl(parsed.url);
+                setCustomerFileName(parsed.name);
+                setCustomerFileDialogOpen(true);
+                console.log("📄 Agent set customer file dialog to open from file-preview");
+              } catch (err) {
+                console.error("📄 Agent failed to parse file-preview signal:", err);
+              }
+            },
+            "signal:file-preview-closed": () => {
+              console.log("📄 Agent received file-preview-closed signal from customer");
+              setCustomerFileDialogOpen(false);
+              setCustomerFileUrl(null);
+              setCustomerFileName(null);
+            },
+            "signal:file-for-signing": (event) => {
+              console.log("📄 Agent received file-for-signing signal from customer:", event);
+              try {
+                const parsed = JSON.parse(event.data);
+                console.log("📄 Agent parsed file-for-signing data:", parsed);
+                setSignedDocUrl(parsed.url);
+                setSignedDocName(parsed.name);
+                setSignedDocDialogOpen(true);
+                setWaitingForSignedDoc(false);
+                console.log("📄 Agent set signed doc dialog to open");
+              } catch (err) {
+                console.error("📄 Agent failed to parse file-for-signing signal:", err);
+              }
+            },
+            "signal:signed-document":(event)=>{
+
+              try {
+                const data = JSON.parse(event.data);
+                if (data.url) {
+                  setSignedDocUrl(data.url);
+                  setSignedDocName(data.name || "Signed Document");
+                  setSignedDocDialogOpen(true);
+                  setWaitingForSignedDoc(false);
+                }
+              } catch (err) {
+                console.log("error",err);
+            }
+
+            },
+            "signal:cobrowsing-url":(event)=>{
+
+              try {
+                const data = JSON.parse(event.data);
+                const url = data.sessionUrl;
+                setCoBrowseUrl(url);
+                setOpenCoBrowseDialog(true);
+                setIsCobrowsing(true);
+              } catch (err) {
+                console.error("Failed to parse cobrowsing-url signal:", err);
+              }
+
+            }
+             
+          });
+
+          // Add a general signal listener for debugging
+          session.on('signal', (event) => {
+            console.log("🔌 Agent received general signal:", event.type, event.data);
+          });
+
           try {
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videoInput = devices.some((d) => d.kind === "videoinput");
@@ -296,6 +380,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       if (sessionRef.current) {
         sessionRef.current.disconnect();
       }
+      // Cleanup signal handlers
+      openTokSessionSingleton.unregisterSignalHandler("signal:file-share");
+      openTokSessionSingleton.unregisterSignalHandler("signal:file-preview");
+      openTokSessionSingleton.unregisterSignalHandler("signal:file-preview-closed");
+      openTokSessionSingleton.unregisterSignalHandler("signal:file-for-signing");
     };
   }, [sessionId]);
 
@@ -886,6 +975,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const uploadFileAndSignal = async (file, type = "preview") => {
     if (!file) return;
 
+    console.log("📄 Agent uploading file:", file.name, "type:", type);
+
     const extension = file.name?.split(".").pop().toLowerCase();
     const isImage = ["jpg", "jpeg", "png"].includes(extension);
     const isPdf = extension === "pdf";
@@ -900,12 +991,16 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
     setIsUploading(true); // ⬅️ START LOADER
     try {
+      console.log("📄 Agent uploading file to server...");
       const res = await axios.post(`${backendUrl}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       const uploadedFileUrl = res.data.url;
       const signalType = type === "sign" ? "file-for-signing" : "file-preview";
+
+      console.log("📄 File uploaded successfully, URL:", uploadedFileUrl);
+      console.log("📄 Sending signal to customer, type:", signalType);
 
       const session = openTokSessionSingleton.getSession();
       if (session) {
@@ -919,8 +1014,9 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           },
           (err) => {
             if (err) {
-              console.error("Signal send error:", err);
+              console.error("📄 Signal send error:", err);
             } else {
+              console.log("📄 Signal sent successfully to customer");
               if (type === "sign") {
                 setWaitingForSignedDoc(true);
               } else {
@@ -931,9 +1027,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             }
           }
         );
+      } else {
+        console.error("📄 No session available to send signal");
       }
     } catch (err) {
-      console.error("File upload failed:", err);
+      console.error("📄 File upload failed:", err);
     } finally {
       setIsUploading(false); // ⬅️ STOP LOADER
     }
