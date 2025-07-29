@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -48,6 +48,7 @@ import {
   Share as ShareIcon,
 } from '@mui/icons-material';
 import { useCoBrowseScrollSync } from '../../hooks/useCoBrowseScrollSync';
+import { openTokSessionSingleton } from '../../services/OpenTokSessionManager';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -61,6 +62,7 @@ const TourComparisonModal = ({
   onClearComparison,
   getBestValue,
   userType = 'agent',
+  sharedPackages = [],
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -68,6 +70,157 @@ const TourComparisonModal = ({
 
   // Use scroll sync hook for comparison modal
   const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
+
+  // Ref to track if we've already sent the signal for this modal opening
+  const hasSentSignalRef = useRef(false);
+
+  // Effect to handle modal opening and send signal to other party
+  useEffect(() => {
+    if (open && !hasSentSignalRef.current) {
+      console.log(`🎭 [${userType}] Comparison modal opened with ${compareList.length} packages`);
+      
+      // Send signal to other party to open their comparison modal with current data
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        // Prepare data to send - include both compareList and any shared packages
+        const signalData = {
+          action: `${userType}-opened-comparison`,
+          timestamp: new Date().toISOString(),
+        };
+
+        // If we have comparison data, send it
+        if (compareList.length > 0) {
+          signalData.compareList = compareList;
+          console.log(`🎭 [${userType}] Sending comparison data with ${compareList.length} packages`);
+        }
+
+        // For agent, also include shared packages if available (this will be passed as a prop)
+        if (userType === 'agent' && sharedPackages && sharedPackages.length > 0) {
+          signalData.sharedPackages = sharedPackages;
+          console.log(`🎭 [${userType}] Also sending shared packages data with ${sharedPackages.length} packages`);
+        }
+
+        // For customer, also include shared packages if available and no comparison list
+        if (userType === 'customer' && sharedPackages && sharedPackages.length > 0 && compareList.length === 0) {
+          signalData.sharedPackages = sharedPackages;
+          console.log(`🎭 [${userType}] Also sending shared packages data with ${sharedPackages.length} packages`);
+        }
+
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "shared-comparison-open",
+            data: JSON.stringify(signalData),
+          },
+          (err) => {
+            if (err) {
+              console.error(`🎭 [${userType}] Failed to send comparison open signal:`, err);
+            } else {
+              console.log(`🎭 [${userType}] Successfully sent comparison open signal`);
+            }
+          }
+        );
+      }
+      
+      // Mark that we've sent the signal for this modal opening
+      hasSentSignalRef.current = true;
+    } else if (!open) {
+      // Reset the flag when modal closes
+      hasSentSignalRef.current = false;
+    }
+  }, [open, userType]); // Keep minimal dependencies to prevent continuous signals
+
+  // Effect to handle bidirectional actions (clear comparison and close modal)
+  useEffect(() => {
+    const handleComparisonAction = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Ignore signals from same user type
+        if (data.userType === userType) {
+          return;
+        }
+
+        console.log(`🎭 [${userType}] Received comparison action signal:`, data.action);
+
+        if (data.action === 'clear-comparison') {
+          console.log(`🎭 [${userType}] Received clear comparison signal from ${data.userType}`);
+          // Call the clear comparison function
+          onClearComparison();
+        } else if (data.action === 'close-comparison') {
+          console.log(`🎭 [${userType}] Received close comparison signal from ${data.userType}`);
+          // Call the close modal function
+          onClose();
+        }
+      } catch (err) {
+        console.error(`🎭 [${userType}] Failed to parse comparison action signal:`, err);
+      }
+    };
+
+    // Register signal handler for comparison actions
+    openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+
+    return () => {
+      openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
+    };
+  }, [userType, onClearComparison, onClose]);
+
+  // Function to send clear comparison signal to other party
+  const handleClearComparison = () => {
+    console.log(`🎭 [${userType}] Sending clear comparison signal`);
+    
+    const session = openTokSessionSingleton.getSession();
+    if (session) {
+      openTokSessionSingleton.sendSignal(
+        {
+          type: "comparison-action",
+          data: JSON.stringify({
+            action: 'clear-comparison',
+            userType: userType,
+            timestamp: new Date().toISOString(),
+          }),
+        },
+        (err) => {
+          if (err) {
+            console.error(`🎭 [${userType}] Failed to send clear comparison signal:`, err);
+          } else {
+            console.log(`🎭 [${userType}] Successfully sent clear comparison signal`);
+          }
+        }
+      );
+    }
+    
+    // Call the original clear comparison function
+    onClearComparison();
+  };
+
+  // Function to send close comparison signal to other party
+  const handleCloseComparison = () => {
+    console.log(`🎭 [${userType}] Sending close comparison signal`);
+    
+    const session = openTokSessionSingleton.getSession();
+    if (session) {
+      openTokSessionSingleton.sendSignal(
+        {
+          type: "comparison-action",
+          data: JSON.stringify({
+            action: 'close-comparison',
+            userType: userType,
+            timestamp: new Date().toISOString(),
+          }),
+        },
+        (err) => {
+          if (err) {
+            console.error(`🎭 [${userType}] Failed to send close comparison signal:`, err);
+          } else {
+            console.log(`🎭 [${userType}] Successfully sent close comparison signal`);
+          }
+        }
+      );
+    }
+    
+    // Call the original close function
+    onClose();
+  };
 
   const formatHighlights = (description) => {
     const sentences = description.split('.').filter(s => s.trim().length > 0);
@@ -186,17 +339,6 @@ const TourComparisonModal = ({
 
   const bestPricedPackage = getBestPricedPackage();
 
-  // Helper function to calculate discount percentage
-  const getDiscountPercentage = (pkg) => {
-    if (!bestPricedPackage || pkg.id !== bestPricedPackage.id) return 0;
-    const maxPrice = Math.max(...compareList.map(p => {
-      const price = p.price?.discounted || p.price?.original || p.price;
-      return price;
-    }));
-    const pkgPrice = pkg.price?.discounted || pkg.price?.original || pkg.price;
-    return Math.round(((maxPrice - pkgPrice) / maxPrice) * 100);
-  };
-
   // Helper function to calculate package discount percentage
   const getPackageDiscountPercentage = (pkg) => {
     if (!hasDiscount(pkg)) return 0;
@@ -223,7 +365,6 @@ const TourComparisonModal = ({
   const renderCellContent = (section, pkg) => {
     const isBestValue = bestValuePackage?.id === pkg.id;
     const isBestPrice = bestPricedPackage?.id === pkg.id;
-    const discountPercentage = getDiscountPercentage(pkg);
 
     switch (section.type) {
       case 'image':
@@ -1328,7 +1469,7 @@ const TourComparisonModal = ({
                              },
                            }}
                          >
-                          {renderCellContent(section, pkg, pkgIndex)}
+                          {renderCellContent(section, pkg)}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -1439,7 +1580,7 @@ const TourComparisonModal = ({
         }}
       >
         <Button
-          onClick={onClearComparison}
+          onClick={handleClearComparison}
           color="error"
           variant="outlined"
           disabled={compareList.length === 0}
@@ -1455,7 +1596,7 @@ const TourComparisonModal = ({
           Clear All ({compareList.length})
         </Button>
         <Button 
-          onClick={onClose} 
+          onClick={handleCloseComparison} 
           variant="contained" 
           size="large"
           fullWidth={isMobile}

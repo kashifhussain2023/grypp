@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 
 /**
@@ -9,33 +9,50 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 export const useComparePackages = (userType = 'agent') => {
     const [compareList, setCompareList] = useState([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    
+    // Refs to prevent signal loops and debounce rapid changes
+    const isUpdatingFromSignalRef = useRef(false);
+    const syncTimeoutRef = useRef(null);
 
-    // Send comparison update to other party
+    // Send comparison update to other party with debouncing
     const syncComparison = useCallback((newCompareList) => {
-        const session = openTokSessionSingleton.getSession();
-        if (!session) return;
+        // Don't send signals if we're updating from an incoming signal
+        if (isUpdatingFromSignalRef.current) {
+            return;
+        }
 
-        const syncData = {
-            type: 'package-comparison-update',
-            userType,
-            compareList: newCompareList,
-            timestamp: Date.now()
-        };
+        // Clear any pending sync timeout
+        if (syncTimeoutRef.current) {
+            clearTimeout(syncTimeoutRef.current);
+        }
 
-        openTokSessionSingleton.sendSignal(
-            {
-                type: 'cobrowse-comparison-sync',
-                data: JSON.stringify(syncData)
-            },
-            (err) => {
-                if (err) {
-                    console.error('Comparison sync signal error:', err);
+        // Debounce the sync to prevent rapid successive signals
+        syncTimeoutRef.current = setTimeout(() => {
+            const session = openTokSessionSingleton.getSession();
+            if (!session) return;
+
+            const syncData = {
+                type: 'package-comparison-update',
+                userType,
+                compareList: newCompareList,
+                timestamp: Date.now()
+            };
+
+            openTokSessionSingleton.sendSignal(
+                {
+                    type: 'cobrowse-comparison-sync',
+                    data: JSON.stringify(syncData)
+                },
+                (err) => {
+                    if (err) {
+                        console.error('Comparison sync signal error:', err);
+                    }
                 }
-            }
-        );
+            );
+        }, 100); // 100ms debounce
     }, [userType]);
 
-    // Send drawer state sync to other party
+    // Send drawer state sync to other party with comparison data
     const syncDrawerState = useCallback((isOpen) => {
         const session = openTokSessionSingleton.getSession();
         if (!session) return;
@@ -44,6 +61,7 @@ export const useComparePackages = (userType = 'agent') => {
             type: 'comparison-drawer-state',
             userType,
             isDrawerOpen: isOpen,
+            compareList: isOpen ? compareList : [], // Include comparison data when opening
             timestamp: Date.now()
         };
 
@@ -58,37 +76,42 @@ export const useComparePackages = (userType = 'agent') => {
                 }
             }
         );
-    }, [userType]);
+    }, [userType, compareList]);
 
     // Add to comparison list
     const addToCompare = useCallback((packageData) => {
+        console.log(`[Compare-${userType}] Adding package to comparison:`, packageData.id, packageData.name);
         setCompareList(prev => {
             const newList = [...prev];
             if (!newList.find(pkg => pkg.id === packageData.id)) {
                 newList.push(packageData);
+                console.log(`[Compare-${userType}] Updated comparison list:`, newList.length, 'packages');
                 // Sync with other party
                 syncComparison(newList);
             }
             return newList;
         });
-    }, [syncComparison]);
+    }, [syncComparison, userType]);
 
     // Remove from comparison list
     const removeFromCompare = useCallback((packageId) => {
+        console.log(`[Compare-${userType}] Removing package from comparison:`, packageId);
         setCompareList(prev => {
             const newList = prev.filter(pkg => pkg.id !== packageId);
+            console.log(`[Compare-${userType}] Updated comparison list:`, newList.length, 'packages');
             // Sync with other party
             syncComparison(newList);
             return newList;
         });
-    }, [syncComparison]);
+    }, [syncComparison, userType]);
 
     // Clear comparison list
     const clearComparison = useCallback(() => {
+        console.log(`[Compare-${userType}] Clearing comparison list`);
         setCompareList([]);
         // Sync with other party
         syncComparison([]);
-    }, [syncComparison]);
+    }, [syncComparison, userType]);
 
     // Get best value package
     const getBestValue = useCallback(() => {
@@ -113,10 +136,10 @@ export const useComparePackages = (userType = 'agent') => {
     // Get comparison count
     const comparisonCount = compareList.length;
 
-    // Toggle drawer
+    // Toggle drawer with data sync
     const toggleDrawer = useCallback((open) => {
         setIsDrawerOpen(open);
-        // Sync drawer state with other party
+        // Sync drawer state with other party (includes comparison data when opening)
         syncDrawerState(open);
     }, [syncDrawerState]);
 
@@ -130,15 +153,19 @@ export const useComparePackages = (userType = 'agent') => {
                 return;
             }
 
-            console.log('[Compare] Received comparison sync:', data);
+            console.log(`[Compare-${userType}] Received comparison sync:`, data.compareList?.length, 'packages');
 
-            // For customers, only update the comparison list (view-only)
-            // For agents, handle as before
-            if (userType === 'customer') {
-                setCompareList(data.compareList || []);
-            } else {
-                setCompareList(data.compareList || []);
-            }
+            // Set flag to prevent sending signals while updating from incoming signal
+            isUpdatingFromSignalRef.current = true;
+            
+            // Update comparison list for both user types
+            setCompareList(data.compareList || []);
+            console.log(`[Compare-${userType}] Updated comparison list from sync:`, data.compareList?.length, 'packages');
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+                isUpdatingFromSignalRef.current = false;
+            }, 50);
         } catch (err) {
             console.error('Failed to parse comparison sync signal:', err);
         }
@@ -154,12 +181,82 @@ export const useComparePackages = (userType = 'agent') => {
                 return;
             }
 
-            console.log('[Compare] Received drawer sync:', data);
+            console.log(`[Compare-${userType}] Received drawer sync:`, data.isDrawerOpen, 'with', data.compareList?.length, 'packages');
 
+            // Set flag to prevent sending signals while updating from incoming signal
+            isUpdatingFromSignalRef.current = true;
+            
             // Update drawer state
             setIsDrawerOpen(data.isDrawerOpen || false);
+            
+            // If opening and there's comparison data, update the comparison list
+            if (data.isDrawerOpen && data.compareList && data.compareList.length > 0) {
+                console.log(`[Compare-${userType}] Received comparison data with drawer open:`, data.compareList.length, 'packages');
+                setCompareList(data.compareList);
+            }
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+                isUpdatingFromSignalRef.current = false;
+            }, 50);
         } catch (err) {
             console.error('Failed to parse drawer sync signal:', err);
+        }
+    }, [userType]);
+
+    // Handle shared comparison open signal
+    const handleSharedComparisonOpen = useCallback((event) => {
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Ignore signals from same user type
+            if (data.action && data.action.includes(userType)) {
+                return;
+            }
+
+            console.log(`[Compare-${userType}] Received shared comparison open signal:`, data.action, 'with', data.compareList?.length, 'packages');
+
+            // Set flag to prevent sending signals while updating from incoming signal
+            isUpdatingFromSignalRef.current = true;
+
+            // If there's comparison data, update the comparison list
+            if (data.compareList && data.compareList.length > 0) {
+                console.log(`[Compare-${userType}] Received comparison data from shared signal:`, data.compareList.length, 'packages');
+                setCompareList(data.compareList);
+            }
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+                isUpdatingFromSignalRef.current = false;
+            }, 50);
+        } catch (err) {
+            console.error('Failed to parse shared comparison open signal:', err);
+        }
+    }, [userType]);
+
+    // Handle comparison action signals (clear comparison, close comparison)
+    const handleComparisonAction = useCallback((event) => {
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Ignore signals from same user type
+            if (data.userType === userType) {
+                return;
+            }
+
+            console.log(`[Compare-${userType}] Received comparison action signal:`, data.action);
+
+            if (data.action === 'clear-comparison') {
+                console.log(`[Compare-${userType}] Received clear comparison signal from ${data.userType}`);
+                // Clear the comparison list
+                setCompareList([]);
+            } else if (data.action === 'close-comparison') {
+                console.log(`[Compare-${userType}] Received close comparison signal from ${data.userType}`);
+                // Close the drawer/modal
+                setIsDrawerOpen(false);
+            }
+        } catch (err) {
+            console.error('Failed to parse comparison action signal:', err);
         }
     }, [userType]);
 
@@ -171,12 +268,21 @@ export const useComparePackages = (userType = 'agent') => {
         // Register signal handlers with singleton
         openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
         openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
+        openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleSharedComparisonOpen);
+        openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
 
         return () => {
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-drawer-sync');
+            openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
+            openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
+            
+            // Clear any pending timeouts
+            if (syncTimeoutRef.current) {
+                clearTimeout(syncTimeoutRef.current);
+            }
         };
-    }, [handleComparisonSync, handleDrawerSync]);
+    }, [handleComparisonSync, handleDrawerSync, handleSharedComparisonOpen, handleComparisonAction]);
 
     return {
         compareList,

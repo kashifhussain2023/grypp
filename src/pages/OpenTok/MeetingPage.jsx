@@ -38,10 +38,11 @@ import {
   Compare as CompareIcon,
 } from "@mui/icons-material";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
-import { Document, Page, pdfjs } from "react-pdf";
+import { pdfjs } from "react-pdf";
 import { samplePackageData } from "../../data/samplePackageData";
 import { agentPackageService } from "../../services/AgentPackageService";
 import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
+import { scrollSyncManager } from "../../services/ScrollSyncManager";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -102,7 +103,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     setIsDrawerOpen,
     removeFromCompare,
     clearComparison,
-    getBestValue
+    getBestValue,
+    addToCompare
   } = useComparePackages('agent');
 
   const ensureMediaAccess = async () => {
@@ -139,6 +141,9 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         // Initialize the singleton with the session
         console.log("🔌 Initializing OpenTok session singleton",session);
         openTokSessionSingleton.initialize(session);
+
+        // Initialize scroll synchronization manager
+        scrollSyncManager.initialize('agent', session);
 
         session.connect(token, async (err) => {
           if (err) {
@@ -222,6 +227,48 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                 console.error("Failed to parse cobrowsing-url signal:", err);
               }
 
+            },
+            "signal:shared-comparison-open": (event) => {
+              console.log("🎭 Agent received shared-comparison-open signal from customer:", event);
+              try {
+                const data = JSON.parse(event.data);
+                console.log("🎭 Agent parsed shared-comparison-open data:", data);
+                
+                if (data.action === "customer-opened-comparison") {
+                  console.log("🎭 Customer opened comparison modal - opening agent comparison");
+                  
+                  // Update the comparison list with customer's data if provided
+                  if (data.compareList && data.compareList.length > 0) {
+                    console.log("🎭 Agent received comparison data from customer:", data.compareList);
+                    
+                    // Clear existing comparison and add customer's packages
+                    clearComparison();
+                    
+                    // Add each package from customer's comparison list
+                    data.compareList.forEach(pkg => {
+                      addToCompare(pkg);
+                    });
+                    
+                    console.log("🎭 Agent updated comparison list with customer data");
+                  }
+                  
+                  setIsDrawerOpen(true);
+                }
+              } catch (err) {
+                console.error("🎭 Agent failed to parse shared-comparison-open signal:", err);
+              }
+            },
+            "signal:customer-request-packages": (event) => {
+              console.log("🎭 Agent received customer-request-packages signal:", event);
+              try {
+                const data = JSON.parse(event.data);
+                if (data.action === "open-packages-dialog") {
+                  console.log("🎭 Customer requested to open packages dialog");
+                  setPackagesDialogOpen(true);
+                }
+              } catch (err) {
+                console.error("🎭 Agent failed to parse customer-request-packages signal:", err);
+              }
             }
              
           });
@@ -385,6 +432,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       openTokSessionSingleton.unregisterSignalHandler("signal:file-preview");
       openTokSessionSingleton.unregisterSignalHandler("signal:file-preview-closed");
       openTokSessionSingleton.unregisterSignalHandler("signal:file-for-signing");
+      openTokSessionSingleton.unregisterSignalHandler("signal:shared-comparison-open");
+      openTokSessionSingleton.unregisterSignalHandler("signal:customer-request-packages");
+      
+      // Cleanup scroll sync manager
+      scrollSyncManager.cleanup();
     };
   }, [sessionId]);
 
@@ -959,6 +1011,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           data: JSON.stringify({
             action: "agent-opened-comparison",
             sharedPackages: sharedPackages,
+            compareList: compareList, // Include current comparison data
             timestamp: new Date().toISOString(),
           }),
         },
@@ -1557,6 +1610,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         onClearComparison={clearComparison}
         getBestValue={getBestValue}
         userType="agent"
+        sharedPackages={sharedPackages}
       />
 
       {/* Shared Packages Comparison Modal */}

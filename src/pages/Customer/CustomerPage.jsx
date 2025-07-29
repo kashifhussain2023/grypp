@@ -40,6 +40,7 @@ import { CONFIG, FILE_TYPES } from "./constants";
 
 // Services
 import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
+import { scrollSyncManager } from "../../services/ScrollSyncManager";
 
 const CustomerPage = ({
   name,
@@ -237,6 +238,20 @@ const CustomerPage = ({
           );
         }
       },
+      "signal:shared-comparison-open": (event) => {
+        console.log("🎭 Customer received shared-comparison-open signal from agent:", event);
+        try {
+          const data = JSON.parse(event.data);
+          console.log("🎭 Customer parsed shared-comparison-open data:", data);
+          
+          if (data.action === "agent-opened-comparison") {
+            console.log("🎭 Agent opened comparison modal - customer should open comparison");
+            // This will be handled by the PackageShareDialog component
+          }
+        } catch (err) {
+          console.error("🎭 Customer failed to parse shared-comparison-open signal:", err);
+        }
+      },
       "signal:package-share-chunk-metadata": (event) => {
         console.log(
           "📦 CUSTOMER: Signal handler triggered for package-share-chunk-metadata"
@@ -290,6 +305,9 @@ const CustomerPage = ({
     if (sessionRef?.current) {
       console.log('🔌 Initializing OpenTok session singleton');
       openTokSessionSingleton.initialize(sessionRef.current);
+      
+      // Initialize scroll synchronization manager for customer
+      scrollSyncManager.initialize('customer', sessionRef.current);
     }
   }, [sessionRef]);
 
@@ -351,6 +369,8 @@ const CustomerPage = ({
   useEffect(() => {
     return () => {
       cleanupChunkedShare();
+      // Cleanup scroll sync manager
+      scrollSyncManager.cleanup();
     };
   }, [cleanupChunkedShare]);
 

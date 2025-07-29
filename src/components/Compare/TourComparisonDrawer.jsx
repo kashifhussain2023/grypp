@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     Drawer,
     Box,
@@ -32,6 +32,7 @@ import {
     LocalOffer as OfferIcon
 } from '@mui/icons-material';
 import { useCoBrowseScrollSync } from '../../hooks/useCoBrowseScrollSync';
+import { openTokSessionSingleton } from '../../services/OpenTokSessionManager';
 
 const TourComparisonDrawer = ({
     open,
@@ -46,6 +47,99 @@ const TourComparisonDrawer = ({
     
     // Use the unified scroll sync hook
     const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
+
+    // Effect to handle bidirectional actions (clear comparison and close drawer)
+    useEffect(() => {
+        const handleComparisonAction = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Ignore signals from same user type
+                if (data.userType === userType) {
+                    return;
+                }
+
+                console.log(`🎭 [${userType}] Received comparison action signal:`, data.action);
+
+                if (data.action === 'clear-comparison') {
+                    console.log(`🎭 [${userType}] Received clear comparison signal from ${data.userType}`);
+                    // Call the clear comparison function
+                    onClearComparison();
+                } else if (data.action === 'close-comparison') {
+                    console.log(`🎭 [${userType}] Received close comparison signal from ${data.userType}`);
+                    // Call the close drawer function
+                    onClose();
+                }
+            } catch (err) {
+                console.error(`🎭 [${userType}] Failed to parse comparison action signal:`, err);
+            }
+        };
+
+        // Register signal handler for comparison actions
+        openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+
+        return () => {
+            openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
+        };
+    }, [userType, onClearComparison, onClose]);
+
+    // Function to send clear comparison signal to other party
+    const handleClearComparison = () => {
+        console.log(`🎭 [${userType}] Sending clear comparison signal`);
+        
+        const session = openTokSessionSingleton.getSession();
+        if (session) {
+            openTokSessionSingleton.sendSignal(
+                {
+                    type: "comparison-action",
+                    data: JSON.stringify({
+                        action: 'clear-comparison',
+                        userType: userType,
+                        timestamp: new Date().toISOString(),
+                    }),
+                },
+                (err) => {
+                    if (err) {
+                        console.error(`🎭 [${userType}] Failed to send clear comparison signal:`, err);
+                    } else {
+                        console.log(`🎭 [${userType}] Successfully sent clear comparison signal`);
+                    }
+                }
+            );
+        }
+        
+        // Call the original clear comparison function
+        onClearComparison();
+    };
+
+    // Function to send close comparison signal to other party
+    const handleCloseComparison = () => {
+        console.log(`🎭 [${userType}] Sending close comparison signal`);
+        
+        const session = openTokSessionSingleton.getSession();
+        if (session) {
+            openTokSessionSingleton.sendSignal(
+                {
+                    type: "comparison-action",
+                    data: JSON.stringify({
+                        action: 'close-comparison',
+                        userType: userType,
+                        timestamp: new Date().toISOString(),
+                    }),
+                },
+                (err) => {
+                    if (err) {
+                        console.error(`🎭 [${userType}] Failed to send close comparison signal:`, err);
+                    } else {
+                        console.log(`🎭 [${userType}] Successfully sent close comparison signal`);
+                    }
+                }
+            );
+        }
+        
+        // Call the original close function
+        onClose();
+    };
 
     // Helper function to get best priced package
     const getBestPricedPackage = () => {
@@ -174,7 +268,7 @@ const TourComparisonDrawer = ({
                     {compareList.length > 0 && userType === 'agent' && (
                         <Tooltip title="Clear all comparisons">
                             <IconButton
-                                onClick={onClearComparison}
+                                onClick={handleClearComparison}
                                 sx={{ color: 'white' }}
                                 size="small"
                             >
@@ -192,7 +286,7 @@ const TourComparisonDrawer = ({
                             <CompareIcon />
                         </IconButton>
                     </Tooltip>
-                    <IconButton onClick={onClose} sx={{ color: 'white' }}>
+                    <IconButton onClick={handleCloseComparison} sx={{ color: 'white' }}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
@@ -505,7 +599,7 @@ const TourComparisonDrawer = ({
                                     {userType === 'agent' && (
                                         <Button
                                             variant="outlined"
-                                            onClick={onClearComparison}
+                                            onClick={handleClearComparison}
                                             startIcon={<DeleteIcon />}
                                         >
                                             Clear All
@@ -514,7 +608,7 @@ const TourComparisonDrawer = ({
                                     <Button
                                         variant="contained"
                                         color="primary"
-                                        onClick={onClose}
+                                        onClick={handleCloseComparison}
                                     >
                                         Close Comparison
                                     </Button>

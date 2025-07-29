@@ -5,7 +5,7 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
  * Custom hook for synchronizing scroll position between agent and customer
  * @param {string} userType - 'agent' or 'customer'
  * @param {boolean} enabled - Whether scroll sync is enabled
- * @param {string} containerType - Type of scroll container ('catalog', 'comparison', 'details')
+ * @param {string} containerType - Type of scroll container ('catalog', 'comparison', 'details', 'modal', 'drawer', 'package-list')
  * @returns {Object} - Scroll sync state and methods
  */
 export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, containerType = 'catalog') => {
@@ -19,6 +19,8 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
   const scrollAnimationRef = useRef(false);
   const isActiveControllerRef = useRef(false);
   const scrollTimeoutRef = useRef(null);
+  const throttleTimeoutRef = useRef(null);
+  const scrollDelayTimeoutRef = useRef(null);
 
   // Determine signal type based on container type
   const getSignalType = useCallback(() => {
@@ -27,6 +29,12 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
         return 'cobrowse-comparison-scroll-sync';
       case 'details':
         return 'cobrowse-details-scroll-sync';
+      case 'modal':
+        return 'cobrowse-modal-scroll-sync';
+      case 'drawer':
+        return 'cobrowse-drawer-scroll-sync';
+      case 'package-list':
+        return 'cobrowse-package-list-scroll-sync';
       case 'catalog':
       default:
         return 'cobrowse-scroll-sync';
@@ -40,7 +48,41 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
     }
   }, [userType, containerType]);
 
-  // Send scroll position to other party
+  // Throttled scroll position sender with delay for smooth scrolling
+  const sendScrollPositionThrottled = useCallback((scrollTop, scrollLeft) => {
+    // Clear existing throttle timeout
+    if (throttleTimeoutRef.current) {
+      clearTimeout(throttleTimeoutRef.current);
+    }
+
+    // Set new throttle timeout with delay for smooth scrolling
+    throttleTimeoutRef.current = setTimeout(() => {
+      const session = openTokSessionSingleton.getSession();
+      if (!session || !enabled) return;
+
+      const scrollData = {
+        scrollTop,
+        scrollLeft,
+        userType,
+        containerType,
+        timestamp: Date.now()
+      };
+
+      openTokSessionSingleton.sendSignal(
+        {
+          type: getSignalType(),
+          data: JSON.stringify(scrollData)
+        },
+        (err) => {
+          if (err) {
+            log('Failed to send scroll signal:', err);
+          }
+        }
+      );
+    }, 150); // Increased delay to 150ms for smoother scrolling
+  }, [userType, enabled, log, getSignalType, containerType]);
+
+  // Send scroll position to other party (immediate, for important updates)
   const sendScrollPosition = useCallback((scrollTop, scrollLeft) => {
     const session = openTokSessionSingleton.getSession();
     if (!session || !enabled) return;
@@ -66,7 +108,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
     );
   }, [userType, enabled, log, getSignalType, containerType]);
 
-  // Apply scroll position to the scroll container
+  // Apply scroll position to the scroll container with smooth animation and delay
   const applyScrollPosition = useCallback((scrollTop, scrollLeft) => {
     if (!scrollRef.current) return;
     
@@ -76,20 +118,30 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
     incomingScrollRef.current = true;
     scrollAnimationRef.current = true;
     
-    // Apply the scroll position
-    scrollRef.current.scrollTop = scrollTop;
-    scrollRef.current.scrollLeft = scrollLeft;
+    // Add a small delay before applying scroll for smoother experience
+    if (scrollDelayTimeoutRef.current) {
+      clearTimeout(scrollDelayTimeoutRef.current);
+    }
     
-    // Update last scroll position
-    const newPosition = { scrollTop, scrollLeft };
-    setLastScrollPosition(newPosition);
-    lastScrollPositionRef.current = newPosition;
-    
-    // Reset flags after a short delay
-    setTimeout(() => {
-      incomingScrollRef.current = false;
-      scrollAnimationRef.current = false;
-    }, 100);
+    scrollDelayTimeoutRef.current = setTimeout(() => {
+      // Apply the scroll position smoothly
+      scrollRef.current.scrollTo({
+        top: scrollTop,
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+      
+      // Update last scroll position
+      const newPosition = { scrollTop, scrollLeft };
+      setLastScrollPosition(newPosition);
+      lastScrollPositionRef.current = newPosition;
+      
+      // Reset flags after animation completes
+      setTimeout(() => {
+        incomingScrollRef.current = false;
+        scrollAnimationRef.current = false;
+      }, 400); // Increased delay to account for smooth scroll animation
+    }, 50); // 50ms delay before applying scroll
   }, [log]);
 
   // Handle incoming scroll signals
@@ -124,7 +176,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
 
     // Check if scroll position actually changed significantly
     const lastPos = lastScrollPositionRef.current;
-    const scrollThreshold = 5; // Increased threshold to prevent micro-movements
+    const scrollThreshold = 5; // Increased threshold for smoother sync
     if (Math.abs(scrollTop - lastPos.scrollTop) < scrollThreshold &&
       Math.abs(scrollLeft - lastPos.scrollLeft) < scrollThreshold) {
       return;
@@ -136,13 +188,13 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
 
     log('Local scroll detected:', { scrollTop, scrollLeft });
 
-    // Send scroll position to other party
-    sendScrollPosition(scrollTop, scrollLeft);
+    // Send scroll position to other party (throttled for performance)
+    sendScrollPositionThrottled(scrollTop, scrollLeft);
     
     // Update last scroll position
     lastScrollPositionRef.current = { scrollTop, scrollLeft };
     setLastScrollPosition({ scrollTop, scrollLeft });
-  }, [sendScrollPosition, log]);
+  }, [sendScrollPositionThrottled, log]);
 
   // Handle scroll timeout (when user stops scrolling)
   const handleScrollEnd = useCallback(() => {
@@ -153,7 +205,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
         setIsActiveController(false);
         log('Released active control');
       }
-    }, 1500); // Increased delay to prevent rapid switching
+    }, 2500); // Increased delay to prevent rapid switching
   }, [log]);
 
   // Set up scroll event listener on the scroll container
@@ -174,7 +226,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
       // Set new timeout for scroll end
       scrollTimeoutRef.current = setTimeout(() => {
         handleScrollEnd();
-      }, 150);
+      }, 150); // Increased delay for more responsive control switching
     };
 
     scrollContainer.addEventListener('scroll', handleScrollEvent, { passive: true });
@@ -211,6 +263,12 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+      }
+      if (scrollDelayTimeoutRef.current) {
+        clearTimeout(scrollDelayTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -222,6 +280,21 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
     handleScrollEnd,
     applyScrollPosition,
     isIncomingScroll: incomingScrollRef.current,
-    isScrollAnimating: scrollAnimationRef.current
+    isScrollAnimating: scrollAnimationRef.current,
+    // Additional utility methods
+    syncToPosition: (scrollTop, scrollLeft) => {
+      if (!incomingScrollRef.current) {
+        sendScrollPosition(scrollTop, scrollLeft);
+      }
+    },
+    getScrollPosition: () => {
+      if (scrollRef.current) {
+        return {
+          scrollTop: scrollRef.current.scrollTop,
+          scrollLeft: scrollRef.current.scrollLeft
+        };
+      }
+      return { scrollTop: 0, scrollLeft: 0 };
+    }
   };
 }; 
