@@ -69,7 +69,7 @@ const TourComparisonModal = ({
   const bestValuePackage = getBestValue();
 
   // Use scroll sync hook for comparison modal
-  const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
+  const { scrollRef, isActiveController } = useCoBrowseScrollSync(userType, true, 'comparison');
 
   // Ref to track if we've already sent the signal for this modal opening
   const hasSentSignalRef = useRef(false);
@@ -1301,6 +1301,19 @@ const TourComparisonModal = ({
               }}
             />
           )}
+          {/* Scroll Sync Indicator */}
+          {!isActiveController && (
+            <Chip
+              label="Synced with other party"
+              size="small"
+              sx={{
+                bgcolor: 'rgba(33, 150, 243, 0.9)',
+                color: 'white',
+                fontSize: '0.6rem',
+                fontWeight: 'bold',
+              }}
+            />
+          )}
         </Box>
         <IconButton
           onClick={onClose}
@@ -1339,7 +1352,31 @@ const TourComparisonModal = ({
             </Typography>
           </Box>
         ) : (
-          <Box ref={scrollRef} sx={{ height: 'calc(100vh - 180px)', overflow: 'auto' }}>
+          <Box
+            ref={scrollRef}
+            sx={{
+              height: 'calc(100vh - 180px)',
+              overflow: 'auto',
+              // Add visual indicator when this side is actively controlling
+              borderLeft: isActiveController ? '4px solid' : 'none',
+              borderColor: 'success.main',
+              // Prevent scroll conflicts
+              scrollBehavior: 'smooth',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#c1c1c1',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: '#a8a8a8',
+              },
+            }}
+          >
             <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
               <Table stickyHeader>
                 <TableBody>
