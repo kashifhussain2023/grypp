@@ -40,103 +40,38 @@ const TourComparisonDrawer = ({
     compareList,
     onRemoveFromCompare,
     onClearComparison,
-    userType = 'agent'
+    userType = 'agent',
+    sendComparisonAction = null
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    
+
     // Use the unified scroll sync hook
     const { scrollRef } = useCoBrowseScrollSync(userType, true, 'comparison');
 
-    // Effect to handle bidirectional actions (clear comparison and close drawer)
-    useEffect(() => {
-        const handleComparisonAction = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                
-                // Ignore signals from same user type
-                if (data.userType === userType) {
-                    return;
-                }
+    // Effect to handle bidirectional actions (clear comparison and close drawer) (handled by parent)
+    // Signal listening is now handled by parent components
 
-                console.log(`🎭 [${userType}] Received comparison action signal:`, data.action);
-
-                if (data.action === 'clear-comparison') {
-                    console.log(`🎭 [${userType}] Received clear comparison signal from ${data.userType}`);
-                    // Call the clear comparison function
-                    onClearComparison();
-                } else if (data.action === 'close-comparison') {
-                    console.log(`🎭 [${userType}] Received close comparison signal from ${data.userType}`);
-                    // Call the close drawer function
-                    onClose();
-                }
-            } catch (err) {
-                console.error(`🎭 [${userType}] Failed to parse comparison action signal:`, err);
-            }
-        };
-
-        // Register signal handler for comparison actions
-        openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
-
-        return () => {
-            openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
-        };
-    }, [userType, onClearComparison, onClose]);
-
-    // Function to send clear comparison signal to other party
+    // Function to send clear comparison signal to other party (handled by parent)
     const handleClearComparison = () => {
         console.log(`🎭 [${userType}] Sending clear comparison signal`);
-        
-        const session = openTokSessionSingleton.getSession();
-        if (session) {
-            openTokSessionSingleton.sendSignal(
-                {
-                    type: "comparison-action",
-                    data: JSON.stringify({
-                        action: 'clear-comparison',
-                        userType: userType,
-                        timestamp: new Date().toISOString(),
-                    }),
-                },
-                (err) => {
-                    if (err) {
-                        console.error(`🎭 [${userType}] Failed to send clear comparison signal:`, err);
-                    } else {
-                        console.log(`🎭 [${userType}] Successfully sent clear comparison signal`);
-                    }
-                }
-            );
+
+        if (sendComparisonAction) {
+            sendComparisonAction('clear-comparison');
         }
-        
+
         // Call the original clear comparison function
         onClearComparison();
     };
 
-    // Function to send close comparison signal to other party
+    // Function to send close comparison signal to other party (handled by parent)
     const handleCloseComparison = () => {
         console.log(`🎭 [${userType}] Sending close comparison signal`);
-        
-        const session = openTokSessionSingleton.getSession();
-        if (session) {
-            openTokSessionSingleton.sendSignal(
-                {
-                    type: "comparison-action",
-                    data: JSON.stringify({
-                        action: 'close-comparison',
-                        userType: userType,
-                        timestamp: new Date().toISOString(),
-                    }),
-                },
-                (err) => {
-                    if (err) {
-                        console.error(`🎭 [${userType}] Failed to send close comparison signal:`, err);
-                    } else {
-                        console.log(`🎭 [${userType}] Successfully sent close comparison signal`);
-                    }
-                }
-            );
+
+        if (sendComparisonAction) {
+            sendComparisonAction('close-comparison');
         }
-        
+
         // Call the original close function
         onClose();
     };
@@ -279,7 +214,7 @@ const TourComparisonDrawer = ({
                     {/* Test Scroll Sync Button */}
                     <Tooltip title="Test scroll sync">
                         <IconButton
-                            onClick={() => {}} // No longer needed for test
+                            onClick={() => { }} // No longer needed for test
                             sx={{ color: 'white' }}
                             size="small"
                         >
@@ -317,7 +252,7 @@ const TourComparisonDrawer = ({
                         background: '#555',
                     },
                 }}
-                // onScroll={handleScroll} // No longer needed for scroll sync
+            // onScroll={handleScroll} // No longer needed for scroll sync
             >
                 {compareList.length === 0 ? (
                     // Empty State
@@ -368,7 +303,7 @@ const TourComparisonDrawer = ({
                                 const isBestPrice = bestPricedPackage?.id === pkg.id;
                                 const savings = getSavings(pkg);
                                 const discountPercentage = getDiscountPercentage(pkg);
-                                
+
                                 return (
                                     <Grid sx={{ width: "250px" }} item xs={3} lg={3} md={3} key={pkg.id}>
                                         <Slide direction="up" in={true} timeout={300 + index * 200}>
@@ -480,10 +415,10 @@ const TourComparisonDrawer = ({
                                                     />
 
                                                     {/* Enhanced Price Display */}
-                                                    <Box sx={{ 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
-                                                        gap: 1, 
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1,
                                                         mb: 2,
                                                         p: isBestPrice ? 1.5 : 0,
                                                         bgcolor: isBestPrice ? 'rgba(76, 175, 80, 0.1)' : 'transparent',
@@ -495,7 +430,7 @@ const TourComparisonDrawer = ({
                                                             <Typography
                                                                 variant="h5"
                                                                 color={isBestPrice ? "success.main" : "primary.main"}
-                                                                sx={{ 
+                                                                sx={{
                                                                     fontWeight: 700,
                                                                     fontSize: isBestPrice ? '1.5rem' : '1.25rem',
                                                                 }}
@@ -516,7 +451,7 @@ const TourComparisonDrawer = ({
 
                                                     {/* Savings Display for non-best packages */}
                                                     {!isBestPrice && savings > 0 && (
-                                                        <Box sx={{ 
+                                                        <Box sx={{
                                                             mb: 2,
                                                             p: 1,
                                                             bgcolor: 'warning.light',

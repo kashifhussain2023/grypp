@@ -9,13 +9,13 @@ class OpenTokSessionSingleton {
     if (OpenTokSessionSingleton.instance) {
       return OpenTokSessionSingleton.instance;
     }
-    
+
     this.session = null;
     this.sessionRef = { current: null };
     this.signalHandlers = new Map();
     this.isInitialized = false;
     this.listeners = new Set();
-    
+
     OpenTokSessionSingleton.instance = this;
   }
 
@@ -91,7 +91,7 @@ class OpenTokSessionSingleton {
     console.log(`🔌 Registering signal handler: ${signalType}`);
     console.log(`🔌 Handler function:`, handler);
     console.log(`🔌 Session object:`, this.session);
-    
+
     // Remove existing handler if any
     if (this.signalHandlers.has(signalType)) {
       console.log(`🔌 Removing existing handler for: ${signalType}`);
@@ -102,7 +102,7 @@ class OpenTokSessionSingleton {
     this.signalHandlers.set(signalType, handler);
     this.session.on(signalType, handler);
     console.log(`🔌 Successfully registered handler for: ${signalType}`);
-    
+
     return true;
   }
 
@@ -134,7 +134,7 @@ class OpenTokSessionSingleton {
     }
 
     console.log('🔌 Registering multiple signal handlers:', Object.keys(handlers));
-    
+
     Object.entries(handlers).forEach(([signalType, handler]) => {
       this.registerSignalHandler(signalType, handler);
     });
@@ -151,11 +151,11 @@ class OpenTokSessionSingleton {
     }
 
     console.log('🔌 Unregistering all signal handlers');
-    
+
     this.signalHandlers.forEach((handler, signalType) => {
       this.session.off(signalType, handler);
     });
-    
+
     this.signalHandlers.clear();
   }
 
@@ -164,7 +164,7 @@ class OpenTokSessionSingleton {
    * @param {Object} signalData - Signal data object
    * @param {Function} callback - Optional callback function
    */
- async sendSignal(signalData, callback) {
+  async sendSignal(signalData, callback) {
     if (!this.isSessionAvailable()) {
       const error = new Error('Cannot send signal: No session available');
       console.error('🔌', error.message);
@@ -175,7 +175,7 @@ class OpenTokSessionSingleton {
     console.log('🔌 Sending signal:', signalData.type);
     console.log('🔌 Signal data:', signalData);
     console.log('🔌 Session available:', !!this.session);
-    
+
     this.session.signal(signalData, (err) => {
       if (err) {
         console.error('🔌 Signal send error:', err);
@@ -185,6 +185,64 @@ class OpenTokSessionSingleton {
       if (callback) callback(err);
     });
     return true;
+  }
+
+  /**
+   * Register a general signal listener for debugging
+   * @param {Function} handler - Signal handler function
+   */
+  registerGeneralSignalListener(handler) {
+    if (!this.isSessionAvailable()) {
+      console.warn('🔌 Cannot register general signal listener: No session available');
+      return false;
+    }
+
+    console.log('🔌 Registering general signal listener');
+    this.session.on('signal', handler);
+    return true;
+  }
+
+  /**
+   * Unregister a general signal listener
+   * @param {Function} handler - Signal handler function to unregister
+   */
+  unregisterGeneralSignalListener(handler) {
+    if (!this.isSessionAvailable()) {
+      return;
+    }
+
+    console.log('🔌 Unregistering general signal listener');
+    this.session.off('signal', handler);
+  }
+
+  /**
+   * Register a specific signal type listener
+   * @param {string} signalType - Signal type (e.g., 'callAccepted', 'endCall')
+   * @param {Function} handler - Signal handler function
+   */
+  registerSpecificSignalListener(signalType, handler) {
+    if (!this.isSessionAvailable()) {
+      console.warn(`🔌 Cannot register specific signal listener ${signalType}: No session available`);
+      return false;
+    }
+
+    console.log(`🔌 Registering specific signal listener: ${signalType}`);
+    this.session.on(signalType, handler);
+    return true;
+  }
+
+  /**
+   * Unregister a specific signal type listener
+   * @param {string} signalType - Signal type to unregister
+   * @param {Function} handler - Signal handler function to unregister
+   */
+  unregisterSpecificSignalListener(signalType, handler) {
+    if (!this.isSessionAvailable()) {
+      return;
+    }
+
+    console.log(`🔌 Unregistering specific signal listener: ${signalType}`);
+    this.session.off(signalType, handler);
   }
 
   /**
@@ -227,7 +285,7 @@ class OpenTokSessionSingleton {
    */
   cleanup() {
     console.log('🔌 Cleaning up OpenTok session singleton');
-    
+
     this.unregisterAllSignalHandlers();
     this.listeners.clear();
     this.session = null;

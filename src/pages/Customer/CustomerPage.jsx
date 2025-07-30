@@ -41,6 +41,7 @@ import { CONFIG, FILE_TYPES } from "./constants";
 // Services
 import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
 import { scrollSyncManager } from "../../services/ScrollSyncManager";
+import { packageDetailsCoBrowseSingleton } from "../../services/PackageDetailsCoBrowseManager";
 
 const CustomerPage = ({
   name,
@@ -74,6 +75,11 @@ const CustomerPage = ({
 
   // Create a ref to always have access to the latest signal handlers
   const signalHandlersRef = useRef(null);
+
+  // Initialize package details co-browsing singleton
+  useEffect(() => {
+    packageDetailsCoBrowseSingleton.initialize();
+  }, []);
 
   // Chunked package sharing logic (using singleton)
   const {
@@ -203,9 +209,8 @@ const CustomerPage = ({
           const sessionUrl = `https://cobrowse.io/session/${sessionId}/?token=${token}&end_action=none&navigation=none&messages=none`;
 
           // Use the session from singleton
-          const session = openTokSessionSingleton.getSession();
-          if (sessionUrl && session) {
-            session.signal(
+          if (sessionUrl) {
+            openTokSessionSingleton.sendSignal(
               {
                 type: "cobrowsing-url",
                 data: JSON.stringify({ action: "start", sessionUrl }),
@@ -244,7 +249,7 @@ const CustomerPage = ({
         try {
           const data = JSON.parse(event.data);
           console.log("🎭 Customer parsed shared-comparison-open data:", data);
-          
+
           if (data.action === "agent-opened-comparison") {
             console.log("🎭 Agent opened comparison modal - customer should open comparison");
             // This will be handled by the PackageShareDialog component
@@ -294,6 +299,52 @@ const CustomerPage = ({
           console.error("🎭 Customer failed to parse close-package-details signal:", err);
         }
       },
+      "signal:package-details-modal-action": (event) => {
+        console.log("📦 Customer received package details modal action:", event);
+        try {
+          const data = JSON.parse(event.data);
+
+          // Ignore signals from same user type
+          if (data.userType === 'customer') {
+            return;
+          }
+
+          console.log("📦 Customer received package details action:", data.action);
+
+          if (data.action === 'agent-opened-package-details' && data.packageData) {
+            console.log("📦 Agent opened package details - opening customer modal with package:", data.packageId);
+            setPackageDetailsToOpen(data.packageData);
+          } else if (data.action === 'close-package-details') {
+            console.log("📦 Agent closed package details - closing customer modal");
+            setPackageDetailsToOpen(null);
+          }
+        } catch (err) {
+          console.error("📦 Customer failed to parse package details modal action signal:", err);
+        }
+      },
+      "signal:comparison-action": (event) => {
+        console.log("🎭 Customer received comparison action signal:", event);
+        try {
+          const data = JSON.parse(event.data);
+
+          // Ignore signals from same user type
+          if (data.userType === 'customer') {
+            return;
+          }
+
+          console.log("🎭 Customer received comparison action:", data.action);
+
+          if (data.action === 'clear-comparison') {
+            console.log("🎭 Agent cleared comparison - clearing customer comparison");
+            // This will be handled by the PackageShareDialog component
+          } else if (data.action === 'close-comparison') {
+            console.log("🎭 Agent closed comparison - closing customer comparison modal");
+            // This will be handled by the PackageShareDialog component
+          }
+        } catch (err) {
+          console.error("🎭 Customer failed to parse comparison action signal:", err);
+        }
+      },
     }),
     []
   );
@@ -313,7 +364,6 @@ const CustomerPage = ({
     setAgentLeft,
     isVideoEnabled,
     isAudioEnabled,
-    sessionRef,
     publisherRef,
     subscriberRef,
     publisher,
@@ -328,32 +378,27 @@ const CustomerPage = ({
     signalHandlers,
   });
 
-  // Initialize singleton when session is available
+  // Initialize scroll synchronization manager when session is available
   useEffect(() => {
-    if (sessionRef?.current) {
-      console.log('🔌 Initializing OpenTok session singleton');
-      openTokSessionSingleton.initialize(sessionRef.current);
-      
-      // Initialize scroll synchronization manager for customer
-      scrollSyncManager.initialize('customer', sessionRef.current);
+    if (openTokSessionSingleton.isSessionAvailable()) {
+      const session = openTokSessionSingleton.getSession();
+      console.log('🔌 Initializing scroll synchronization manager for customer');
+      scrollSyncManager.initialize('customer', session);
     }
-  }, [sessionRef]);
+  }, [openTokSessionSingleton.isSessionAvailable()]);
 
   // Re-register signal handlers after singleton is initialized
   useEffect(() => {
     if (openTokSessionSingleton.isSessionAvailable() && signalHandlers) {
       console.log('🔌 Re-registering signal handlers after singleton initialization:', Object.keys(signalHandlers));
       openTokSessionSingleton.registerSignalHandlers(signalHandlers);
-      
+
       // Add a general signal listener for debugging
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        session.on('signal', (event) => {
-          console.log("🔌 Customer received general signal:", event.type, event.data);
-        });
-      }
+      openTokSessionSingleton.registerGeneralSignalListener((event) => {
+        console.log("🔌 Customer received general signal:", event.type, event.data);
+      });
     }
-  }, [signalHandlers, sessionRef]);
+  }, [signalHandlers, openTokSessionSingleton.isSessionAvailable()]);
 
   // Set up global callback for chunked package reception and progress dialog management
   useEffect(() => {
@@ -363,7 +408,7 @@ const CustomerPage = ({
       console.log('📦 CUSTOMER: Synthetic event data:', syntheticEvent.data);
       console.log('📦 CUSTOMER: Synthetic event type:', syntheticEvent.type);
       console.log('📦 CUSTOMER: Available signal handlers:', signalHandlersRef.current ? Object.keys(signalHandlersRef.current) : 'none');
-      
+
       // This will trigger the existing package-share signal handler
       const existingHandler = signalHandlersRef.current?.["signal:package-share"];
       if (existingHandler) {
@@ -462,25 +507,22 @@ const CustomerPage = ({
         type: file.type,
       };
 
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        session.signal(
-          {
-            type: "file-share",
-            data: JSON.stringify(fileData),
-          },
-          (err) => {
-            if (err) {
-              console.error("❌ File signal send error:", err);
-              setError("Failed to share file.");
-            } else {
-              setFilePreviewUrl(res.data.url);
-              setFilePreviewName(res.data.name);
-              setShowUploadedDialog(true);
-            }
+      openTokSessionSingleton.sendSignal(
+        {
+          type: "file-share",
+          data: JSON.stringify(fileData),
+        },
+        (err) => {
+          if (err) {
+            console.error("❌ File signal send error:", err);
+            setError("Failed to share file.");
+          } else {
+            setFilePreviewUrl(res.data.url);
+            setFilePreviewName(res.data.name);
+            setShowUploadedDialog(true);
           }
-        );
-      }
+        }
+      );
     } catch (err) {
       console.error("❌ File upload failed:", err);
       setError("File upload failed. Please try again.");
@@ -492,7 +534,7 @@ const CustomerPage = ({
   // Handle file input change
   const handleFileInputChange = async (e) => {
     const file = e.target.files[0];
-    if (file && sessionRef.current) {
+    if (file && openTokSessionSingleton.isSessionAvailable()) {
       await uploadAndShareFile(file);
     }
   };
@@ -506,7 +548,7 @@ const CustomerPage = ({
 
   // Handle signature document
   const handleSendSignedDocument = async (signatureDataUrl) => {
-    if (!sessionRef.current || !signatureDocUrl || !signatureDocName) {
+    if (!openTokSessionSingleton.isSessionAvailable() || !signatureDocUrl || !signatureDocName) {
       setError("Session or file not available for signing.");
       return;
     }
@@ -595,30 +637,76 @@ const CustomerPage = ({
         url: res.data.url,
       };
 
-      const session = openTokSessionSingleton.getSession();
-      console.log("session",session);
-      if (session) {
-        session.signal(
-          {
-            type: "signed-document",
-            data: JSON.stringify(signalData),
-          },
-          (err) => {
-            if (err) {
-              console.error("Signal error:", err);
-              setError("Failed to send signed document.");
-            } else {
-              setSignatureModalOpen(false);
-              setSignatureDocUrl(null);
-              setSignatureDocName(null);
-            }
+      openTokSessionSingleton.sendSignal(
+        {
+          type: "signed-document",
+          data: JSON.stringify(signalData),
+        },
+        (err) => {
+          if (err) {
+            console.error("Signal error:", err);
+            setError("Failed to send signed document.");
+          } else {
+            setSignatureModalOpen(false);
+            setSignatureDocUrl(null);
+            setSignatureDocName(null);
           }
-        );
-      }
+        }
+      );
     } catch (err) {
       console.error("❌ Error signing document:", err);
       setError("Failed to sign document.");
     }
+  };
+
+  // Signal sending functions for child components
+  const sendPackageDetailsAction = (action, packageData = null) => {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
+
+    const signalData = {
+      action,
+      userType: 'customer',
+      timestamp: new Date().toISOString(),
+    };
+
+    if (packageData) {
+      signalData.packageData = packageData;
+      signalData.packageId = packageData.id;
+    }
+
+    openTokSessionSingleton.sendSignal(
+      {
+        type: "package-details-modal-action",
+        data: JSON.stringify(signalData),
+      },
+      (err) => {
+        if (err) {
+          console.error("Failed to send package details action signal:", err);
+        }
+      }
+    );
+  };
+
+  const sendComparisonAction = (action) => {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
+
+    openTokSessionSingleton.sendSignal(
+      {
+        type: "comparison-action",
+        data: JSON.stringify({
+          action,
+          userType: 'customer',
+          timestamp: new Date().toISOString(),
+        }),
+      },
+      (err) => {
+        if (err) {
+          console.error("Failed to send comparison action signal:", err);
+        }
+      }
+    );
   };
 
   // Waiting room view
@@ -627,7 +715,6 @@ const CustomerPage = ({
       <ErrorBoundary>
         <WaitingRoom
           userId={userId}
-          sessionRef={sessionRef}
           onEndCall={onEndCall}
           setError={setError}
         />
@@ -763,12 +850,12 @@ const CustomerPage = ({
           isAudioEnabled={isAudioEnabled}
           sharedPackages={sharedPackages}
           publisher={publisher.current}
-          sessionRef={sessionRef}
           onToggleVideo={toggleVideo}
           onToggleAudio={toggleAudio}
           onShowPackages={() => {
             console.log("🎭 Customer clicked 'View Shared Packages'");
             setShowPackagesDialog(true);
+            setPackageDetailsToOpen(null);
             // Send signal to agent to open their packages dialog
             const session = openTokSessionSingleton.getSession();
             if (session) {
@@ -910,6 +997,8 @@ const CustomerPage = ({
           userType="customer"
           packageDetailsToOpen={packageDetailsToOpen}
           onPackageDetailsOpened={() => setPackageDetailsToOpen(null)}
+          sendPackageDetailsAction={sendPackageDetailsAction}
+          sendComparisonAction={sendComparisonAction}
         />
 
         {/* Simple test dialog to verify MUI Dialog works */}

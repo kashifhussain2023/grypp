@@ -1,17 +1,19 @@
 import React from "react";
 import { Box, Tooltip, Typography } from "@mui/material";
 import { Videocam, VideocamOff, Mic, MicOff, CardTravel } from "@mui/icons-material";
+import { openTokSessionSingleton } from "../../../services/OpenTokSessionManager";
 
 const VideoControls = ({
   isVideoEnabled,
   isAudioEnabled,
   sharedPackages,
   publisher,
-  sessionRef,
   onToggleVideo,
   onToggleAudio,
   onShowPackages,
 }) => {
+  const isSessionAvailable = openTokSessionSingleton.isSessionAvailable();
+
   return (
     <Box
       sx={{
@@ -32,11 +34,11 @@ const VideoControls = ({
         minWidth: 280,
         animation: "slideUp 0.3s ease-out",
         "@keyframes slideUp": {
-          "0%": { 
+          "0%": {
             opacity: 0,
             transform: "translateX(-50%) translateY(20px)",
           },
-          "100%": { 
+          "100%": {
             opacity: 1,
             transform: "translateX(-50%) translateY(0)",
           },
@@ -183,8 +185,8 @@ const VideoControls = ({
             width: 8,
             height: 8,
             borderRadius: "50%",
-            bgcolor: publisher && sessionRef?.current ? "#4caf50" : "#ff9800",
-            animation: publisher && sessionRef?.current ? "pulse 2s infinite" : "none",
+            bgcolor: publisher && isSessionAvailable ? "#4caf50" : "#ff9800",
+            animation: publisher && isSessionAvailable ? "pulse 2s infinite" : "none",
             "@keyframes pulse": {
               "0%": { opacity: 1 },
               "50%": { opacity: 0.5 },
@@ -200,7 +202,7 @@ const VideoControls = ({
             fontWeight: 500,
           }}
         >
-          {publisher && sessionRef?.current ? "Connected" : "Connecting..."}
+          {publisher && isSessionAvailable ? "Connected" : "Connecting..."}
         </Typography>
       </Box>
     </Box>

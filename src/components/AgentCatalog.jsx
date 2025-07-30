@@ -26,7 +26,6 @@ import {
 import { useCoBrowseScrollSync } from "../hooks/useCoBrowseScrollSync";
 import { samplePackageData } from "../data/samplePackageData";
 import PackageDetailsModal from "./PackageDetailsModal";
-import { openTokSessionSingleton } from "../services/OpenTokSessionManager";
 
 // Use centralized package data
 const tourPackages = samplePackageData;
@@ -51,10 +50,10 @@ const AgentCatalog = ({
   sharingProgress = 0, // eslint-disable-line no-unused-vars
   sharingStatus = '', // eslint-disable-line no-unused-vars
   packageDetailsToOpen = null,
-  onPackageDetailsOpened = () => {}
+  sendPackageDetailsAction = null
 }) => {
   // Filter states
-  const [priceRange, setPriceRange] = useState([3000, 90000]);
+  const [priceRange, setPriceRange] = useState([500, 5000]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filteredPackages, setFilteredPackages] = useState(tourPackages);
   const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
@@ -66,20 +65,14 @@ const AgentCatalog = ({
   // Co-browse scroll sync hook
   const { scrollRef, isActiveController } = useCoBrowseScrollSync('agent', true);
 
-  // Effect to handle opening modal from customer signal
-  // useEffect(() => {
-  //   if (packageDetailsToOpen) {
-  //     console.log("[Agent Catalog] Opening modal from customer signal with package:", packageDetailsToOpen.id);
-  //     setSelectedPackage(packageDetailsToOpen);
-  //     setModalOpen(true);
-  //     onPackageDetailsOpened(); // Clear the prop
-  //   } else if (packageDetailsToOpen === null && modalOpen) {
-  //     console.log("[Agent Catalog] Closing modal from customer signal");
-  //     // Close modal when packageDetailsToOpen is explicitly set to null
-  //     setModalOpen(false);
-  //     setSelectedPackage(null);
-  //   }
-  // }, [packageDetailsToOpen, onPackageDetailsOpened, modalOpen]);
+  // Effect to handle opening modal from customer signal (handled by parent)
+  useEffect(() => {
+    if (packageDetailsToOpen) {
+      console.log(`📦 [agent] Opening modal from parent signal with package:`, packageDetailsToOpen.id);
+      setSelectedPackage(packageDetailsToOpen);
+      setModalOpen(true);
+    }
+  }, [packageDetailsToOpen]);
 
   // Filter packages based on price range and selected types
   useEffect(() => {
@@ -104,75 +97,32 @@ const AgentCatalog = ({
   // Modal handlers
   const handleOpenModal = (pkg) => {
     console.log("[Agent Catalog] handleOpenModal called with package:", pkg.id);
-    
+
     // Set state in a single batch to prevent multiple re-renders
     setSelectedPackage(pkg);
     setModalOpen(true);
-    
-    // Send signal to customer to open the same modal using singleton
+
+    // Send signal to customer to open the same modal using parent's signal function
     // Only send signal if not opened via signal from customer
-    if (packageDetailsToOpen !== pkg) {
+    if (packageDetailsToOpen !== pkg && sendPackageDetailsAction) {
       console.log("[Agent Catalog] Sending signal to customer to open package details");
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        openTokSessionSingleton.sendSignal(
-          {
-            type: "open-package-details",
-            data: JSON.stringify({
-              action: "open-modal",
-              packageData: pkg,
-              userType: "agent",
-              timestamp: new Date().toISOString(),
-            }),
-          },
-          (err) => {
-            if (err) {
-              console.error("Failed to send open-package-details signal:", err);
-            } else {
-              console.log("Successfully sent open-package-details signal to customer");
-            }
-          }
-        );
-      } else {
-        console.error("[Agent Catalog] No session available in singleton");
-      }
+      sendPackageDetailsAction('agent-opened-package-details', pkg);
     } else {
-      console.log("[Agent Catalog] Not sending signal - opened via customer signal");
+      console.log("[Agent Catalog] Not sending signal - opened via customer signal or no signal function");
     }
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedPackage(null);
-    
-    // Send signal to customer to close the same modal using singleton
+
+    // Send signal to customer to close the same modal using parent's signal function
     // Only send signal if not closed via signal from customer
-    if (packageDetailsToOpen !== null) {
+    if (packageDetailsToOpen !== null && sendPackageDetailsAction) {
       console.log("[Agent Catalog] Sending signal to customer to close package details");
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        openTokSessionSingleton.sendSignal(
-          {
-            type: "close-package-details",
-            data: JSON.stringify({
-              action: "close-modal",
-              userType: "agent",
-              timestamp: new Date().toISOString(),
-            }),
-          },
-          (err) => {
-            if (err) {
-              console.error("Failed to send close-package-details signal:", err);
-            } else {
-              console.log("Successfully sent close-package-details signal to customer");
-            }
-          }
-        );
-      } else {
-        console.error("[Agent Catalog] No session available in singleton");
-      }
+      sendPackageDetailsAction('close-package-details');
     } else {
-      console.log("[Agent Catalog] Not sending signal - closed via customer signal");
+      console.log("[Agent Catalog] Not sending signal - closed via customer signal or no signal function");
     }
   };
 
@@ -420,20 +370,20 @@ const AgentCatalog = ({
                       top: 12,
                       right: 12,
                       zIndex: 3,
-                      bgcolor: selectedPackages.includes(pkg.id) 
-                        ? "rgba(76, 175, 80, 0.95)" 
+                      bgcolor: selectedPackages.includes(pkg.id)
+                        ? "rgba(76, 175, 80, 0.95)"
                         : "rgba(255, 255, 255, 0.95)",
                       color: selectedPackages.includes(pkg.id) ? "white" : "primary.main",
                       borderRadius: "50%",
                       padding: "8px",
                       opacity: selectedPackages.includes(pkg.id) ? 1 : 0.7,
                       transition: "all 0.3s ease",
-                      boxShadow: selectedPackages.includes(pkg.id) 
-                        ? "0 4px 12px rgba(76, 175, 80, 0.4)" 
+                      boxShadow: selectedPackages.includes(pkg.id)
+                        ? "0 4px 12px rgba(76, 175, 80, 0.4)"
                         : "0 4px 12px rgba(0,0,0,0.15)",
                       "&:hover": {
-                        bgcolor: selectedPackages.includes(pkg.id) 
-                          ? "rgba(76, 175, 80, 1)" 
+                        bgcolor: selectedPackages.includes(pkg.id)
+                          ? "rgba(76, 175, 80, 1)"
                           : "rgba(255, 255, 255, 1)",
                         transform: "scale(1.1)",
                       },

@@ -63,6 +63,7 @@ const TourComparisonModal = ({
   getBestValue,
   userType = 'agent',
   sharedPackages = [],
+  sendComparisonAction = null,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -74,150 +75,41 @@ const TourComparisonModal = ({
   // Ref to track if we've already sent the signal for this modal opening
   const hasSentSignalRef = useRef(false);
 
-  // Effect to handle modal opening and send signal to other party
+  // Effect to handle modal opening and send signal to other party (handled by parent)
   useEffect(() => {
-    if (open && !hasSentSignalRef.current) {
+    if (open && !hasSentSignalRef.current && sendComparisonAction) {
       console.log(`🎭 [${userType}] Comparison modal opened with ${compareList.length} packages`);
-      
-      // Send signal to other party to open their comparison modal with current data
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        // Prepare data to send - include both compareList and any shared packages
-        const signalData = {
-          action: `${userType}-opened-comparison`,
-          timestamp: new Date().toISOString(),
-        };
-
-        // If we have comparison data, send it
-        if (compareList.length > 0) {
-          signalData.compareList = compareList;
-          console.log(`🎭 [${userType}] Sending comparison data with ${compareList.length} packages`);
-        }
-
-        // For agent, also include shared packages if available (this will be passed as a prop)
-        if (userType === 'agent' && sharedPackages && sharedPackages.length > 0) {
-          signalData.sharedPackages = sharedPackages;
-          console.log(`🎭 [${userType}] Also sending shared packages data with ${sharedPackages.length} packages`);
-        }
-
-        // For customer, also include shared packages if available and no comparison list
-        if (userType === 'customer' && sharedPackages && sharedPackages.length > 0 && compareList.length === 0) {
-          signalData.sharedPackages = sharedPackages;
-          console.log(`🎭 [${userType}] Also sending shared packages data with ${sharedPackages.length} packages`);
-        }
-
-        openTokSessionSingleton.sendSignal(
-          {
-            type: "shared-comparison-open",
-            data: JSON.stringify(signalData),
-          },
-          (err) => {
-            if (err) {
-              console.error(`🎭 [${userType}] Failed to send comparison open signal:`, err);
-            } else {
-              console.log(`🎭 [${userType}] Successfully sent comparison open signal`);
-            }
-          }
-        );
-      }
-      
-      // Mark that we've sent the signal for this modal opening
+      sendComparisonAction(`${userType}-opened-comparison`);
       hasSentSignalRef.current = true;
     } else if (!open) {
       // Reset the flag when modal closes
       hasSentSignalRef.current = false;
     }
-  }, [open, userType]); // Keep minimal dependencies to prevent continuous signals
+  }, [open, userType, sendComparisonAction]);
 
-  // Effect to handle bidirectional actions (clear comparison and close modal)
-  useEffect(() => {
-    const handleComparisonAction = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Ignore signals from same user type
-        if (data.userType === userType) {
-          return;
-        }
+  // Effect to handle bidirectional actions (clear comparison and close modal) (handled by parent)
+  // Signal listening is now handled by parent components
 
-        console.log(`🎭 [${userType}] Received comparison action signal:`, data.action);
-
-        if (data.action === 'clear-comparison') {
-          console.log(`🎭 [${userType}] Received clear comparison signal from ${data.userType}`);
-          // Call the clear comparison function
-          onClearComparison();
-        } else if (data.action === 'close-comparison') {
-          console.log(`🎭 [${userType}] Received close comparison signal from ${data.userType}`);
-          // Call the close modal function
-          onClose();
-        }
-      } catch (err) {
-        console.error(`🎭 [${userType}] Failed to parse comparison action signal:`, err);
-      }
-    };
-
-    // Register signal handler for comparison actions
-    openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
-
-    return () => {
-      openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
-    };
-  }, [userType, onClearComparison, onClose]);
-
-  // Function to send clear comparison signal to other party
+  // Function to send clear comparison signal to other party (handled by parent)
   const handleClearComparison = () => {
     console.log(`🎭 [${userType}] Sending clear comparison signal`);
-    
-    const session = openTokSessionSingleton.getSession();
-    if (session) {
-      openTokSessionSingleton.sendSignal(
-        {
-          type: "comparison-action",
-          data: JSON.stringify({
-            action: 'clear-comparison',
-            userType: userType,
-            timestamp: new Date().toISOString(),
-          }),
-        },
-        (err) => {
-          if (err) {
-            console.error(`🎭 [${userType}] Failed to send clear comparison signal:`, err);
-          } else {
-            console.log(`🎭 [${userType}] Successfully sent clear comparison signal`);
-          }
-        }
-      );
+
+    if (sendComparisonAction) {
+      sendComparisonAction('clear-comparison');
     }
-    
+
     // Call the original clear comparison function
     onClearComparison();
   };
 
-  // Function to send close comparison signal to other party
+  // Function to send close comparison signal to other party (handled by parent)
   const handleCloseComparison = () => {
     console.log(`🎭 [${userType}] Sending close comparison signal`);
-    
-    const session = openTokSessionSingleton.getSession();
-    if (session) {
-      openTokSessionSingleton.sendSignal(
-        {
-          type: "comparison-action",
-          data: JSON.stringify({
-            action: 'close-comparison',
-            userType: userType,
-            timestamp: new Date().toISOString(),
-          }),
-        },
-        (err) => {
-          if (err) {
-            console.error(`🎭 [${userType}] Failed to send close comparison signal:`, err);
-          } else {
-            console.log(`🎭 [${userType}] Successfully sent close comparison signal`);
-          }
-        }
-      );
+
+    if (sendComparisonAction) {
+      sendComparisonAction('close-comparison');
     }
-    
+
     // Call the original close function
     onClose();
   };
@@ -228,7 +120,7 @@ const TourComparisonModal = ({
   };
 
   const getDifficultyColor = (difficulty) => {
-    switch(difficulty?.toLowerCase()) {
+    switch (difficulty?.toLowerCase()) {
       case 'easy': return 'success';
       case 'moderate': return 'warning';
       case 'hard': return 'error';
@@ -237,7 +129,7 @@ const TourComparisonModal = ({
   };
 
   const getDifficultyProgress = (difficulty) => {
-    switch(difficulty?.toLowerCase()) {
+    switch (difficulty?.toLowerCase()) {
       case 'easy': return 33;
       case 'moderate': return 66;
       case 'hard': return 100;
@@ -370,35 +262,35 @@ const TourComparisonModal = ({
       case 'image':
         return (
           <Box sx={{ position: 'relative' }}>
-                         {/* Best Deal Banner */}
-             {isBestPrice && (
-               <Box
-                 sx={{
-                   position: 'absolute',
-                   top: -12,
-                   left: -12,
-                   right: -12,
-                   background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                   color: 'white',
-                   py: 1,
-                   px: 2,
-                   borderRadius: '12px 12px 0 0',
-                   zIndex: 4,
-                   display: 'flex',
-                   alignItems: 'center',
-                   justifyContent: 'center',
-                   gap: 0.5,
-                   fontSize: isMobile ? '0.7rem' : '0.8rem',
-                   fontWeight: 'bold',
-                   boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
-                   textTransform: 'uppercase',
-                   letterSpacing: '0.5px',
-                 }}
-               >
-                 <TrophyIcon sx={{ fontSize: isMobile ? 16 : 18 }} />
-                 Best Deal – Limited time only
-               </Box>
-             )}
+            {/* Best Deal Banner */}
+            {isBestPrice && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -12,
+                  left: -12,
+                  right: -12,
+                  background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                  color: 'white',
+                  py: 1,
+                  px: 2,
+                  borderRadius: '12px 12px 0 0',
+                  zIndex: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  fontSize: isMobile ? '0.7rem' : '0.8rem',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                <TrophyIcon sx={{ fontSize: isMobile ? 16 : 18 }} />
+                Best Deal – Limited time only
+              </Box>
+            )}
 
             {/* Discount Badge */}
             {hasDiscount(pkg) && (
@@ -407,8 +299,8 @@ const TourComparisonModal = ({
                   position: 'absolute',
                   top: isMobile ? 20 : 25,
                   right: -8,
-                  background: isBestPrice 
-                    ? 'linear-gradient(135deg, #76ff03, #64dd17)' 
+                  background: isBestPrice
+                    ? 'linear-gradient(135deg, #76ff03, #64dd17)'
                     : 'linear-gradient(135deg, #ff9800, #f57c00)',
                   color: isBestPrice ? '#1b5e20' : '#e65100',
                   px: 1.5,
@@ -419,8 +311,8 @@ const TourComparisonModal = ({
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
                   letterSpacing: '0.3px',
-                  boxShadow: isBestPrice 
-                    ? '0 3px 10px rgba(118, 255, 3, 0.4)' 
+                  boxShadow: isBestPrice
+                    ? '0 3px 10px rgba(118, 255, 3, 0.4)'
                     : '0 3px 10px rgba(255, 152, 0, 0.4)',
                   animation: 'bounce 2s infinite',
                   '@keyframes bounce': {
@@ -461,40 +353,40 @@ const TourComparisonModal = ({
               </Box>
             )}
 
-                         {/* Enhanced Card for Best Price */}
-             <Card 
-               sx={{ 
-                 borderRadius: isBestPrice ? 3 : 2, 
-                 overflow: 'hidden', 
-                 mt: (isBestValue || isBestPrice) ? 2 : 0,
-                 border: isBestPrice ? '3px solid' : isBestValue ? '2px solid' : '1px solid',
-                 borderColor: isBestPrice ? '#4caf50' : isBestValue ? 'success.main' : 'grey.300',
-                 boxShadow: isBestPrice ? '0 12px 40px rgba(76, 175, 80, 0.25)' : 
-                           isBestValue ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
-                 transition: 'all 0.3s ease',
-                 position: 'relative',
-                 '&:hover': {
-                   transform: isBestPrice ? 'scale(1.03)' : 'scale(1.02)',
-                   boxShadow: isBestPrice ? '0 16px 50px rgba(76, 175, 80, 0.35)' : '0 8px 25px rgba(0,0,0,0.15)',
-                 },
-                 '&::before': isBestPrice ? {
-                   content: '""',
-                   position: 'absolute',
-                   top: 0,
-                   left: 0,
-                   right: 0,
-                   bottom: 0,
-                   background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
-                   zIndex: 1,
-                 } : {},
-               }}
-             >
+            {/* Enhanced Card for Best Price */}
+            <Card
+              sx={{
+                borderRadius: isBestPrice ? 3 : 2,
+                overflow: 'hidden',
+                mt: (isBestValue || isBestPrice) ? 2 : 0,
+                border: isBestPrice ? '3px solid' : isBestValue ? '2px solid' : '1px solid',
+                borderColor: isBestPrice ? '#4caf50' : isBestValue ? 'success.main' : 'grey.300',
+                boxShadow: isBestPrice ? '0 12px 40px rgba(76, 175, 80, 0.25)' :
+                  isBestValue ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                '&:hover': {
+                  transform: isBestPrice ? 'scale(1.03)' : 'scale(1.02)',
+                  boxShadow: isBestPrice ? '0 16px 50px rgba(76, 175, 80, 0.35)' : '0 8px 25px rgba(0,0,0,0.15)',
+                },
+                '&::before': isBestPrice ? {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
+                  zIndex: 1,
+                } : {},
+              }}
+            >
               <CardMedia
                 component="img"
                 height={isMobile ? "130" : "160"}
                 image={pkg.image}
                 alt={pkg.name}
-                sx={{ 
+                sx={{
                   objectFit: 'cover',
                   transition: 'transform 0.3s ease',
                   position: 'relative',
@@ -504,37 +396,37 @@ const TourComparisonModal = ({
                   }
                 }}
               />
-              
-                             {/* Premium Overlay for Best Price */}
-               {isBestPrice && (
-                 <Box
-                   sx={{
-                     position: 'absolute',
-                     bottom: 0,
-                     left: 0,
-                     right: 0,
-                     background: 'linear-gradient(to top, rgba(46, 125, 50, 0.8), transparent)',
-                     height: '40%',
-                     zIndex: 2,
-                     display: 'flex',
-                     alignItems: 'flex-end',
-                     justifyContent: 'center',
-                     pb: 1,
-                   }}
-                 >
-                   <Chip
-                     label="PREMIUM CHOICE"
-                     size="small"
-                     sx={{
-                       bgcolor: 'rgba(255, 255, 255, 0.95)',
-                       color: '#2e7d32',
-                       fontWeight: 'bold',
-                       fontSize: '0.65rem',
-                       letterSpacing: '0.3px',
-                     }}
-                   />
-                 </Box>
-               )}
+
+              {/* Premium Overlay for Best Price */}
+              {isBestPrice && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(to top, rgba(46, 125, 50, 0.8), transparent)',
+                    height: '40%',
+                    zIndex: 2,
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                    pb: 1,
+                  }}
+                >
+                  <Chip
+                    label="PREMIUM CHOICE"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.95)',
+                      color: '#2e7d32',
+                      fontWeight: 'bold',
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.3px',
+                    }}
+                  />
+                </Box>
+              )}
             </Card>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.5, gap: 1 }}>
@@ -557,22 +449,22 @@ const TourComparisonModal = ({
               >
                 <CloseIcon fontSize="small" />
               </IconButton>
-                             <IconButton
-                 size="small"
-                 sx={{
-                   color: isBestPrice ? '#2e7d32' : 'primary.main',
-                   bgcolor: 'background.paper',
-                   boxShadow: isBestPrice ? 4 : 2,
-                   border: isBestPrice ? '2px solid' : 'none',
-                   borderColor: isBestPrice ? '#c8e6c9' : 'transparent',
-                   transition: 'all 0.3s ease',
-                   '&:hover': {
-                     bgcolor: isBestPrice ? '#2e7d32' : 'primary.main',
-                     color: 'white',
-                     transform: 'scale(1.1)',
-                   },
-                 }}
-               >
+              <IconButton
+                size="small"
+                sx={{
+                  color: isBestPrice ? '#2e7d32' : 'primary.main',
+                  bgcolor: 'background.paper',
+                  boxShadow: isBestPrice ? 4 : 2,
+                  border: isBestPrice ? '2px solid' : 'none',
+                  borderColor: isBestPrice ? '#c8e6c9' : 'transparent',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    bgcolor: isBestPrice ? '#2e7d32' : 'primary.main',
+                    color: 'white',
+                    transform: 'scale(1.1)',
+                  },
+                }}
+              >
                 <HeartIcon fontSize="small" />
               </IconButton>
               <IconButton
@@ -600,66 +492,66 @@ const TourComparisonModal = ({
       case 'text':
         if (section.id === 'name') {
           return (
-                         <Box 
-               sx={{ 
-                 textAlign: 'center',
-                 position: 'relative',
-                 ...(isBestPrice && {
-                   background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
-                   borderRadius: 2,
-                   p: 2,
-                   border: '2px solid #c8e6c9',
-                   boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
-                 })
-               }}
-             >
-               <Typography 
-                 variant={isMobile ? "body1" : "h6"} 
-                 fontWeight="bold" 
-                 color={isBestPrice ? '#2e7d32' : 'primary.main'}
-                 sx={{ 
-                   mb: 1,
-                   fontSize: isBestPrice ? (isMobile ? '1rem' : '1.25rem') : (isMobile ? '0.875rem' : '1rem'),
-                   background: isBestPrice ? 'linear-gradient(135deg, #2e7d32, #4caf50)' : 
-                             isBestValue ? 'linear-gradient(45deg, #4caf50, #2e7d32)' : 'transparent',
-                   WebkitBackgroundClip: (isBestPrice || isBestValue) ? 'text' : 'unset',
-                   WebkitTextFillColor: (isBestPrice || isBestValue) ? 'transparent' : 'inherit',
-                   textShadow: isBestPrice ? '0 2px 4px rgba(46, 125, 50, 0.1)' : 'none',
-                   fontWeight: isBestPrice ? 'bolder' : 'bold',
-                 }}
-               >
-                 {pkg.name}
-               </Typography>
+            <Box
+              sx={{
+                textAlign: 'center',
+                position: 'relative',
+                ...(isBestPrice && {
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
+                  borderRadius: 2,
+                  p: 2,
+                  border: '2px solid #c8e6c9',
+                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
+                })
+              }}
+            >
+              <Typography
+                variant={isMobile ? "body1" : "h6"}
+                fontWeight="bold"
+                color={isBestPrice ? '#2e7d32' : 'primary.main'}
+                sx={{
+                  mb: 1,
+                  fontSize: isBestPrice ? (isMobile ? '1rem' : '1.25rem') : (isMobile ? '0.875rem' : '1rem'),
+                  background: isBestPrice ? 'linear-gradient(135deg, #2e7d32, #4caf50)' :
+                    isBestValue ? 'linear-gradient(45deg, #4caf50, #2e7d32)' : 'transparent',
+                  WebkitBackgroundClip: (isBestPrice || isBestValue) ? 'text' : 'unset',
+                  WebkitTextFillColor: (isBestPrice || isBestValue) ? 'transparent' : 'inherit',
+                  textShadow: isBestPrice ? '0 2px 4px rgba(46, 125, 50, 0.1)' : 'none',
+                  fontWeight: isBestPrice ? 'bolder' : 'bold',
+                }}
+              >
+                {pkg.name}
+              </Typography>
 
-               {/* Enhanced chip for best price */}
-               {isBestPrice && (
-                 <Chip 
-                   label="PREMIUM CHOICE" 
-                   size="small" 
-                   sx={{
-                     background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                     color: 'white',
-                     fontWeight: 'bold',
-                     fontSize: '0.65rem',
-                     textTransform: 'uppercase',
-                     letterSpacing: '0.3px',
-                     boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
-                     border: 'none',
-                     animation: 'premium-pulse 3s infinite',
-                     '@keyframes premium-pulse': {
-                       '0%, 100%': { transform: 'scale(1)' },
-                       '50%': { transform: 'scale(1.05)' },
-                     },
-                   }}
-                 />
-               )}
+              {/* Enhanced chip for best price */}
+              {isBestPrice && (
+                <Chip
+                  label="PREMIUM CHOICE"
+                  size="small"
+                  sx={{
+                    background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '0.65rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px',
+                    boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+                    border: 'none',
+                    animation: 'premium-pulse 3s infinite',
+                    '@keyframes premium-pulse': {
+                      '0%, 100%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.05)' },
+                    },
+                  }}
+                />
+              )}
 
               {/* Legacy recommended chip */}
               {isBestValue && !isBestPrice && (
-                <Chip 
-                  label="RECOMMENDED" 
-                  size="small" 
-                  color="success" 
+                <Chip
+                  label="RECOMMENDED"
+                  size="small"
+                  color="success"
                   sx={{ fontWeight: 'bold', fontSize: '0.6rem' }}
                 />
               )}
@@ -669,9 +561,9 @@ const TourComparisonModal = ({
         if (section.id === 'duration') {
           return pkg.duration ? (
             <Box sx={{ textAlign: 'center' }}>
-              <Typography 
-                variant="body1" 
-                color="text.primary" 
+              <Typography
+                variant="body1"
+                color="text.primary"
                 fontWeight="600"
                 sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
               >
@@ -679,9 +571,9 @@ const TourComparisonModal = ({
               </Typography>
             </Box>
           ) : (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
+            <Typography
+              variant="body2"
+              color="text.secondary"
               textAlign="center"
               sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
             >
@@ -691,11 +583,11 @@ const TourComparisonModal = ({
         }
         if (section.id === 'description') {
           return (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
+            <Typography
+              variant="body2"
+              color="text.secondary"
               lineHeight={1.6}
-              sx={{ 
+              sx={{
                 maxHeight: isMobile ? '80px' : '100px',
                 overflow: 'auto',
                 textAlign: 'left',
@@ -716,41 +608,41 @@ const TourComparisonModal = ({
             </Typography>
           );
         }
-                 if (section.id === 'groupSize') {
-           return (
-             <Box sx={{ textAlign: 'center' }}>
-               <Typography 
-                 variant="body2" 
-                 fontWeight="600"
-                 sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
-               >
-                 {pkg.groupSize || 'Not specified'}
-               </Typography>
-             </Box>
-           );
-         }
-         return (
-           <Typography 
-             variant="body2" 
-             textAlign="center"
-             sx={{ fontSize: isMobile ? '0.7rem' : '0.8rem' }}
-           >
-             {pkg[section.id] || 'N/A'}
-           </Typography>
-         );
+        if (section.id === 'groupSize') {
+          return (
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography
+                variant="body2"
+                fontWeight="600"
+                sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+              >
+                {pkg.groupSize || 'Not specified'}
+              </Typography>
+            </Box>
+          );
+        }
+        return (
+          <Typography
+            variant="body2"
+            textAlign="center"
+            sx={{ fontSize: isMobile ? '0.7rem' : '0.8rem' }}
+          >
+            {pkg[section.id] || 'N/A'}
+          </Typography>
+        );
 
       case 'rating':
         return (
           <Box sx={{ textAlign: 'center' }}>
-            <Rating 
-              value={pkg.rating || 0} 
-              readOnly 
+            <Rating
+              value={pkg.rating || 0}
+              readOnly
               precision={0.1}
               size="small"
               sx={{ mb: 0.5, fontSize: isMobile ? '1rem' : '1.2rem' }}
             />
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               color="text.secondary"
               sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
             >
@@ -762,13 +654,13 @@ const TourComparisonModal = ({
       case 'location':
         return (
           <Box sx={{ textAlign: 'center' }}>
-            <LocationIcon sx={{ 
-              color: 'primary.main', 
-              mb: 0.5, 
-              fontSize: isMobile ? '1rem' : '1.2rem' 
+            <LocationIcon sx={{
+              color: 'primary.main',
+              mb: 0.5,
+              fontSize: isMobile ? '1rem' : '1.2rem'
             }} />
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               fontWeight="600"
               sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
             >
@@ -810,85 +702,85 @@ const TourComparisonModal = ({
         );
 
       case 'price':
-                 return (
-           <Box 
-             sx={{ 
-               textAlign: 'center',
-               position: 'relative',
-               mt: isBestPrice ? 2 : 0,
-               ...(isBestPrice && {
-                 background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
-                 borderRadius: 2,
-                 p: 2,
-                 border: '2px solid #c8e6c9',
-                 boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
-               })
-             }}
-           >
-             {/* Premium Badge for Best Price */}
-             {isBestPrice && (
-               <Box
-                 sx={{
-                   position: 'absolute',
-                   top: -8,
-                   left: '50%',
-                   transform: 'translateX(-50%)',
-                   background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                   color: 'white',
-                   px: 2,
-                   py: 0.5,
-                   borderRadius: '15px',
-                   fontSize: '0.65rem',
-                   fontWeight: 'bold',
-                   textTransform: 'uppercase',
-                   letterSpacing: '0.5px',
-                   zIndex: 2,
-                   boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
-                 }}
-               >
-                 LOWEST PRICE
-               </Box>
-             )}
+        return (
+          <Box
+            sx={{
+              textAlign: 'center',
+              position: 'relative',
+              mt: isBestPrice ? 2 : 0,
+              ...(isBestPrice && {
+                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
+                borderRadius: 2,
+                p: 2,
+                border: '2px solid #c8e6c9',
+                boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
+              })
+            }}
+          >
+            {/* Premium Badge for Best Price */}
+            {isBestPrice && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                  color: 'white',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: '15px',
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  zIndex: 2,
+                  boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+                }}
+              >
+                LOWEST PRICE
+              </Box>
+            )}
 
-             <Typography 
-               variant={isMobile ? "h5" : "h4"} 
-               color={isBestPrice ? '#2e7d32' : 'success.main'}
-               fontWeight="bold"
-               sx={{ 
-                 mb: 0.5,
-                 mt: isBestPrice ? 1 : 0,
-                 fontSize: isBestPrice ? (isMobile ? '1.5rem' : '2rem') : (isMobile ? '1rem' : '1.25rem'),
-                 textShadow: isBestPrice ? '0 2px 4px rgba(46, 125, 50, 0.2)' : 'none',
-                 ...(isBestPrice && {
-                   background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                   WebkitBackgroundClip: 'text',
-                   WebkitTextFillColor: 'transparent',
-                   backgroundClip: 'text',
-                 })
-               }}
-             >
-               ${getDisplayPrice(pkg)?.toLocaleString('en-US') || getDisplayPrice(pkg)}
-             </Typography>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              color={isBestPrice ? '#2e7d32' : 'success.main'}
+              fontWeight="bold"
+              sx={{
+                mb: 0.5,
+                mt: isBestPrice ? 1 : 0,
+                fontSize: isBestPrice ? (isMobile ? '1.5rem' : '2rem') : (isMobile ? '1rem' : '1.25rem'),
+                textShadow: isBestPrice ? '0 2px 4px rgba(46, 125, 50, 0.2)' : 'none',
+                ...(isBestPrice && {
+                  background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                })
+              }}
+            >
+              ${getDisplayPrice(pkg)?.toLocaleString('en-US') || getDisplayPrice(pkg)}
+            </Typography>
 
-             {/* Show original price if there's a discount */}
-             {hasDiscount(pkg) && (
-               <Typography 
-                 variant="body2" 
-                 color="text.secondary"
-                 sx={{ 
-                   textDecoration: 'line-through',
-                   fontSize: isMobile ? '0.75rem' : '0.875rem',
-                   mb: 0.5,
-                 }}
-               >
-                 ${getOriginalPrice(pkg)?.toLocaleString('en-US')}
-               </Typography>
-             )}
+            {/* Show original price if there's a discount */}
+            {hasDiscount(pkg) && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  textDecoration: 'line-through',
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  mb: 0.5,
+                }}
+              >
+                ${getOriginalPrice(pkg)?.toLocaleString('en-US')}
+              </Typography>
+            )}
 
-            <Typography 
-              variant="caption" 
+            <Typography
+              variant="caption"
               color="text.secondary"
-              sx={{ 
+              sx={{
                 fontSize: isMobile ? '0.65rem' : '0.75rem',
                 fontWeight: isBestPrice ? 600 : 400,
               }}
@@ -899,10 +791,10 @@ const TourComparisonModal = ({
 
             {/* EMI Information */}
             {pkg.price?.emi && (
-              <Typography 
-                variant="caption" 
+              <Typography
+                variant="caption"
                 color="primary.main"
-                sx={{ 
+                sx={{
                   fontSize: isMobile ? '0.6rem' : '0.65rem',
                   fontWeight: 600,
                   display: 'block',
@@ -915,10 +807,10 @@ const TourComparisonModal = ({
 
             {/* Price Notes */}
             {pkg.price?.notes && (
-              <Typography 
-                variant="caption" 
+              <Typography
+                variant="caption"
                 color="text.secondary"
-                sx={{ 
+                sx={{
                   fontSize: isMobile ? '0.55rem' : '0.6rem',
                   fontStyle: 'italic',
                   display: 'block',
@@ -950,9 +842,9 @@ const TourComparisonModal = ({
             {/* Enhanced chip for best price */}
             {isBestPrice && (
               <Box sx={{ mt: 1.5 }}>
-                <Chip 
-                  label="BEST DEAL" 
-                  size="small" 
+                <Chip
+                  label="BEST DEAL"
+                  size="small"
                   sx={{
                     background: 'linear-gradient(135deg, #76ff03, #64dd17)',
                     color: '#1b5e20',
@@ -970,10 +862,10 @@ const TourComparisonModal = ({
             {/* Legacy best value chip */}
             {isBestValue && !isBestPrice && (
               <Box sx={{ mt: 1 }}>
-                <Chip 
-                  label="BEST VALUE" 
-                  size="small" 
-                  color="success" 
+                <Chip
+                  label="BEST VALUE"
+                  size="small"
+                  color="success"
                   variant="filled"
                   sx={{ fontWeight: 'bold', fontSize: '0.6rem' }}
                 />
@@ -984,67 +876,67 @@ const TourComparisonModal = ({
 
       case 'includes':
         return pkg.includes && pkg.includes.length > 0 ? (
-                     <Box
-             sx={{
-               ...(isBestPrice && {
-                 background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
-                 borderRadius: 2,
-                 p: 2,
-                 border: '2px solid #c8e6c9',
-                 boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
-                 position: 'relative',
-               })
-             }}
-           >
-             {/* Premium Features Header for Best Price */}
-             {isBestPrice && (
-               <Box
-                 sx={{
-                   position: 'absolute',
-                   top: -8,
-                   left: '50%',
-                   transform: 'translateX(-50%)',
-                   background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                   color: 'white',
-                   px: 2,
-                   py: 0.5,
-                   borderRadius: '15px',
-                   fontSize: '0.6rem',
-                   fontWeight: 'bold',
-                   textTransform: 'uppercase',
-                   letterSpacing: '0.5px',
-                   zIndex: 2,
-                   boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
-                 }}
-               >
-                 PREMIUM FEATURES
-               </Box>
-             )}
+          <Box
+            sx={{
+              ...(isBestPrice && {
+                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
+                borderRadius: 2,
+                p: 2,
+                border: '2px solid #c8e6c9',
+                boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
+                position: 'relative',
+              })
+            }}
+          >
+            {/* Premium Features Header for Best Price */}
+            {isBestPrice && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                  color: 'white',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: '15px',
+                  fontSize: '0.6rem',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  zIndex: 2,
+                  boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+                }}
+              >
+                PREMIUM FEATURES
+              </Box>
+            )}
 
             <Stack spacing={isBestPrice ? 0.6 : 0.4} sx={{ mt: isBestPrice ? 1 : 0 }}>
               {pkg.includes.slice(0, isMobile ? 3 : 4).map((item, idx) => (
-                <Box 
-                  key={idx} 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                <Box
+                  key={idx}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 0.5,
                     transition: 'transform 0.2s ease',
                     '&:hover': isBestPrice ? { transform: 'translateX(4px)' } : {},
                   }}
                 >
-                                     <CheckIcon 
-                     sx={{ 
-                       fontSize: isBestPrice ? 14 : 12, 
-                       color: isBestPrice ? '#2e7d32' : 'success.main',
-                       filter: isBestPrice ? 'drop-shadow(0 2px 4px rgba(46, 125, 50, 0.3))' : 'none',
-                     }} 
-                   />
-                  <Typography 
-                    variant="caption" 
+                  <CheckIcon
+                    sx={{
+                      fontSize: isBestPrice ? 14 : 12,
+                      color: isBestPrice ? '#2e7d32' : 'success.main',
+                      filter: isBestPrice ? 'drop-shadow(0 2px 4px rgba(46, 125, 50, 0.3))' : 'none',
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
                     color={isBestPrice ? 'text.primary' : 'text.secondary'}
                     lineHeight={1.3}
-                    sx={{ 
+                    sx={{
                       fontSize: isMobile ? '0.65rem' : '0.7rem',
                       fontWeight: isBestPrice ? 600 : 400,
                     }}
@@ -1053,70 +945,70 @@ const TourComparisonModal = ({
                   </Typography>
                 </Box>
               ))}
-              
+
               {pkg.includes.length > (isMobile ? 3 : 4) && (
-                                 <Box
-                   sx={{
-                     ...(isBestPrice && {
-                       background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(46, 125, 50, 0.15))',
-                       borderRadius: 1,
-                       p: 1,
-                       border: '1px solid #c8e6c9',
-                     })
-                   }}
-                 >
-                   <Typography 
-                     variant="caption" 
-                     color={isBestPrice ? '#2e7d32' : 'primary.main'}
-                     sx={{ 
-                       fontStyle: 'italic',
-                       fontSize: isMobile ? '0.6rem' : '0.65rem',
-                       fontWeight: isBestPrice ? 'bold' : 'normal',
-                       display: 'flex',
-                       alignItems: 'center',
-                       gap: 0.5,
-                     }}
-                   >
-                     +{pkg.includes.length - (isMobile ? 3 : 4)} more {isBestPrice ? 'premium ' : ''}items
-                   </Typography>
-                 </Box>
+                <Box
+                  sx={{
+                    ...(isBestPrice && {
+                      background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(46, 125, 50, 0.15))',
+                      borderRadius: 1,
+                      p: 1,
+                      border: '1px solid #c8e6c9',
+                    })
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color={isBestPrice ? '#2e7d32' : 'primary.main'}
+                    sx={{
+                      fontStyle: 'italic',
+                      fontSize: isMobile ? '0.6rem' : '0.65rem',
+                      fontWeight: isBestPrice ? 'bold' : 'normal',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                    }}
+                  >
+                    +{pkg.includes.length - (isMobile ? 3 : 4)} more {isBestPrice ? 'premium ' : ''}items
+                  </Typography>
+                </Box>
               )}
 
-                             {/* Bonus section for best price */}
-               {isBestPrice && (
-                 <Box
-                   sx={{
-                     mt: 1,
-                     pt: 1,
-                     borderTop: '2px solid #c8e6c9',
-                     background: 'linear-gradient(135deg, rgba(118, 255, 3, 0.1), rgba(100, 221, 23, 0.15))',
-                     borderRadius: 1,
-                     p: 1,
-                   }}
-                 >
-                   <Typography
-                     variant="caption"
-                     sx={{
-                       color: '#388e3c',
-                       fontWeight: 'bold',
-                       fontSize: '0.65rem',
-                       textTransform: 'uppercase',
-                       letterSpacing: '0.3px',
-                       display: 'flex',
-                       alignItems: 'center',
-                       gap: 0.5,
-                     }}
-                   >
-                     BONUS: Priority Support & Free Cancellation
-                   </Typography>
-                 </Box>
-               )}
+              {/* Bonus section for best price */}
+              {isBestPrice && (
+                <Box
+                  sx={{
+                    mt: 1,
+                    pt: 1,
+                    borderTop: '2px solid #c8e6c9',
+                    background: 'linear-gradient(135deg, rgba(118, 255, 3, 0.1), rgba(100, 221, 23, 0.15))',
+                    borderRadius: 1,
+                    p: 1,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#388e3c',
+                      fontWeight: 'bold',
+                      fontSize: '0.65rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                    }}
+                  >
+                    BONUS: Priority Support & Free Cancellation
+                  </Typography>
+                </Box>
+              )}
             </Stack>
           </Box>
         ) : (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
+          <Typography
+            variant="body2"
+            color="text.secondary"
             textAlign="center"
             sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
           >
@@ -1131,9 +1023,9 @@ const TourComparisonModal = ({
             {highlights.slice(0, isMobile ? 2 : 3).map((highlight, idx) => (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
                 <StarIcon sx={{ fontSize: 12, color: 'warning.main', mt: 0.2 }} />
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary" 
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
                   lineHeight={1.3}
                   sx={{ fontSize: isMobile ? '0.65rem' : '0.7rem' }}
                 >
@@ -1147,68 +1039,68 @@ const TourComparisonModal = ({
 
       case 'badges':
         return (
-                     <Box
-             sx={{
-               ...(isBestPrice && {
-                 background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
-                 borderRadius: 2,
-                 p: 2,
-                 border: '2px solid #c8e6c9',
-                 boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
-                 position: 'relative',
-               })
-             }}
-           >
-             {/* Premium Action Button for Best Price */}
-             {isBestPrice && (
-               <Box sx={{ mb: 2 }}>
-                 <Button
-                   variant="contained"
-                   fullWidth
-                   size={isMobile ? "medium" : "large"}
-                   sx={{
-                     background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                     color: 'white',
-                     fontWeight: 'bold',
-                     fontSize: isMobile ? '0.8rem' : '0.9rem',
-                     textTransform: 'uppercase',
-                     letterSpacing: '0.5px',
-                     py: isMobile ? 1 : 1.5,
-                     borderRadius: '25px',
-                     boxShadow: '0 8px 25px rgba(46, 125, 50, 0.4)',
-                     transition: 'all 0.3s ease',
-                     '&:hover': {
-                       background: 'linear-gradient(135deg, #1b5e20, #388e3c)',
-                       transform: 'translateY(-2px)',
-                       boxShadow: '0 12px 35px rgba(46, 125, 50, 0.5)',
-                     },
-                     '&:active': {
-                       transform: 'translateY(0px)',
-                     }
-                   }}
-                 >
-                   Choose Best Deal
-                 </Button>
-                 <Typography
-                   variant="caption"
-                   sx={{
-                     display: 'block',
-                     textAlign: 'center',
-                     mt: 1,
-                     color: '#2e7d32',
-                     fontWeight: 'bold',
-                     fontSize: '0.65rem',
-                     animation: 'fade-pulse 2s infinite',
-                     '@keyframes fade-pulse': {
-                       '0%, 100%': { opacity: 1 },
-                       '50%': { opacity: 0.7 },
-                     },
-                   }}
-                 >
-                   Limited Time Offer
-                 </Typography>
-               </Box>
-             )}
+          <Box
+            sx={{
+              ...(isBestPrice && {
+                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(46, 125, 50, 0.1))',
+                borderRadius: 2,
+                p: 2,
+                border: '2px solid #c8e6c9',
+                boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
+                position: 'relative',
+              })
+            }}
+          >
+            {/* Premium Action Button for Best Price */}
+            {isBestPrice && (
+              <Box sx={{ mb: 2 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size={isMobile ? "medium" : "large"}
+                  sx={{
+                    background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '0.8rem' : '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    py: isMobile ? 1 : 1.5,
+                    borderRadius: '25px',
+                    boxShadow: '0 8px 25px rgba(46, 125, 50, 0.4)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1b5e20, #388e3c)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 35px rgba(46, 125, 50, 0.5)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0px)',
+                    }
+                  }}
+                >
+                  Choose Best Deal
+                </Button>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    textAlign: 'center',
+                    mt: 1,
+                    color: '#2e7d32',
+                    fontWeight: 'bold',
+                    fontSize: '0.65rem',
+                    animation: 'fade-pulse 2s infinite',
+                    '@keyframes fade-pulse': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0.7 },
+                    },
+                  }}
+                >
+                  Limited Time Offer
+                </Typography>
+              </Box>
+            )}
 
             {/* Features/Badges Section */}
             {pkg.badges && pkg.badges.length > 0 ? (
@@ -1220,13 +1112,13 @@ const TourComparisonModal = ({
                     size="small"
                     color={isBestPrice ? "primary" : "secondary"}
                     variant={isBestPrice ? "filled" : "outlined"}
-                                         sx={{ 
-                       fontWeight: 600,
-                       fontSize: isMobile ? '0.6rem' : '0.65rem',
-                       height: 'auto',
-                       background: isBestPrice ? 'linear-gradient(135deg, #2e7d32, #4caf50)' : undefined,
-                       color: isBestPrice ? 'white' : undefined,
-                       boxShadow: isBestPrice ? '0 4px 12px rgba(46, 125, 50, 0.3)' : undefined,
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: isMobile ? '0.6rem' : '0.65rem',
+                      height: 'auto',
+                      background: isBestPrice ? 'linear-gradient(135deg, #2e7d32, #4caf50)' : undefined,
+                      color: isBestPrice ? 'white' : undefined,
+                      boxShadow: isBestPrice ? '0 4px 12px rgba(46, 125, 50, 0.3)' : undefined,
                       '& .MuiChip-label': {
                         px: 0.5,
                         py: 0.2,
@@ -1241,9 +1133,9 @@ const TourComparisonModal = ({
               </Box>
             ) : (
               !isBestPrice && (
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
                   textAlign="center"
                   sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
                 >
@@ -1252,45 +1144,45 @@ const TourComparisonModal = ({
               )
             )}
 
-                         {/* Premium guarantee for best price */}
-             {isBestPrice && (
-               <Box
-                 sx={{
-                   mt: 2,
-                   pt: 1.5,
-                   borderTop: '2px solid #c8e6c9',
-                   textAlign: 'center',
-                 }}
-               >
-                 <Typography
-                   variant="caption"
-                   sx={{
-                     color: '#388e3c',
-                     fontWeight: 'bold',
-                     fontSize: '0.65rem',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
-                     gap: 0.5,
-                     textTransform: 'uppercase',
-                     letterSpacing: '0.3px',
-                   }}
-                 >
-                   Best Price Guarantee
-                 </Typography>
-                 <Typography
-                   variant="caption"
-                   sx={{
-                     color: 'text.secondary',
-                     fontSize: '0.6rem',
-                     display: 'block',
-                     mt: 0.5,
-                   }}
-                 >
-                   We'll match any lower price
-                 </Typography>
-               </Box>
-             )}
+            {/* Premium guarantee for best price */}
+            {isBestPrice && (
+              <Box
+                sx={{
+                  mt: 2,
+                  pt: 1.5,
+                  borderTop: '2px solid #c8e6c9',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#388e3c',
+                    fontWeight: 'bold',
+                    fontSize: '0.65rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px',
+                  }}
+                >
+                  Best Price Guarantee
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.6rem',
+                    display: 'block',
+                    mt: 0.5,
+                  }}
+                >
+                  We'll match any lower price
+                </Typography>
+              </Box>
+            )}
           </Box>
         );
 
@@ -1334,10 +1226,10 @@ const TourComparisonModal = ({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <CompareIcon />
-          <Typography 
-            variant={isMobile ? "body1" : "h6"} 
+          <Typography
+            variant={isMobile ? "body1" : "h6"}
             component="div"
-            sx={{ 
+            sx={{
               fontWeight: 'bold',
               fontSize: isMobile ? '1rem' : '1.25rem'
             }}
@@ -1345,11 +1237,11 @@ const TourComparisonModal = ({
             Compare Packages ({compareList.length})
           </Typography>
           {compareList.length > 0 && (
-            <Chip 
+            <Chip
               label={`${compareList.length}/3 selected`}
               size="small"
-              sx={{ 
-                bgcolor: 'rgba(255,255,255,0.2)', 
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.2)',
                 color: 'white',
                 fontWeight: 'bold',
                 fontSize: '0.65rem'
@@ -1409,66 +1301,66 @@ const TourComparisonModal = ({
                         },
                       }}
                     >
-                                             {/* Enhanced Label Column */}
-                       <TableCell
-                         sx={{
-                           bgcolor: 'primary.dark',
-                           color: 'white',
-                           fontWeight: 'bold',
-                           fontSize: isMobile ? '0.75rem' : '0.875rem',
-                           minWidth: isMobile ? 120 : 180,
-                           maxWidth: isMobile ? 120 : 180,
-                           width: isMobile ? 120 : 180,
-                           position: 'sticky',
-                           left: 0,
-                           zIndex: 2,
-                           borderRight: '3px solid',
-                           borderColor: 'primary.main',
-                           background: 'linear-gradient(135deg, #1976d2, #1565c0)',
-                         }}
-                       >
+                      {/* Enhanced Label Column */}
+                      <TableCell
+                        sx={{
+                          bgcolor: 'primary.dark',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: isMobile ? '0.75rem' : '0.875rem',
+                          minWidth: isMobile ? 120 : 180,
+                          maxWidth: isMobile ? 120 : 180,
+                          width: isMobile ? 120 : 180,
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 2,
+                          borderRight: '3px solid',
+                          borderColor: 'primary.main',
+                          background: 'linear-gradient(135deg, #1976d2, #1565c0)',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Avatar
-                            sx={{ 
-                              bgcolor: 'rgba(255,255,255,0.2)', 
-                              width: 28, 
-                              height: 28 
+                            sx={{
+                              bgcolor: 'rgba(255,255,255,0.2)',
+                              width: 28,
+                              height: 28
                             }}
                           >
-                            {React.cloneElement(section.icon, { 
-                              sx: { fontSize: isMobile ? 14 : 16, color: 'white' } 
+                            {React.cloneElement(section.icon, {
+                              sx: { fontSize: isMobile ? 14 : 16, color: 'white' }
                             })}
                           </Avatar>
-                                                     <Typography 
-                             variant={isMobile ? "caption" : "body2"} 
-                             fontWeight="bold"
-                             color="inherit"
-                             sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
-                           >
-                             {section.label}
-                           </Typography>
+                          <Typography
+                            variant={isMobile ? "caption" : "body2"}
+                            fontWeight="bold"
+                            color="inherit"
+                            sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}
+                          >
+                            {section.label}
+                          </Typography>
                         </Box>
                       </TableCell>
 
-                                             {/* Enhanced Package Value Columns */}
-                       {compareList.map((pkg, pkgIndex) => (
-                         <TableCell
-                           key={pkg.id}
-                           sx={{
-                             minWidth: isMobile ? 140 : 220,
-                             maxWidth: isMobile ? 180 : 280,
-                             p: isMobile ? 1 : 2,
-                             verticalAlign: 'top',
-                             borderRight: pkgIndex < compareList.length - 1 ? '2px solid' : 'none',
-                             borderColor: 'grey.300',
-                             transition: 'all 0.3s ease',
-                             position: 'relative',
-                             '&:hover': {
-                               bgcolor: 'rgba(25, 118, 210, 0.04)',
-                               transform: 'translateY(-1px)',
-                             },
-                           }}
-                         >
+                      {/* Enhanced Package Value Columns */}
+                      {compareList.map((pkg, pkgIndex) => (
+                        <TableCell
+                          key={pkg.id}
+                          sx={{
+                            minWidth: isMobile ? 140 : 220,
+                            maxWidth: isMobile ? 180 : 280,
+                            p: isMobile ? 1 : 2,
+                            verticalAlign: 'top',
+                            borderRight: pkgIndex < compareList.length - 1 ? '2px solid' : 'none',
+                            borderColor: 'grey.300',
+                            transition: 'all 0.3s ease',
+                            position: 'relative',
+                            '&:hover': {
+                              bgcolor: 'rgba(25, 118, 210, 0.04)',
+                              transform: 'translateY(-1px)',
+                            },
+                          }}
+                        >
                           {renderCellContent(section, pkg)}
                         </TableCell>
                       ))}
@@ -1479,22 +1371,22 @@ const TourComparisonModal = ({
             </TableContainer>
 
             {/* Additional Information Footer */}
-            <Paper 
-              elevation={3} 
-              sx={{ 
-                mt: 2, 
-                p: 3, 
+            <Paper
+              elevation={3}
+              sx={{
+                mt: 2,
+                p: 3,
                 bgcolor: 'background.paper',
                 borderTop: '3px solid',
                 borderColor: 'primary.main',
               }}
             >
-              <Typography 
-                variant="body1" 
-                gutterBottom 
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <Typography
+                variant="body1"
+                gutterBottom
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: 1,
                   fontWeight: 'bold',
                   fontSize: '1rem'
@@ -1507,15 +1399,15 @@ const TourComparisonModal = ({
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center', p: 1.5 }}>
                     <MoneyIcon sx={{ fontSize: 30, color: 'success.main', mb: 1 }} />
-                    <Typography 
-                      variant="subtitle2" 
+                    <Typography
+                      variant="subtitle2"
                       fontWeight="bold"
                       sx={{ fontSize: '0.875rem' }}
                     >
                       Price Comparison
                     </Typography>
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{ fontSize: '0.75rem' }}
                     >
@@ -1526,15 +1418,15 @@ const TourComparisonModal = ({
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center', p: 1.5 }}>
                     <StarIcon sx={{ fontSize: 30, color: 'warning.main', mb: 1 }} />
-                    <Typography 
-                      variant="subtitle2" 
+                    <Typography
+                      variant="subtitle2"
                       fontWeight="bold"
                       sx={{ fontSize: '0.875rem' }}
                     >
                       Rating & Reviews
                     </Typography>
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{ fontSize: '0.75rem' }}
                     >
@@ -1545,15 +1437,15 @@ const TourComparisonModal = ({
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center', p: 1.5 }}>
                     <TrophyIcon sx={{ fontSize: 30, color: 'success.main', mb: 1 }} />
-                    <Typography 
-                      variant="subtitle2" 
+                    <Typography
+                      variant="subtitle2"
                       fontWeight="bold"
                       sx={{ fontSize: '0.875rem' }}
                     >
                       Best Value
                     </Typography>
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color="text.secondary"
                       sx={{ fontSize: '0.75rem' }}
                     >
@@ -1595,9 +1487,9 @@ const TourComparisonModal = ({
         >
           Clear All ({compareList.length})
         </Button>
-        <Button 
-          onClick={handleCloseComparison} 
-          variant="contained" 
+        <Button
+          onClick={handleCloseComparison}
+          variant="contained"
           size="large"
           fullWidth={isMobile}
           startIcon={<CheckIcon />}

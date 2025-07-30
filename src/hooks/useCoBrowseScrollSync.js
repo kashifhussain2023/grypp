@@ -11,7 +11,7 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, containerType = 'catalog') => {
   const [isActiveController, setIsActiveController] = useState(false);
   const [lastScrollPosition, setLastScrollPosition] = useState({ scrollTop: 0, scrollLeft: 0 });
-  
+
   // Refs for tracking scroll state
   const scrollRef = useRef(null);
   const lastScrollPositionRef = useRef({ scrollTop: 0, scrollLeft: 0 });
@@ -43,9 +43,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
 
   // Debug logging function
   const log = useCallback((message, data = null) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📊 [${userType}-${containerType}] ${message}`, data || '');
-    }
+    console.log(`📊 [${userType}-${containerType}] ${message}`, data || '');
   }, [userType, containerType]);
 
   // Throttled scroll position sender with delay for smooth scrolling
@@ -111,18 +109,18 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
   // Apply scroll position to the scroll container with smooth animation and delay
   const applyScrollPosition = useCallback((scrollTop, scrollLeft) => {
     if (!scrollRef.current) return;
-    
+
     log('Applying scroll position:', { scrollTop, scrollLeft });
-    
+
     // Mark that we're applying an incoming scroll
     incomingScrollRef.current = true;
     scrollAnimationRef.current = true;
-    
+
     // Add a small delay before applying scroll for smoother experience
     if (scrollDelayTimeoutRef.current) {
       clearTimeout(scrollDelayTimeoutRef.current);
     }
-    
+
     scrollDelayTimeoutRef.current = setTimeout(() => {
       // Apply the scroll position smoothly
       scrollRef.current.scrollTo({
@@ -130,12 +128,12 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
         left: scrollLeft,
         behavior: 'smooth'
       });
-      
+
       // Update last scroll position
       const newPosition = { scrollTop, scrollLeft };
       setLastScrollPosition(newPosition);
       lastScrollPositionRef.current = newPosition;
-      
+
       // Reset flags after animation completes
       setTimeout(() => {
         incomingScrollRef.current = false;
@@ -150,7 +148,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
 
     try {
       const data = JSON.parse(event.data);
-      
+
       // Ignore signals from same user type or different container type
       if (data.userType === userType || data.containerType !== containerType) {
         return;
@@ -190,7 +188,7 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
 
     // Send scroll position to other party (throttled for performance)
     sendScrollPositionThrottled(scrollTop, scrollLeft);
-    
+
     // Update last scroll position
     lastScrollPositionRef.current = { scrollTop, scrollLeft };
     setLastScrollPosition({ scrollTop, scrollLeft });
@@ -214,15 +212,15 @@ export const useCoBrowseScrollSync = (userType = 'agent', enabled = true, contai
     if (!scrollContainer || !enabled) return;
 
     log('Setting up scroll event listener on container');
-    
+
     const handleScrollEvent = (event) => {
       handleScroll(event);
-      
+
       // Clear existing timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
-      
+
       // Set new timeout for scroll end
       scrollTimeoutRef.current = setTimeout(() => {
         handleScrollEnd();

@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { CallEnd, Person } from "@mui/icons-material";
 import axios from "axios";
+import { openTokSessionSingleton } from "../../../services/OpenTokSessionManager";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-const WaitingRoom = ({ userId, sessionRef, onEndCall, setError }) => {
+const WaitingRoom = ({ userId, onEndCall, setError }) => {
   const [isEndingCall, setIsEndingCall] = useState(false);
 
   const handleEndCall = async () => {
@@ -14,8 +15,8 @@ const WaitingRoom = ({ userId, sessionRef, onEndCall, setError }) => {
       if (userId) {
         await axios.post(`${backendUrl}/api/call-request/${userId}/decline`);
       }
-      if (sessionRef.current) {
-        sessionRef.current.disconnect();
+      if (openTokSessionSingleton.isSessionAvailable()) {
+        openTokSessionSingleton.getSession().disconnect();
       }
       onEndCall?.();
     } catch (err) {
