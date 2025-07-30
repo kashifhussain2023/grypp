@@ -16,7 +16,7 @@ const TravelExpert = () => {
   return (
     <Box
       sx={{
-        py: 8,
+        py: { xs: 4, md: 8 }, // Responsive padding top/bottom
         minHeight: "100vh",
         background: `url(https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80) no-repeat center center/cover`,
         backgroundColor: "rgba(0, 0, 0, 0.5)", // Dark overlay for readability
@@ -24,6 +24,9 @@ const TravelExpert = () => {
         textAlign: "center",
         position: "relative",
         overflow: "hidden",
+        display: "flex", // Use flexbox for vertical centering
+        alignItems: "center", // Center content vertically
+        justifyContent: "center", // Center content horizontally
       }}
       id="travelExpert"
     >
@@ -44,9 +47,9 @@ const TravelExpert = () => {
         sx={{
           position: "relative",
           zIndex: 2,
-          maxWidth: 800,
+          maxWidth: { xs: "90%", sm: 700, md: 800 }, // Responsive max-width
           mx: "auto",
-          px: 2,
+          px: { xs: 2, sm: 4 }, // Responsive horizontal padding
         }}
       >
         <Typography
@@ -57,10 +60,11 @@ const TravelExpert = () => {
             fontWeight: 700,
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)", // Adds depth
             position: "relative",
+            fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" }, // Responsive font size
             "&:after": {
               content: '""',
               display: "block",
-              width: 100,
+              width: { xs: 80, sm: 100 }, // Responsive line width
               height: 5,
               background: "linear-gradient(to right, #ffeb3b, #f44336)", // Travel gradient
               margin: "15px auto",
@@ -75,8 +79,8 @@ const TravelExpert = () => {
           sx={{
             backgroundColor: "rgba(255, 255, 255, 0.9)", // Slight transparency
             borderRadius: 16,
-            p: 6,
-            maxWidth: 600,
+            p: { xs: 3, sm: 6 }, // Responsive padding
+            maxWidth: { xs: "95%", sm: 500, md: 600 }, // Responsive max-width for the card
             mx: "auto",
             boxShadow: 6,
             color: "#333",
@@ -90,8 +94,8 @@ const TravelExpert = () => {
           <Avatar
             src="/expert-avatar.jpg"
             sx={{
-              width: 180,
-              height: 180,
+              width: { xs: 120, sm: 180 }, // Responsive avatar size
+              height: { xs: 120, sm: 180 }, // Responsive avatar size
               mx: "auto",
               mb: 4,
               border: "6px solid #ffeb3b", // Yellow border for travel theme
@@ -100,19 +104,33 @@ const TravelExpert = () => {
           />
           <Typography
             variant="h4"
-            sx={{ mb: 2, fontWeight: 600, color: "#2ecc71" }}
+            sx={{
+              mb: 2,
+              fontWeight: 600,
+              color: "#2ecc71",
+              fontSize: { xs: "1.5rem", sm: "2rem" },
+            }} // Responsive font size
           >
             Travel Expert
           </Typography>
           <Typography
             color="primary"
-            sx={{ mb: 3, fontWeight: 500, color: "#3498db" }}
+            sx={{
+              mb: 3,
+              fontWeight: 500,
+              color: "#3498db",
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+            }} // Responsive font size
           >
             Senior Travel Consultant
           </Typography>
           <Typography
             color="text.secondary"
-            sx={{ mb: 5, fontSize: "1.1rem", color: "#666" }}
+            sx={{
+              mb: 5,
+              fontSize: { xs: "1rem", sm: "1.1rem" },
+              color: "#666",
+            }} // Responsive font size
           >
             With over 15 years of experience, our expert has guided thousands of
             travelers to their dream destinations with personalized itineraries.
@@ -132,11 +150,12 @@ const TravelExpert = () => {
               color="success"
               startIcon={<Chat />}
               sx={{
-                px: 4,
-                py: 2,
+                px: { xs: 2, sm: 4 }, // Responsive padding
+                py: { xs: 1.5, sm: 2 }, // Responsive padding
                 fontWeight: 600,
                 backgroundColor: "#2ecc71",
                 "&:hover": { backgroundColor: "#27ae60", transform: "translateY(-3px)" },
+                fontSize: { xs: '0.8rem', sm: '1rem' }, // Responsive font size
               }}
             >
               Chat Now
@@ -147,8 +166,8 @@ const TravelExpert = () => {
               startIcon={<VideoCall />}
               onClick={() => setVideoDialogOpen(true)}
               sx={{
-                px: 4,
-                py: 2,
+                px: { xs: 2, sm: 4 }, // Responsive padding
+                py: { xs: 1.5, sm: 2 }, // Responsive padding
                 fontWeight: 700,
                 backgroundColor: "#3498db",
                 color: "white",
@@ -158,6 +177,7 @@ const TravelExpert = () => {
                 },
                 textTransform: "uppercase",
                 borderRadius: 5,
+                fontSize: { xs: "0.8rem", sm: "1rem" }, // Responsive font size
               }}
             >
               Video Call
