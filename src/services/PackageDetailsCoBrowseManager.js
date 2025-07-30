@@ -237,7 +237,7 @@ class PackageDetailsCoBrowseSingleton {
 
       setTimeout(() => {
         this.isIncomingActionRef.current = false;
-      }, 50);
+      }, 150);
     } catch (error) {
       console.error('📦 Error handling fullscreen toggle signal:', error);
     }
@@ -269,7 +269,7 @@ class PackageDetailsCoBrowseSingleton {
 
       setTimeout(() => {
         this.isIncomingActionRef.current = false;
-      }, 50);
+      }, 150);
     } catch (error) {
       console.error('📦 Error handling image navigate signal:', error);
     }
@@ -285,7 +285,7 @@ class PackageDetailsCoBrowseSingleton {
 
       setTimeout(() => {
         this.isIncomingActionRef.current = false;
-      }, 50);
+      }, 150);
     } catch (error) {
       console.error('📦 Error handling zoom change signal:', error);
     }

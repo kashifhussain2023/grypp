@@ -346,7 +346,7 @@ const CustomerPage = ({
         }
       },
     }),
-    []
+    [handleChunk, handleChunkMetadata]
   );
 
   // Update the ref whenever signal handlers change
@@ -385,20 +385,22 @@ const CustomerPage = ({
       console.log('🔌 Initializing scroll synchronization manager for customer');
       scrollSyncManager.initialize('customer', session);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openTokSessionSingleton.isSessionAvailable()]);
 
   // Re-register signal handlers after singleton is initialized
-  useEffect(() => {
-    if (openTokSessionSingleton.isSessionAvailable() && signalHandlers) {
-      console.log('🔌 Re-registering signal handlers after singleton initialization:', Object.keys(signalHandlers));
-      openTokSessionSingleton.registerSignalHandlers(signalHandlers);
+  // useEffect(() => {
+  //   if (openTokSessionSingleton.isSessionAvailable() && signalHandlers) {
+  //     console.log('🔌 Re-registering signal handlers after singleton initialization:', Object.keys(signalHandlers));
+  //     openTokSessionSingleton.registerSignalHandlers(signalHandlers);
 
-      // Add a general signal listener for debugging
-      openTokSessionSingleton.registerGeneralSignalListener((event) => {
-        console.log("🔌 Customer received general signal:", event.type, event.data);
-      });
-    }
-  }, [signalHandlers, openTokSessionSingleton.isSessionAvailable()]);
+  //     // Add a general signal listener for debugging
+  //     openTokSessionSingleton.registerGeneralSignalListener((event) => {
+  //       console.log("🔌 Customer received general signal:", event.type, event.data);
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [signalHandlers, openTokSessionSingleton.isSessionAvailable()]);
 
   // Set up global callback for chunked package reception and progress dialog management
   useEffect(() => {
@@ -986,9 +988,6 @@ const CustomerPage = ({
           }}
         />
 
-        {/* Debug check if component exists */}
-        {console.log("📦 PackageShareDialog component:", PackageShareDialog)}
-
         {/* Package Share Dialog */}
         <PackageShareDialog
           open={showPackagesDialog}
@@ -1016,13 +1015,7 @@ const CustomerPage = ({
           onClose={() => setShowChunkedProgressDialog(false)}
         />
 
-        {/* Debug: Show dialog state in console when it changes */}
-        {console.log(
-          "📦 CustomerPage render - showPackagesDialog:",
-          showPackagesDialog,
-          "sharedPackages.length:",
-          sharedPackages.length
-        )}
+
 
         {/* Bottom Line Loader for Chunked Package Reception */}
         <Fade in={isReceiving}>

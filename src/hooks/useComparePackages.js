@@ -9,7 +9,7 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 export const useComparePackages = (userType = 'agent') => {
     const [compareList, setCompareList] = useState([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    
+
     // Refs to prevent signal loops and debounce rapid changes
     const isUpdatingFromSignalRef = useRef(false);
     const syncTimeoutRef = useRef(null);
@@ -157,11 +157,11 @@ export const useComparePackages = (userType = 'agent') => {
 
             // Set flag to prevent sending signals while updating from incoming signal
             isUpdatingFromSignalRef.current = true;
-            
+
             // Update comparison list for both user types
             setCompareList(data.compareList || []);
             console.log(`[Compare-${userType}] Updated comparison list from sync:`, data.compareList?.length, 'packages');
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -185,16 +185,16 @@ export const useComparePackages = (userType = 'agent') => {
 
             // Set flag to prevent sending signals while updating from incoming signal
             isUpdatingFromSignalRef.current = true;
-            
+
             // Update drawer state
             setIsDrawerOpen(data.isDrawerOpen || false);
-            
+
             // If opening and there's comparison data, update the comparison list
             if (data.isDrawerOpen && data.compareList && data.compareList.length > 0) {
                 console.log(`[Compare-${userType}] Received comparison data with drawer open:`, data.compareList.length, 'packages');
                 setCompareList(data.compareList);
             }
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -208,7 +208,7 @@ export const useComparePackages = (userType = 'agent') => {
     const handleSharedComparisonOpen = useCallback((event) => {
         try {
             const data = JSON.parse(event.data);
-            
+
             // Ignore signals from same user type
             if (data.action && data.action.includes(userType)) {
                 return;
@@ -224,7 +224,7 @@ export const useComparePackages = (userType = 'agent') => {
                 console.log(`[Compare-${userType}] Received comparison data from shared signal:`, data.compareList.length, 'packages');
                 setCompareList(data.compareList);
             }
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -238,7 +238,7 @@ export const useComparePackages = (userType = 'agent') => {
     const handleComparisonAction = useCallback((event) => {
         try {
             const data = JSON.parse(event.data);
-            
+
             // Ignore signals from same user type
             if (data.userType === userType) {
                 return;
@@ -276,13 +276,13 @@ export const useComparePackages = (userType = 'agent') => {
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-drawer-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
             openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
-            
+
             // Clear any pending timeouts
             if (syncTimeoutRef.current) {
                 clearTimeout(syncTimeoutRef.current);
             }
         };
-    }, [handleComparisonSync, handleDrawerSync, handleSharedComparisonOpen, handleComparisonAction]);
+    }, [userType]);
 
     return {
         compareList,

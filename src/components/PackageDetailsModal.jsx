@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -163,7 +163,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
       // Reset the flag when modal closes
       hasSentOpenSignalRef.current = false;
     }
-  }, [open, packageData, userType, sendModalOpen]);
+  }, [open, packageData?.id, userType, sendModalOpen]);
 
   // Effect to handle incoming modal open/close actions
   useEffect(() => {
@@ -225,12 +225,14 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     if (incomingImageNavigate && packageData?.images) {
       console.log(`📦 [${userType}] Received image navigate:`, incomingImageNavigate.data.direction);
       const direction = incomingImageNavigate.data.direction;
-      const newIndex = direction === 'next'
-        ? (selectedImageIndex + 1) % packageData.images.length
-        : selectedImageIndex === 0 ? packageData.images.length - 1 : selectedImageIndex - 1;
-      setSelectedImageIndex(newIndex);
+      setSelectedImageIndex(prevIndex => {
+        const newIndex = direction === 'next'
+          ? (prevIndex + 1) % packageData.images.length
+          : prevIndex === 0 ? packageData.images.length - 1 : prevIndex - 1;
+        return newIndex;
+      });
     }
-  }, [incomingImageNavigate, userType, packageData?.images, selectedImageIndex]);
+  }, [incomingImageNavigate, userType, packageData?.images]);
 
   // Effect to handle incoming zoom changes
   useEffect(() => {
@@ -287,10 +289,12 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
   // Clear incoming actions after processing
   useEffect(() => {
-    if (incomingTabChange || incomingImageSelect || incomingDaySelect ||
+    const hasIncomingActions = incomingTabChange || incomingImageSelect || incomingDaySelect ||
       incomingFullscreenToggle || incomingSlideshowToggle || incomingImageNavigate ||
       incomingZoomChange || incomingScrollSync || incomingComparisonAction ||
-      incomingPaymentAction || incomingModalOpen || incomingModalClose) {
+      incomingPaymentAction || incomingModalOpen || incomingModalClose;
+
+    if (hasIncomingActions) {
       // Clear after a short delay to ensure processing is complete
       setTimeout(() => {
         clearIncomingActions();
@@ -378,14 +382,14 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     };
 
     const dialogElement = dialogRef.current;
-    if (dialogElement) {
+    if (dialogElement && open) {
       dialogElement.addEventListener('scroll', handleScroll, { passive: true });
       return () => dialogElement.removeEventListener('scroll', handleScroll);
     }
-  }, [open, sendScrollSync, scrollRef]);
+  }, [open, sendScrollSync]);
 
   useEffect(() => {
-    if (isImageSlideshow) {
+    if (isImageSlideshow && packageData?.images?.length) {
       slideshowInterval.current = setInterval(() => {
         setSelectedImageIndex(prev =>
           prev === packageData.images.length - 1 ? 0 : prev + 1
@@ -398,10 +402,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     return () => clearInterval(slideshowInterval.current);
   }, [isImageSlideshow, packageData?.images?.length]);
 
-  // Add debugging for packageData
-  useEffect(() => {
-    console.log("[PackageDetailsModal] Modal props:", { open, packageData: packageData?.id, userType });
-  }, [open, packageData?.id, userType]);
+  // Add debugging for packageData (commented out to prevent re-renders)
+  // useEffect(() => {
+  //   console.log("[PackageDetailsModal] Modal props:", { open, packageData: packageData?.id, userType });
+  // }, [open, packageData?.id, userType]);
 
   // Don't return null immediately, let the modal render and show loading state
   // if (!packageData) return null;
@@ -2367,4 +2371,4 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 };
 
-export default memo(PackageDetailsModal); 
+export default PackageDetailsModal; 

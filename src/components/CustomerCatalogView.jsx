@@ -74,15 +74,7 @@ const CustomerCatalogView = ({
     }
   };
 
-  console.log("[Customer Catalog] Scroll sync active controller:", isActiveController);
-  console.log("[Customer Catalog] Shared packages:", sharedPackages.length);
-  // Remove excessive debugging that causes re-renders
-  // console.log("[Customer Catalog] Shared packages data:", sharedPackages);
-  // console.log("[Customer Catalog] Shared packages type:", typeof sharedPackages);
-  // console.log("[Customer Catalog] Shared packages is array:", Array.isArray(sharedPackages));
-  // console.log("[Customer Catalog] Modal state - modalOpen:", modalOpen);
-  // console.log("[Customer Catalog] Modal state - selectedPackage:", selectedPackage);
-  // console.log("[Customer Catalog] Modal state - packageDetailsToOpen:", packageDetailsToOpen);
+  // Debug logging moved to useEffect to prevent re-renders
 
   return (
     <Box sx={{ position: 'relative', height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -595,7 +587,6 @@ const CustomerCatalogView = ({
       )}
 
       {/* Package Details Modal */}
-      {/* Remove debugging log that causes re-renders */}
       {modalOpen && (
         <PackageDetailsModal
           open={modalOpen}
