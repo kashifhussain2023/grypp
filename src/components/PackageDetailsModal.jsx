@@ -113,12 +113,11 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const dialogRef = useRef(null);
   const slideshowInterval = useRef(null);
   const hasSentOpenSignalRef = useRef(false);
 
   // Use scroll sync hook for package details
-  const { scrollRef } = useCoBrowseScrollSync(userType, true, 'details');
+  const { scrollRef, isActiveController } = useCoBrowseScrollSync(userType, true, 'details');
 
   // Use package details co-browsing hook
   const {
@@ -130,7 +129,6 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     incomingSlideshowToggle,
     incomingImageNavigate,
     incomingZoomChange,
-    incomingScrollSync,
     incomingComparisonAction,
     incomingPaymentAction,
     incomingModalOpen,
@@ -144,7 +142,6 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     sendSlideshowToggle,
     sendImageNavigate,
     sendZoomChange,
-    sendScrollSync,
     sendPaymentAction,
     sendModalOpen,
     sendModalClose,
@@ -245,31 +242,8 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     }
   }, [incomingZoomChange, userType]);
 
-  // Effect to handle incoming scroll sync
-  useEffect(() => {
-    if (incomingScrollSync && incomingScrollSync.data) {
-      console.log(`📦 [${userType}] Received scroll sync:`, incomingScrollSync.data);
-      const { scrollTop, scrollLeft } = incomingScrollSync.data;
-
-      // Apply scroll to the main scroll container
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: scrollTop,
-          left: scrollLeft,
-          behavior: 'smooth'
-        });
-      }
-
-      // Also apply to dialog content if available
-      if (dialogRef.current) {
-        dialogRef.current.scrollTo({
-          top: scrollTop,
-          left: scrollLeft,
-          behavior: 'smooth'
-        });
-      }
-    }
-  }, [incomingScrollSync, userType]);
+  // The useCoBrowseScrollSync hook handles incoming scroll sync internally
+  // No need for duplicate handling here
 
   // Effect to handle incoming comparison actions
   useEffect(() => {
@@ -291,7 +265,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   useEffect(() => {
     const hasIncomingActions = incomingTabChange || incomingImageSelect || incomingDaySelect ||
       incomingFullscreenToggle || incomingSlideshowToggle || incomingImageNavigate ||
-      incomingZoomChange || incomingScrollSync || incomingComparisonAction ||
+      incomingZoomChange || incomingComparisonAction ||
       incomingPaymentAction || incomingModalOpen || incomingModalClose;
 
     if (hasIncomingActions) {
@@ -301,7 +275,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
       }, 100);
     }
   }, [incomingTabChange, incomingImageSelect, incomingDaySelect, incomingFullscreenToggle,
-    incomingSlideshowToggle, incomingImageNavigate, incomingZoomChange, incomingScrollSync,
+    incomingSlideshowToggle, incomingImageNavigate, incomingZoomChange,
     incomingComparisonAction, incomingPaymentAction, incomingModalOpen, incomingModalClose,
     clearIncomingActions]);
 
@@ -360,33 +334,23 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     }
   }, [open]);
 
+  // Simple scroll state update - let the useCoBrowseScrollSync hook handle everything else
   useEffect(() => {
-    const handleScroll = () => {
-      if (dialogRef.current) {
-        const scrollTop = dialogRef.current.scrollTop;
-        const scrollLeft = dialogRef.current.scrollLeft;
+    const handleScrollUpdate = () => {
+      if (scrollRef.current) {
+        const scrollTop = scrollRef.current.scrollTop;
         setScrollY(scrollTop);
         setIsFloatingButtonsVisible(scrollTop > 200);
-
-        // Send scroll sync to other party with throttling
-        if (scrollRef.current) {
-          // Use the scrollRef from useCoBrowseScrollSync for better sync
-          const currentScrollTop = scrollRef.current.scrollTop;
-          const currentScrollLeft = scrollRef.current.scrollLeft;
-          sendScrollSync(currentScrollTop, currentScrollLeft);
-        } else {
-          // Fallback to dialogRef
-          sendScrollSync(scrollTop, scrollLeft);
-        }
       }
     };
 
-    const dialogElement = dialogRef.current;
-    if (dialogElement && open) {
-      dialogElement.addEventListener('scroll', handleScroll, { passive: true });
-      return () => dialogElement.removeEventListener('scroll', handleScroll);
+    // Add a simple scroll listener to update our local state
+    const scrollElement = scrollRef.current;
+    if (scrollElement && open) {
+      scrollElement.addEventListener('scroll', handleScrollUpdate, { passive: true });
+      return () => scrollElement.removeEventListener('scroll', handleScrollUpdate);
     }
-  }, [open, sendScrollSync]);
+  }, [open, scrollRef]);
 
   useEffect(() => {
     if (isImageSlideshow && packageData?.images?.length) {
@@ -554,7 +518,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         </Box>
         <Box display="flex" gap={1} justifyContent={{ xs: 'center', sm: 'flex-end' }} width={{ xs: '100%', sm: 'auto' }}>
           {/* Scroll Sync Indicator */}
-          <Tooltip title="Scroll synchronized with other party">
+          <Tooltip title={isActiveController ? "You're controlling scroll" : "Scroll synchronized with other party"}>
             <Box
               sx={{
                 display: 'flex',
@@ -562,12 +526,12 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 gap: 0.5,
                 px: 1,
                 py: 0.5,
-                bgcolor: 'success.main',
+                bgcolor: isActiveController ? 'warning.main' : 'success.main',
                 color: 'white',
                 borderRadius: 1,
                 fontSize: '0.7rem',
                 fontWeight: 'bold',
-                animation: 'pulse 2s infinite',
+                animation: isActiveController ? 'none' : 'pulse 2s infinite',
                 '@keyframes pulse': {
                   '0%': { opacity: 1 },
                   '50%': { opacity: 0.7 },
@@ -576,7 +540,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               }}
             >
               <SyncIcon sx={{ fontSize: '0.8rem' }} />
-              SYNC
+              {isActiveController ? 'CONTROLLING' : 'SYNC'}
             </Box>
           </Tooltip>
           <Tooltip title="Add to Wishlist">
@@ -2304,6 +2268,9 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 height: 'calc(100vh - 100px)',
                 overflow: 'auto',
                 scrollBehavior: 'smooth',
+                // Add visual indicator when this side is actively controlling
+                borderLeft: isActiveController ? '4px solid' : 'none',
+                borderColor: 'primary.main',
               }}
             >
               <Box sx={{ px: isMobile ? 1.5 : 3, py: 2 }}>

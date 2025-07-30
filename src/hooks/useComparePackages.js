@@ -263,15 +263,23 @@ export const useComparePackages = (userType = 'agent') => {
     // Set up signal listener for comparison sync
     useEffect(() => {
         const session = openTokSessionSingleton.getSession();
-        if (!session) return;
+        if (!session) {
+            console.log(`[Compare-${userType}] No session available, skipping signal registration`);
+            return;
+        }
+
+        console.log(`[Compare-${userType}] Registering signal handlers with session`);
 
         // Register signal handlers with singleton
-        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
-        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
-        openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleSharedComparisonOpen);
-        openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+        const success1 = openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
+        const success2 = openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
+        const success3 = openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleSharedComparisonOpen);
+        const success4 = openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+
+        console.log(`[Compare-${userType}] Signal registration results:`, { success1, success2, success3, success4 });
 
         return () => {
+            console.log(`[Compare-${userType}] Cleaning up signal handlers`);
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-drawer-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
@@ -282,7 +290,7 @@ export const useComparePackages = (userType = 'agent') => {
                 clearTimeout(syncTimeoutRef.current);
             }
         };
-    }, [userType]);
+    }, [userType, handleComparisonSync, handleDrawerSync, handleSharedComparisonOpen, handleComparisonAction]);
 
     return {
         compareList,

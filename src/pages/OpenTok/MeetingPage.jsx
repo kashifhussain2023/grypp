@@ -313,6 +313,23 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                 } else if (data.action === 'close-comparison') {
                   console.log("🎭 Customer closed comparison - closing agent comparison modal");
                   setIsDrawerOpen(false);
+                } else if (data.action === 'customer-opened-comparison') {
+                  console.log("🎭 Customer opened comparison - opening agent comparison modal");
+                  console.log("🎭 Customer compareList data:", data.compareList);
+
+                  // If customer sent comparison data, update agent's comparison list
+                  if (data.compareList && data.compareList.length > 0) {
+                    console.log("🎭 Agent received comparison data from customer:", data.compareList.length, "packages");
+                    // Clear current comparison and add customer's packages
+                    clearComparison();
+                    data.compareList.forEach(pkg => {
+                      console.log("🎭 Agent adding package from customer:", pkg.id, pkg.name);
+                      addToCompare(pkg);
+                    });
+                  }
+
+                  // Open the comparison modal for agent
+                  setIsDrawerOpen(true);
                 }
               } catch (err) {
                 console.error("🎭 Agent failed to parse comparison action signal:", err);
@@ -1149,18 +1166,28 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
     const session = openTokSessionSingleton.getSession();
     if (!session) return;
 
+    const signalData = {
+      action,
+      userType: 'agent',
+      timestamp: new Date().toISOString(),
+    };
+
+    // Include comparison data for opening actions
+    if (action === 'agent-opened-comparison') {
+      signalData.compareList = compareList;
+      console.log("🎭 Agent sending comparison action with", compareList.length, "packages");
+    }
+
     openTokSessionSingleton.sendSignal(
       {
         type: "comparison-action",
-        data: JSON.stringify({
-          action,
-          userType: 'agent',
-          timestamp: new Date().toISOString(),
-        }),
+        data: JSON.stringify(signalData),
       },
       (err) => {
         if (err) {
           console.error("Failed to send comparison action signal:", err);
+        } else {
+          console.log("🎭 Agent sent comparison action:", action);
         }
       }
     );

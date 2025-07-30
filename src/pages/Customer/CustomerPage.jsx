@@ -340,6 +340,9 @@ const CustomerPage = ({
           } else if (data.action === 'close-comparison') {
             console.log("🎭 Agent closed comparison - closing customer comparison modal");
             // This will be handled by the PackageShareDialog component
+          } else if (data.action === 'agent-opened-comparison') {
+            console.log("🎭 Agent opened comparison - customer should open comparison modal");
+            // This will be handled by the PackageShareDialog component
           }
         } catch (err) {
           console.error("🎭 Customer failed to parse comparison action signal:", err);

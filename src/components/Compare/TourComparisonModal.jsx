@@ -62,7 +62,6 @@ const TourComparisonModal = ({
   onClearComparison,
   getBestValue,
   userType = 'agent',
-  sharedPackages = [],
   sendComparisonAction = null,
 }) => {
   const theme = useTheme();
@@ -85,7 +84,61 @@ const TourComparisonModal = ({
       // Reset the flag when modal closes
       hasSentSignalRef.current = false;
     }
-  }, [open, userType, sendComparisonAction]);
+  }, [open, userType, sendComparisonAction, compareList.length]);
+
+  // Effect to handle incoming comparison modal open signals
+  useEffect(() => {
+    const handleComparisonOpen = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        // Ignore signals from same user type
+        if (data.userType === userType) {
+          return;
+        }
+
+        console.log(`🎭 [${userType}] Received comparison open signal:`, data.action);
+
+        if (data.action === `${userType === 'agent' ? 'customer' : 'agent'}-opened-comparison`) {
+          console.log(`🎭 [${userType}] Other party opened comparison - should open modal`);
+          // The modal should be opened by the parent component
+          // This signal is handled by the parent component
+        }
+      } catch (err) {
+        console.error(`🎭 [${userType}] Failed to parse comparison open signal:`, err);
+      }
+    };
+
+    // Register signal handler for comparison open signals
+    const session = openTokSessionSingleton.getSession();
+    if (!session) {
+      console.log(`🎭 [${userType}] No session available, skipping signal registration`);
+      return;
+    }
+
+    console.log(`🎭 [${userType}] Registering comparison signal handlers`);
+
+    const success1 = openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonOpen);
+    const success2 = openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleComparisonOpen);
+
+    console.log(`🎭 [${userType}] Signal registration results:`, { success1, success2 });
+
+    return () => {
+      if (session) {
+        console.log(`🎭 [${userType}] Cleaning up comparison signal handlers`);
+        openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
+        openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
+      }
+    };
+  }, [userType]);
+
+  // Effect to handle modal state synchronization
+  useEffect(() => {
+    // Reset the signal flag when modal state changes
+    if (!open) {
+      hasSentSignalRef.current = false;
+    }
+  }, [open]);
 
   // Effect to handle bidirectional actions (clear comparison and close modal) (handled by parent)
   // Signal listening is now handled by parent components
