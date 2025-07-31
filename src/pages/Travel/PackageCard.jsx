@@ -1,163 +1,150 @@
-import { Paper, Typography, Box, IconButton, useTheme } from "@mui/material";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { useState, useRef, useEffect } from "react";
-import CardComp from "./CardComp"; // Assuming CardComp is in the same directory
+import {
+  Paper,
+  Typography,
+  Box,
+  IconButton,
+  Card,
+  CardMedia,
+  CardContent,
+  Rating,
+  CardActions,
+  Button,
+} from "@mui/material";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import StarIcon from "@mui/icons-material/Star";
+import { styled, useTheme } from "@mui/material/styles";
+import { useEffect, useRef, useState } from "react";
 
-const PackageCard = ({ title, packageData }) => {
-  const theme = useTheme();
-  const scrollRef = useRef(null);
-  const [showArrows, setShowArrows] = useState({
-    left: false,
-    right: true,
-  });
-
-  const checkScrollPosition = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      const isAtStart = scrollLeft === 0;
-      // Added a small tolerance (1px) for isAtEnd to account for potential sub-pixel rendering issues.
-      const isAtEnd = Math.abs(scrollLeft + clientWidth - scrollWidth) < 1;
-
-      setShowArrows({
-        left: !isAtStart,
-        right: !isAtEnd,
-      });
-    }
-  };
-
-  const handleScroll = (direction) => {
-    if (scrollRef.current) {
-      const scrollAmount = 300; // Adjusted scroll amount for smoother feel
-      const newPosition =
-        direction === "left"
-          ? scrollRef.current.scrollLeft - scrollAmount
-          : scrollRef.current.scrollLeft + scrollAmount;
-
-      scrollRef.current.scrollTo({
-        left: newPosition,
-        behavior: "smooth",
-      });
-    }
-  };
+const PackageCard = ({ packageData, index }) => {
+  const [inView, setInView] = useState(false);
+  const cardRef = useRef(null);
 
   useEffect(() => {
-    const currentRef = scrollRef.current;
+    console.log("card ref", cardRef);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.unobserve(cardRef.current); // Stop observing once it's in view
+        }
+      },
+      {
+        root: null, // viewport
+        rootMargin: "0px",
+        threshold: 0.1, // Trigger when 10% of the item is visible
+      }
+    );
 
-    // Initial check
-    checkScrollPosition();
-
-    // Add event listener
-    if (currentRef) {
-      currentRef.addEventListener("scroll", checkScrollPosition);
-      // Re-check scroll position on window resize
-      window.addEventListener("resize", checkScrollPosition);
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
     }
 
-    // Cleanup
     return () => {
-      if (currentRef) {
-        currentRef.removeEventListener("scroll", checkScrollPosition);
-        window.removeEventListener("resize", checkScrollPosition);
-      }
+      observer.disconnect();
     };
-  }, [packageData]); // Dependency on packageData to re-evaluate arrows if data changes
+  }, []);
+  const theme = useTheme();
 
+  const StyledCardMedia = styled(CardMedia)(() => ({
+    borderTopLeftRadius: "12px",
+    borderTopRightRadius: "12px",
+    transition: "transform 0.3s ease-in-out",
+    "&:hover": {
+      transform: "scale(1.05)",
+    },
+  }));
   return (
-    <Paper
-      elevation={4}
+    <Card
+      ref={cardRef}
       sx={{
-        py: { xs: 3, md: 4 }, // Responsive padding
-        px: { xs: 1, md: 2 }, // Responsive padding
-        mb: { xs: 3, md: 4 },
-        borderRadius: theme.shape.borderRadius,
-        position: "relative",
-        overflow: "hidden", // Ensures no overflow issues from children
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: "12px",
+        boxShadow: theme.shadows[2],
+        transition: "transform 0.3s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-5px)",
+        },
+        // Animation styles
+        opacity: inView ? 1 : 0, // Start invisible, become visible when in view
+        transform: inView ? "translateY(0)" : "translateY(10px)", // Move up when in view
+        animation: inView
+          ? `fadeIn 0.6s ease-out forwards ${index * 0.1}s`
+          : "none", // Staggered animation only when in view
       }}
     >
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{
-          fontWeight: theme.typography.fontWeightSemiBold, // Use theme fontWeight
-          px: { xs: 2, md: 3 }, // Responsive padding
-          pb: { xs: 1, md: 2 }, // Add padding below title
-        }}
-      >
-        {title}
-      </Typography>
-
-      <Box sx={{ position: "relative" }}>
-        {showArrows.left && (
-          <IconButton
-            onClick={() => handleScroll("left")}
-            aria-label="scroll left"
-            sx={{
-              position: "absolute",
-              left: theme.spacing(1),
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 2,
-              backgroundColor: theme.palette.background.paper,
-              "&:hover": { backgroundColor: theme.palette.action.hover }, // More subtle hover
-              boxShadow: theme.shadows[3], // Lighter shadow for arrows
-              width: 44, // Slightly smaller
-              height: 44,
-              display: { xs: "none", sm: "flex" }, // Hide on extra small, show on small and up
-              color: theme.palette.text.primary, // Ensure arrow color is visible
-            }}
-          >
-            <ChevronLeft fontSize="medium" /> {/* Medium size icon */}
-          </IconButton>
-        )}
-
-        {showArrows.right && (
-          <IconButton
-            onClick={() => handleScroll("right")}
-            aria-label="scroll right"
-            sx={{
-              position: "absolute",
-              right: theme.spacing(1),
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 2,
-              backgroundColor: theme.palette.background.paper,
-              "&:hover": { backgroundColor: theme.palette.action.hover },
-              boxShadow: theme.shadows[3],
-              width: 44,
-              height: 44,
-              display: { xs: "none", sm: "flex" },
-              color: theme.palette.text.primary,
-            }}
-          >
-            <ChevronRight fontSize="medium" />
-          </IconButton>
-        )}
-
-        <Box
-          ref={scrollRef}
+      <StyledCardMedia
+        component="img"
+        height="200"
+        image={packageData.image}
+        alt={packageData.title}
+      />
+      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <Typography
+          gutterBottom
+          variant="h6"
+          component="div"
+          sx={{ fontWeight: 600, color: "#333" }}
+        >
+          {packageData.title}
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <LocationOnIcon sx={{ fontSize: 18, color: "#555", mr: 0.5 }} />
+          <Typography variant="body2" color="text.secondary">
+            {packageData.location}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <AccessTimeIcon sx={{ fontSize: 18, color: "#555", mr: 0.5 }} />
+          <Typography variant="body2" color="text.secondary">
+            {packageData.duration}
+          </Typography>
+        </Box>
+        <Typography
+          variant="h5"
+          color="primary"
+          sx={{ fontWeight: 700, mt: 2, mb: 1 }}
+        >
+          {packageData.price}
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <Rating
+            name="package-rating"
+            value={packageData.rating}
+            precision={0.1}
+            readOnly
+            emptyIcon={
+              <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+            }
+          />
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+            ({packageData.reviews} reviews)
+          </Typography>
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          {packageData.activities
+            ? `Activities: ${packageData.activities.join(", ")}`
+            : `Highlights: ${packageData.highlights.join(", ")}`}
+        </Typography>
+      </CardContent>
+      <CardActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
           sx={{
-            display: "flex",
-            gap: theme.spacing(3),
-            px: { xs: 2, md: 3 }, // Responsive padding
-            py: theme.spacing(1),
-            overflowX: "auto",
-            scrollBehavior: "smooth",
-            scrollSnapType: "x mandatory", // Enable scroll snapping
-            "& > *": {
-              scrollSnapAlign: "start", // Align items to the start of the scroll area
-            },
-            "&::-webkit-scrollbar": { display: "none" },
-            scrollbarWidth: "none", // For Firefox
-            overflowY: "hidden",
-            willChange: "transform",
+            borderRadius: "8px",
+            py: 1.5,
+            fontWeight: 600,
+            background: theme.palette.primary.main,
           }}
         >
-          {packageData.map((pkg, index) => (
-            <CardComp key={pkg.id || index} pkg={pkg} /> // Use a unique ID if available
-          ))}
-        </Box>
-      </Box>
-    </Paper>
+          Book Now
+        </Button>
+      </CardActions>
+    </Card>
   );
 };
 

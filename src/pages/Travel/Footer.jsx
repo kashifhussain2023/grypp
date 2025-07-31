@@ -186,7 +186,7 @@ const Footer = () => {
                       },
                     }}
                   >
-                    <item.Icon fontSize="small" />{" "}
+                    <item.Icon fontSize="small" />
                     {/* Render the Icon component */}
                   </Link>
                 )
@@ -323,7 +323,7 @@ const Footer = () => {
             >
               <Box component="span" sx={{ mr: 1, fontSize: "1.1em" }}>
                 📍
-              </Box>{" "}
+              </Box>
               123 Travel Street, Suite 100
               <br />
               New York, NY 10001
@@ -335,13 +335,13 @@ const Footer = () => {
             >
               <Box component="span" sx={{ mr: 1, fontSize: "1.1em" }}>
                 📞
-              </Box>{" "}
+              </Box>
               +1 (555) 123-4567
             </Typography>
             <Typography variant="body2" color={theme.palette.grey[400]}>
               <Box component="span" sx={{ mr: 1, fontSize: "1.1em" }}>
                 ✉️
-              </Box>{" "}
+              </Box>
               info@tripPlanner.com
             </Typography>
           </Grid>
