@@ -43,6 +43,7 @@ import { samplePackageData } from "../../data/samplePackageData";
 import { agentPackageService } from "../../services/AgentPackageService";
 import { openTokSessionSingleton } from "../../services/OpenTokSessionManager";
 import { scrollSyncManager } from "../../services/ScrollSyncManager";
+import { packageDetailsCoBrowseSingleton } from "../../services/PackageDetailsCoBrowseManager";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -82,7 +83,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [sharedPackages, setSharedPackages] = useState([]);
   const [sharedComparisonOpen, setSharedComparisonOpen] = useState(false);
-  
+
   // Package sharing progress state
   const [isSharingPackages, setIsSharingPackages] = useState(false);
   const [sharingProgress, setSharingProgress] = useState(0);
@@ -90,7 +91,6 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   const [packageDetailsToOpen, setPackageDetailsToOpen] = useState(null);
 
   const fileInputRef = useRef(null);
-  const sessionRef = useRef(null);
   const publisherRef = useRef(null);
   const subscriberRef = useRef(null);
   const webcamPublisherRef = useRef(null);
@@ -137,14 +137,16 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         if (!isMounted) return;
 
         const session = OT.initSession(apiKey, sessionId);
-        sessionRef.current = session;
 
         // Initialize the singleton with the session
-        console.log("🔌 Initializing OpenTok session singleton",session);
+        console.log("🔌 Initializing OpenTok session singleton", session);
         openTokSessionSingleton.initialize(session);
 
         // Initialize scroll synchronization manager
         scrollSyncManager.initialize('agent', session);
+
+        // Initialize package details co-browsing singleton
+        packageDetailsCoBrowseSingleton.initialize();
 
         session.connect(token, async (err) => {
           if (err) {
@@ -201,7 +203,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                 console.error("📄 Agent failed to parse file-for-signing signal:", err);
               }
             },
-            "signal:signed-document":(event)=>{
+            "signal:signed-document": (event) => {
 
               try {
                 const data = JSON.parse(event.data);
@@ -212,11 +214,11 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                   setWaitingForSignedDoc(false);
                 }
               } catch (err) {
-                console.log("error",err);
-            }
+                console.log("error", err);
+              }
 
             },
-            "signal:cobrowsing-url":(event)=>{
+            "signal:cobrowsing-url": (event) => {
 
               try {
                 const data = JSON.parse(event.data);
@@ -234,29 +236,103 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
               try {
                 const data = JSON.parse(event.data);
                 console.log("🎭 Agent parsed shared-comparison-open data:", data);
-                
+
                 if (data.action === "customer-opened-comparison") {
                   console.log("🎭 Customer opened comparison modal - opening agent comparison");
-                  
+
                   // Update the comparison list with customer's data if provided
                   if (data.compareList && data.compareList.length > 0) {
                     console.log("🎭 Agent received comparison data from customer:", data.compareList);
-                    
+
                     // Clear existing comparison and add customer's packages
                     clearComparison();
-                    
+
                     // Add each package from customer's comparison list
                     data.compareList.forEach(pkg => {
                       addToCompare(pkg);
                     });
-                    
-                    console.log("🎭 Agent updated comparison list with customer data");
+                  } else if (data.sharedPackages && data.sharedPackages.length > 0) {
+                    // If no compareList but sharedPackages are available, use those
+                    console.log("🎭 Agent received shared packages data from customer:", data.sharedPackages);
+
+                    // Clear existing comparison and add shared packages
+                    clearComparison();
+
+                    // Add each shared package to comparison
+                    data.sharedPackages.forEach(pkg => {
+                      addToCompare(pkg);
+                    });
                   }
-                  
+
+                  // Open the comparison modal
                   setIsDrawerOpen(true);
+                  console.log("🎭 Agent opened comparison modal from customer signal");
                 }
               } catch (err) {
                 console.error("🎭 Agent failed to parse shared-comparison-open signal:", err);
+              }
+            },
+            "signal:package-details-modal-action": (event) => {
+              console.log("📦 Agent received package details modal action:", event);
+              try {
+                const data = JSON.parse(event.data);
+
+                // Ignore signals from same user type
+                if (data.userType === 'agent') {
+                  return;
+                }
+
+                console.log("📦 Agent received package details action:", data.action);
+
+                if (data.action === 'customer-opened-package-details' && data.packageData) {
+                  console.log("📦 Customer opened package details - opening agent modal with package:", data.packageId);
+                  setPackageDetailsToOpen(data.packageData);
+                } else if (data.action === 'close-package-details') {
+                  console.log("📦 Customer closed package details - closing agent modal");
+                  setPackageDetailsToOpen(null);
+                }
+              } catch (err) {
+                console.error("📦 Agent failed to parse package details modal action signal:", err);
+              }
+            },
+            "signal:comparison-action": (event) => {
+              console.log("🎭 Agent received comparison action signal:", event);
+              try {
+                const data = JSON.parse(event.data);
+
+                // Ignore signals from same user type
+                if (data.userType === 'agent') {
+                  return;
+                }
+
+                console.log("🎭 Agent received comparison action:", data.action);
+
+                if (data.action === 'clear-comparison') {
+                  console.log("🎭 Customer cleared comparison - clearing agent comparison");
+                  clearComparison();
+                } else if (data.action === 'close-comparison') {
+                  console.log("🎭 Customer closed comparison - closing agent comparison modal");
+                  setIsDrawerOpen(false);
+                } else if (data.action === 'customer-opened-comparison') {
+                  console.log("🎭 Customer opened comparison - opening agent comparison modal");
+                  console.log("🎭 Customer compareList data:", data.compareList);
+
+                  // If customer sent comparison data, update agent's comparison list
+                  if (data.compareList && data.compareList.length > 0) {
+                    console.log("🎭 Agent received comparison data from customer:", data.compareList.length, "packages");
+                    // Clear current comparison and add customer's packages
+                    clearComparison();
+                    data.compareList.forEach(pkg => {
+                      console.log("🎭 Agent adding package from customer:", pkg.id, pkg.name);
+                      addToCompare(pkg);
+                    });
+                  }
+
+                  // Open the comparison modal for agent
+                  setIsDrawerOpen(true);
+                }
+              } catch (err) {
+                console.error("🎭 Agent failed to parse comparison action signal:", err);
               }
             },
             "signal:customer-request-packages": (event) => {
@@ -298,11 +374,10 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
                 console.error("🎭 Agent failed to parse close-package-details signal:", err);
               }
             }
-             
           });
 
           // Add a general signal listener for debugging
-          session.on('signal', (event) => {
+          openTokSessionSingleton.registerGeneralSignalListener((event) => {
             console.log("🔌 Agent received general signal:", event.type, event.data);
           });
 
@@ -375,74 +450,73 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
               //setRetryMedia(true);
             }
           }
-        });
 
-        // Set up session event handlers
-        session.on("streamCreated", (event) => {
-          setHasRemoteStream(true);
-          setRemoteVideoOn(event.stream.hasVideo);
-          setRemoteUserName(event.stream.name);
+          // Set up session event handlers
+          session.on("streamCreated", (event) => {
+            setHasRemoteStream(true);
+            setRemoteVideoOn(event.stream.hasVideo);
+            setRemoteUserName(event.stream.name);
 
-          // Mark customer as active
-          setShowCustomerLeftPopup(false);
+            // Mark customer as active
+            setShowCustomerLeftPopup(false);
 
-          const subscriber = session.subscribe(
-            event.stream,
-            subscriberRef.current,
-            {
-              insertMode: "append",
-              width: "100%",
-              height: "100%",
-              showControls: false, // Hide default OpenTok controls
-            },
-            (err) => {
-              if (err) {
-                console.error("Subscribe error:", err);
+            const subscriber = session.subscribe(
+              event.stream,
+              subscriberRef.current,
+              {
+                insertMode: "append",
+                width: "100%",
+                height: "100%",
+                showControls: false, // Hide default OpenTok controls
+              },
+              (err) => {
+                if (err) {
+                  console.error("Subscribe error:", err);
+                }
               }
-            }
-          );
+            );
 
-          subscriber.on("videoEnabled", () => {
-            setRemoteVideoOn(true);
+            subscriber.on("videoEnabled", () => {
+              setRemoteVideoOn(true);
+            });
+
+            subscriber.on("videoDisabled", () => {
+              setRemoteVideoOn(false);
+            });
           });
 
-          subscriber.on("videoDisabled", () => {
+          session.on("streamDestroyed", (event) => {
+            const stream = event.stream;
+            const reason = event.reason;
+
+            console.log("🔌 Stream destroyed:", {
+              reason,
+              streamId: stream?.streamId,
+              isPageVisible: !document.hidden
+            });
+
+            setHasRemoteStream(false);
             setRemoteVideoOn(false);
+
+            // If page is hidden (tab switched), don't immediately show customer left popup
+            if (document.hidden) {
+              console.log("📱 Page hidden during stream destroyed - likely tab switch, not showing customer left");
+              return;
+            }
+
+            // Add a delay before showing "customer left" to handle temporary disconnections
+            setTimeout(() => {
+              console.log("⏰ Customer left timeout triggered - showing popup");
+              setShowCustomerLeftPopup(true);
+            }, 5000); // 5 second delay
           });
-        });
 
-        session.on("streamDestroyed", (event) => {
-          const stream = event.stream;
-          const reason = event.reason;
-
-          console.log("🔌 Stream destroyed:", {
-            reason,
-            streamId: stream?.streamId,
-            isPageVisible: !document.hidden
+          session.on("connectionDestroyed", (event) => {
+            console.log("🔌 Connection destroyed:", event.reason);
           });
 
-          setHasRemoteStream(false);
-          setRemoteVideoOn(false);
-
-          // If page is hidden (tab switched), don't immediately show customer left popup
-          if (document.hidden) {
-            console.log("📱 Page hidden during stream destroyed - likely tab switch, not showing customer left");
-            return;
-          }
-
-          // Add a delay before showing "customer left" to handle temporary disconnections
-          setTimeout(() => {
-            console.log("⏰ Customer left timeout triggered - showing popup");
-            setShowCustomerLeftPopup(true);
-          }, 5000); // 5 second delay
+          session.on("exception", (e) => console.error("⚠️ OpenTok exception:", e));
         });
-
-        session.on("connectionDestroyed", (event) => {
-          console.log("🔌 Connection destroyed:", event.reason);
-        });
-
-        session.on("exception", (e) => console.error("⚠️ OpenTok exception:", e));
-
       } catch (err) {
         console.error("❌ Session initialization error:", err);
       }
@@ -452,8 +526,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
 
     return () => {
       isMounted = false;
-      if (sessionRef.current) {
-        sessionRef.current.disconnect();
+      if (openTokSessionSingleton.isSessionAvailable()) {
+        openTokSessionSingleton.getSession().disconnect();
       }
       // Cleanup signal handlers
       openTokSessionSingleton.unregisterSignalHandler("signal:file-share");
@@ -464,7 +538,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       openTokSessionSingleton.unregisterSignalHandler("signal:customer-request-packages");
       openTokSessionSingleton.unregisterSignalHandler("signal:open-package-details");
       openTokSessionSingleton.unregisterSignalHandler("signal:close-package-details");
-      
+
       // Cleanup scroll sync manager
       scrollSyncManager.cleanup();
     };
@@ -526,7 +600,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
   };
 
   const initWebcamPublisher = (callback) => {
-    if (!sessionRef.current || !publisherContainerRef.current) return;
+    if (!openTokSessionSingleton.isSessionAvailable() || !publisherContainerRef.current) return;
 
     const publisherOptions = {
       insertMode: "append",
@@ -553,7 +627,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         webcamPublisherRef.current = newWebcamPublisher;
         publisherRef.current = newWebcamPublisher;
 
-        sessionRef.current.publish(newWebcamPublisher, (pubErr) => {
+        const session = openTokSessionSingleton.getSession();
+        session.publish(newWebcamPublisher, (pubErr) => {
           if (pubErr) {
             console.error("Publish webcam error:", pubErr);
           }
@@ -875,7 +950,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             setPackagesDialogOpen(true);
             // Send signal to customer to open their shared packages dialog
             const session = openTokSessionSingleton.getSession();
-            console.log("🔌 Session in handleBrowseTourPackages",session);
+            console.log("🔌 Session in handleBrowseTourPackages", session);
             if (session) {
               console.log("📡 Sending signal to customer to open shared packages dialog");
               await openTokSessionSingleton.sendSignal({
@@ -985,7 +1060,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           },
           onComplete: () => {
             console.log(`✅ Successfully shared ${packagesToShare.length} packages worth $${totalValue.toLocaleString("en-US")}`);
-            
+
             // Add shared packages to the list for comparison
             setSharedPackages(prev => {
               const newPackages = [...prev];
@@ -998,7 +1073,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             });
 
             setSharingStatus(`✅ Successfully shared ${packagesToShare.length} packages!`);
-            
+
             // Reset sharing state after a short delay
             setTimeout(() => {
               setIsSharingPackages(false);
@@ -1010,7 +1085,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             console.error("📦 Package share error:", error);
             setSharingStatus(`❌ Failed to share packages: ${error.message}`);
             alert(`Failed to share packages: ${error.message}`);
-            
+
             // Reset sharing state after error
             setTimeout(() => {
               setIsSharingPackages(false);
@@ -1025,7 +1100,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
       console.error("📦 Error initiating package share:", error);
       setSharingStatus(`❌ Error: ${error.message}`);
       alert(`Error: ${error.message}`);
-      
+
       // Reset sharing state
       setIsSharingPackages(false);
       setSharingProgress(0);
@@ -1056,6 +1131,66 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         }
       );
     }
+  };
+
+  // Signal sending functions for child components
+  const sendPackageDetailsAction = (action, packageData = null) => {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
+
+    const signalData = {
+      action,
+      userType: 'agent',
+      timestamp: new Date().toISOString(),
+    };
+
+    if (packageData) {
+      signalData.packageData = packageData;
+      signalData.packageId = packageData.id;
+    }
+
+    openTokSessionSingleton.sendSignal(
+      {
+        type: "package-details-modal-action",
+        data: JSON.stringify(signalData),
+      },
+      (err) => {
+        if (err) {
+          console.error("Failed to send package details action signal:", err);
+        }
+      }
+    );
+  };
+
+  const sendComparisonAction = (action) => {
+    const session = openTokSessionSingleton.getSession();
+    if (!session) return;
+
+    const signalData = {
+      action,
+      userType: 'agent',
+      timestamp: new Date().toISOString(),
+    };
+
+    // Include comparison data for opening actions
+    if (action === 'agent-opened-comparison') {
+      signalData.compareList = compareList;
+      console.log("🎭 Agent sending comparison action with", compareList.length, "packages");
+    }
+
+    openTokSessionSingleton.sendSignal(
+      {
+        type: "comparison-action",
+        data: JSON.stringify(signalData),
+      },
+      (err) => {
+        if (err) {
+          console.error("Failed to send comparison action signal:", err);
+        } else {
+          console.log("🎭 Agent sent comparison action:", action);
+        }
+      }
+    );
   };
 
 
@@ -1569,6 +1704,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
           sharingStatus={sharingStatus}
           packageDetailsToOpen={packageDetailsToOpen}
           onPackageDetailsOpened={() => setPackageDetailsToOpen(null)}
+          sendPackageDetailsAction={sendPackageDetailsAction}
         />
 
         <DialogActions
@@ -1630,8 +1766,8 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
             {isSharingPackages
               ? `${sharingProgress.toFixed(0)}% - ${sharingStatus}`
               : selectedPackages.length === 0
-              ? "Select Packages to Share"
-              : `Share ${selectedPackages.length} Package${selectedPackages.length > 1 ? "s" : ""}`}
+                ? "Select Packages to Share"
+                : `Share ${selectedPackages.length} Package${selectedPackages.length > 1 ? "s" : ""}`}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1646,6 +1782,7 @@ const MeetingPage = ({ sessionId, onCallEnd }) => {
         getBestValue={getBestValue}
         userType="agent"
         sharedPackages={sharedPackages}
+        sendComparisonAction={sendComparisonAction}
       />
 
       {/* Shared Packages Comparison Modal */}

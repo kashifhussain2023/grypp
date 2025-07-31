@@ -18,7 +18,6 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
   // Refs
-  const sessionRef = useRef(null);
   const publisherRef = useRef(null);
   const subscriberRef = useRef(null);
   const publisher = useRef(null);
@@ -60,7 +59,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
   // Publisher initialization
   const initializePublisher = useCallback(() => {
-    const session = sessionRef.current;
+    const session = openTokSessionSingleton.getSession();
     if (!session || !publisherRef.current || publisher.current) {
       return;
     }
@@ -101,19 +100,43 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
       setPublisherHasVideo(true);
       setIsVideoEnabled(true);
     });
-    
+
     publisher.current.on("videoDisabled", () => {
       setPublisherHasVideo(false);
       setIsVideoEnabled(false);
     });
-    
+
     publisher.current.on("audioEnabled", () => {
       setIsAudioEnabled(true);
     });
-    
+
     publisher.current.on("audioDisabled", () => {
       setIsAudioEnabled(false);
     });
+
+    publisher.current.on("accessAllowed", () => {
+      console.log("✅ Publisher access allowed");
+    });
+
+    publisher.current.on("accessDenied", () => {
+      console.error("❌ Publisher access denied");
+      setError("Camera/Mic access denied.");
+    });
+
+    publisher.current.on("streamCreated", () => {
+      console.log("✅ Publisher stream created");
+    });
+
+    publisher.current.on("streamDestroyed", () => {
+      console.log("📹 Publisher stream destroyed");
+    });
+
+    publisher.current.on("destroyed", () => {
+      console.log("🗑️ Publisher destroyed");
+      publisher.current = null;
+    });
+
+    console.log("✅ Publisher initialized successfully");
   }, [name]);
 
   // Handle call acceptance
@@ -125,7 +148,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
     setWaitingForAgent(false);
     setCallStarted(true);
-    
+
     // Initialize publisher after a short delay to ensure refs are ready
     setTimeout(() => {
       if (publisherRef.current && !publisher.current) {
@@ -138,7 +161,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
   const initializeSession = useCallback(async () => {
     try {
       await requestMediaPermissions();
-      
+
       if (!name.trim()) {
         setError("Please enter your name.");
         return;
@@ -155,7 +178,6 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
       const session = OT.initSession(apiKey, sessionId);
       openTokSessionSingleton.initialize(session);
-      sessionRef.current = session;
       setToken(token);
       setJoined(true);
       setWaitingForAgent(true);
@@ -190,7 +212,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
   // Session event handlers
   const setupSessionEventHandlers = useCallback(() => {
-    const session = sessionRef.current;
+    const session = openTokSessionSingleton.getSession();
     if (!session) return;
 
     const handleStreamCreated = (event) => {
@@ -232,11 +254,11 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
     const handleAgentConnectionDestroyed = (event) => {
       const connection = event.connection;
       const reason = event.reason;
-      
-      console.log("🔌 Connection destroyed:", { 
-        reason, 
+
+      console.log("🔌 Connection destroyed:", {
+        reason,
         connectionId: connection?.connectionId,
-        isPageVisible: isPageVisibleRef.current 
+        isPageVisible: isPageVisibleRef.current
       });
 
       // If page is hidden (tab switched), don't immediately show agent left dialog
@@ -261,9 +283,9 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
     };
 
     // Core event listeners only
-    session.on("signal:callAccepted", handleCallAccepted);
+    openTokSessionSingleton.registerSpecificSignalListener("signal:callAccepted", handleCallAccepted);
+    openTokSessionSingleton.registerSpecificSignalListener("signal:endCall", handleEndCall);
     session.on("streamCreated", handleStreamCreated);
-    session.on("signal:endCall", handleEndCall);
     session.on("connectionDestroyed", handleAgentConnectionDestroyed);
     session.on("exception", (e) => console.error("⚠️ OpenTok exception:", e));
 
@@ -281,9 +303,9 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
       }
 
       // Clean up core listeners only
-      session.off("signal:callAccepted", handleCallAccepted);
+      openTokSessionSingleton.unregisterSpecificSignalListener("signal:callAccepted", handleCallAccepted);
+      openTokSessionSingleton.unregisterSpecificSignalListener("signal:endCall", handleEndCall);
       session.off("streamCreated", handleStreamCreated);
-      session.off("signal:endCall", handleEndCall);
       session.off("connectionDestroyed", handleAgentConnectionDestroyed);
     };
   }, [handleCallAccepted, onEndCall, signalHandlers]);
@@ -295,7 +317,7 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
 
   // Set up session event handlers
   useEffect(() => {
-    if (sessionRef.current && token) {
+    if (openTokSessionSingleton.isSessionAvailable() && token) {
       return setupSessionEventHandlers();
     }
   }, [token, setupSessionEventHandlers]);
@@ -315,9 +337,9 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
       if (agentLeftTimeoutRef.current) {
         clearTimeout(agentLeftTimeoutRef.current);
       }
-      
-      if (sessionRef.current) {
-        sessionRef.current.disconnect();
+
+      if (openTokSessionSingleton.isSessionAvailable()) {
+        openTokSessionSingleton.getSession().disconnect();
       }
       if (publisher.current) {
         publisher.current.destroy();
@@ -337,13 +359,12 @@ export const useVideoCall = ({ name, email, setUserId, setCallStarted, onEndCall
     setAgentLeft,
     isVideoEnabled,
     isAudioEnabled,
-    
+
     // Refs
-    sessionRef,
     publisherRef,
     subscriberRef,
     publisher,
-    
+
     // Methods
     toggleVideo,
     toggleAudio,

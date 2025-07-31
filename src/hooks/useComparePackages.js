@@ -9,7 +9,7 @@ import { openTokSessionSingleton } from '../services/OpenTokSessionManager';
 export const useComparePackages = (userType = 'agent') => {
     const [compareList, setCompareList] = useState([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    
+
     // Refs to prevent signal loops and debounce rapid changes
     const isUpdatingFromSignalRef = useRef(false);
     const syncTimeoutRef = useRef(null);
@@ -157,11 +157,11 @@ export const useComparePackages = (userType = 'agent') => {
 
             // Set flag to prevent sending signals while updating from incoming signal
             isUpdatingFromSignalRef.current = true;
-            
+
             // Update comparison list for both user types
             setCompareList(data.compareList || []);
             console.log(`[Compare-${userType}] Updated comparison list from sync:`, data.compareList?.length, 'packages');
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -185,16 +185,16 @@ export const useComparePackages = (userType = 'agent') => {
 
             // Set flag to prevent sending signals while updating from incoming signal
             isUpdatingFromSignalRef.current = true;
-            
+
             // Update drawer state
             setIsDrawerOpen(data.isDrawerOpen || false);
-            
+
             // If opening and there's comparison data, update the comparison list
             if (data.isDrawerOpen && data.compareList && data.compareList.length > 0) {
                 console.log(`[Compare-${userType}] Received comparison data with drawer open:`, data.compareList.length, 'packages');
                 setCompareList(data.compareList);
             }
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -208,7 +208,7 @@ export const useComparePackages = (userType = 'agent') => {
     const handleSharedComparisonOpen = useCallback((event) => {
         try {
             const data = JSON.parse(event.data);
-            
+
             // Ignore signals from same user type
             if (data.action && data.action.includes(userType)) {
                 return;
@@ -224,7 +224,7 @@ export const useComparePackages = (userType = 'agent') => {
                 console.log(`[Compare-${userType}] Received comparison data from shared signal:`, data.compareList.length, 'packages');
                 setCompareList(data.compareList);
             }
-            
+
             // Reset flag after a short delay
             setTimeout(() => {
                 isUpdatingFromSignalRef.current = false;
@@ -238,7 +238,7 @@ export const useComparePackages = (userType = 'agent') => {
     const handleComparisonAction = useCallback((event) => {
         try {
             const data = JSON.parse(event.data);
-            
+
             // Ignore signals from same user type
             if (data.userType === userType) {
                 return;
@@ -263,26 +263,34 @@ export const useComparePackages = (userType = 'agent') => {
     // Set up signal listener for comparison sync
     useEffect(() => {
         const session = openTokSessionSingleton.getSession();
-        if (!session) return;
+        if (!session) {
+            console.log(`[Compare-${userType}] No session available, skipping signal registration`);
+            return;
+        }
+
+        console.log(`[Compare-${userType}] Registering signal handlers with session`);
 
         // Register signal handlers with singleton
-        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
-        openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
-        openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleSharedComparisonOpen);
-        openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+        const success1 = openTokSessionSingleton.registerSignalHandler('signal:cobrowse-comparison-sync', handleComparisonSync);
+        const success2 = openTokSessionSingleton.registerSignalHandler('signal:cobrowse-drawer-sync', handleDrawerSync);
+        const success3 = openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleSharedComparisonOpen);
+        const success4 = openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+
+        console.log(`[Compare-${userType}] Signal registration results:`, { success1, success2, success3, success4 });
 
         return () => {
+            console.log(`[Compare-${userType}] Cleaning up signal handlers`);
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-comparison-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:cobrowse-drawer-sync');
             openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
             openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
-            
+
             // Clear any pending timeouts
             if (syncTimeoutRef.current) {
                 clearTimeout(syncTimeoutRef.current);
             }
         };
-    }, [handleComparisonSync, handleDrawerSync, handleSharedComparisonOpen, handleComparisonAction]);
+    }, [userType, handleComparisonSync, handleDrawerSync, handleSharedComparisonOpen, handleComparisonAction]);
 
     return {
         compareList,

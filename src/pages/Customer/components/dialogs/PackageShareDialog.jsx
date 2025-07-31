@@ -27,7 +27,9 @@ const PackageShareDialog = ({
   sharedPackages,
   userType = "customer",
   packageDetailsToOpen = null,
-  onPackageDetailsOpened = () => {}
+  onPackageDetailsOpened = () => { },
+  sendPackageDetailsAction = null,
+  sendComparisonAction = null
 }) => {
   // Use the comparison hook
   const {
@@ -51,63 +53,86 @@ const PackageShareDialog = ({
     console.log("🎭 PackageShareDialog: sharedPackages changed:", sharedPackages);
   }, [sharedPackages]);
 
-  // Effect to handle comparison modal opening from agent
+  // Effect to handle comparison modal opening from agent signal
   useEffect(() => {
-    const session = openTokSessionSingleton.getSession();
-    if (!session) return;
-
-    const handleComparisonSignal = (event) => {
+    const handleComparisonAction = (event) => {
+      console.log("🎭 PackageShareDialog received comparison action signal:", event);
       try {
         const data = JSON.parse(event.data);
-        if (data.action === "agent-opened-comparison") {
-          console.log("🎭 Agent opened comparison - opening customer comparison");
-          
-          // Update the comparison list with agent's data if provided
+
+        // Ignore signals from same user type
+        if (data.userType === 'customer') {
+          return;
+        }
+
+        console.log("🎭 PackageShareDialog received comparison action:", data.action);
+        console.log("🎭 PackageShareDialog current compareList length:", compareList.length);
+        console.log("🎭 PackageShareDialog sharedPackages length:", sharedPackages.length);
+
+        if (data.action === 'clear-comparison') {
+          console.log("🎭 Agent cleared comparison - clearing customer comparison");
+          clearComparison();
+        } else if (data.action === 'close-comparison') {
+          console.log("🎭 Agent closed comparison - closing customer comparison modal");
+          toggleDrawer(false);
+        } else if (data.action === 'agent-opened-comparison') {
+          console.log("🎭 Agent opened comparison - opening customer comparison modal");
+          console.log("🎭 Customer compareList before opening:", compareList);
+          console.log("🎭 Customer sharedPackages:", sharedPackages);
+          console.log("🎭 Agent compareList data:", data.compareList);
+
+          // If agent sent comparison data, update customer's comparison list
           if (data.compareList && data.compareList.length > 0) {
-            console.log("🎭 Customer received comparison data from agent:", data.compareList);
-            
-            // Clear existing comparison and add agent's packages
+            console.log("🎭 Customer received comparison data from agent:", data.compareList.length, "packages");
+            // Clear current comparison and add agent's packages
             clearComparison();
-            
-            // Add each package from agent's comparison list
             data.compareList.forEach(pkg => {
+              console.log("🎭 Customer adding package from agent:", pkg.id, pkg.name);
               addToCompare(pkg);
             });
-            
-            console.log("🎭 Customer updated comparison list with agent data");
-          } else if (data.sharedPackages && data.sharedPackages.length > 0) {
-            // If no compareList but sharedPackages are available, use those
-            console.log("🎭 Customer received shared packages data from agent:", data.sharedPackages);
-            
-            // Clear existing comparison and add shared packages
-            clearComparison();
-            
-            // Add each shared package to comparison
-            data.sharedPackages.forEach(pkg => {
+          } else if (compareList.length === 0 && sharedPackages.length > 0) {
+            // If customer has no packages in comparison but has shared packages, add them
+            console.log("🎭 Customer has no comparison packages but has shared packages, adding them");
+            sharedPackages.forEach(pkg => {
+              console.log("🎭 Adding package to comparison:", pkg.id, pkg.name);
               addToCompare(pkg);
             });
-            
-            console.log("🎭 Customer updated comparison list with shared packages data");
           }
-          
+
+          console.log("🎭 Opening comparison drawer with compareList length:", compareList.length);
           toggleDrawer(true);
         }
       } catch (err) {
-        console.error("🎭 Failed to parse comparison signal:", err);
+        console.error("🎭 PackageShareDialog failed to parse comparison action signal:", err);
       }
     };
 
-    // Register signal handler for comparison opening
-    openTokSessionSingleton.registerSignalHandler("signal:shared-comparison-open", handleComparisonSignal);
+    // Register signal handler for comparison actions
+    const session = openTokSessionSingleton.getSession();
+    if (!session) {
+      console.log("🎭 PackageShareDialog: No session available, skipping signal registration");
+      return;
+    }
+
+    console.log("🎭 PackageShareDialog: Registering comparison signal handlers");
+
+    const success1 = openTokSessionSingleton.registerSignalHandler('signal:comparison-action', handleComparisonAction);
+    const success2 = openTokSessionSingleton.registerSignalHandler('signal:shared-comparison-open', handleComparisonAction);
+
+    console.log("🎭 PackageShareDialog: Signal registration results:", { success1, success2 });
 
     return () => {
-      openTokSessionSingleton.unregisterSignalHandler("signal:shared-comparison-open");
+      if (session) {
+        console.log("🎭 PackageShareDialog: Cleaning up comparison signal handlers");
+        openTokSessionSingleton.unregisterSignalHandler('signal:comparison-action');
+        openTokSessionSingleton.unregisterSignalHandler('signal:shared-comparison-open');
+      }
     };
-  }, [toggleDrawer, clearComparison, addToCompare]);
+  }, [clearComparison, toggleDrawer, compareList.length, sharedPackages, addToCompare]);
 
   const handleOpenComparison = () => {
     console.log("🎭 Opening comparison drawer with", compareList.length, "packages");
-    
+
     // If customer has no packages in comparison but has shared packages, add them
     if (compareList.length === 0 && sharedPackages.length > 0) {
       console.log("🎭 Customer has no comparison packages but has shared packages, adding them");
@@ -115,29 +140,33 @@ const PackageShareDialog = ({
         addToCompare(pkg);
       });
     }
-    
+
     toggleDrawer(true);
 
-    // Notify agent that customer opened comparison
-    const session = openTokSessionSingleton.getSession();
-    if (session) {
-      openTokSessionSingleton.sendSignal(
-        {
-          type: "shared-comparison-open",
-          data: JSON.stringify({
-            action: "customer-opened-comparison",
-            compareList: compareList.length > 0 ? compareList : sharedPackages, // Send comparison data or shared packages
-            timestamp: new Date().toISOString(),
-          }),
-        },
-        (err) => {
-          if (err) {
-            console.error("Failed to send comparison open signal:", err);
-          } else {
-            console.log("Successfully sent comparison open signal with", compareList.length > 0 ? compareList.length : sharedPackages.length, "packages");
+    // Notify agent that customer opened comparison using parent's signal function
+    if (sendComparisonAction) {
+      // Send the comparison data along with the action
+      const session = openTokSessionSingleton.getSession();
+      if (session) {
+        openTokSessionSingleton.sendSignal(
+          {
+            type: "comparison-action",
+            data: JSON.stringify({
+              action: 'customer-opened-comparison',
+              userType: 'customer',
+              compareList: compareList, // Include the comparison data
+              timestamp: new Date().toISOString(),
+            }),
+          },
+          (err) => {
+            if (err) {
+              console.error("Failed to send comparison action signal:", err);
+            } else {
+              console.log("🎭 Sent customer-opened-comparison signal with", compareList.length, "packages");
+            }
           }
-        }
-      );
+        );
+      }
     }
   };
 
@@ -209,7 +238,7 @@ const PackageShareDialog = ({
         <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden" }}>
           <CustomerCatalogView
             sharedPackages={sharedPackages}
-            onInterested={() => {}} // Customer doesn't need interested handler
+            onInterested={() => { }} // Customer doesn't need interested handler
             // Comparison props
             compareList={compareList}
             addToCompare={addToCompare}
@@ -219,6 +248,7 @@ const PackageShareDialog = ({
             onComparePackages={handleComparePackages}
             packageDetailsToOpen={packageDetailsToOpen}
             onPackageDetailsOpened={onPackageDetailsOpened}
+            sendPackageDetailsAction={sendPackageDetailsAction}
           />
         </DialogContent>
 
@@ -239,6 +269,7 @@ const PackageShareDialog = ({
         getBestValue={getBestValue}
         userType="customer"
         sharedPackages={sharedPackages}
+        sendComparisonAction={sendComparisonAction}
       />
     </>
   );

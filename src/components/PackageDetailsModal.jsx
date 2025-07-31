@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -88,11 +88,13 @@ import {
   Lock as LockIcon,
   Payment as PaymentIcon,
   VerifiedUser as VerifiedUserIcon,
+  Sync as SyncIcon,
   AccountCircle as AccountIcon,
   Home as HomeIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material';
 import { useCoBrowseScrollSync } from '../hooks/useCoBrowseScrollSync';
+import { usePackageDetailsCoBrowse } from '../hooks/usePackageDetailsCoBrowse';
 
 const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer' }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -108,14 +110,223 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState(false);
-  
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const dialogRef = useRef(null);
   const slideshowInterval = useRef(null);
+  const hasSentOpenSignalRef = useRef(false);
 
   // Use scroll sync hook for package details
-  const { scrollRef } = useCoBrowseScrollSync(userType, true, 'details');
+  const { scrollRef, isActiveController } = useCoBrowseScrollSync(userType, true, 'details');
+
+  // Use package details co-browsing hook
+  const {
+    // Incoming actions
+    incomingTabChange,
+    incomingImageSelect,
+    incomingDaySelect,
+    incomingFullscreenToggle,
+    incomingSlideshowToggle,
+    incomingImageNavigate,
+    incomingZoomChange,
+    incomingComparisonAction,
+    incomingPaymentAction,
+    incomingModalOpen,
+    incomingModalClose,
+
+    // Action senders
+    sendTabChange,
+    sendImageSelect,
+    sendDaySelect,
+    sendFullscreenToggle,
+    sendSlideshowToggle,
+    sendImageNavigate,
+    sendZoomChange,
+    sendPaymentAction,
+    sendModalOpen,
+    sendModalClose,
+
+    // Utility functions
+    clearIncomingActions,
+  } = usePackageDetailsCoBrowse(userType, true);
+
+  // Effect to handle modal opening and send signal to other party
+  useEffect(() => {
+    if (open && packageData && !hasSentOpenSignalRef.current) {
+      console.log(`📦 [${userType}] Package details modal opened for package:`, packageData.id);
+      sendModalOpen(packageData);
+      hasSentOpenSignalRef.current = true;
+    } else if (!open) {
+      // Reset the flag when modal closes
+      hasSentOpenSignalRef.current = false;
+    }
+  }, [open, packageData?.id, userType, sendModalOpen]);
+
+  // Effect to handle incoming modal open/close actions
+  useEffect(() => {
+    if (incomingModalOpen && incomingModalOpen.data?.packageData) {
+      console.log(`📦 [${userType}] Received modal open signal for package:`, incomingModalOpen.data.packageData.id);
+      // This will be handled by parent components
+    }
+  }, [incomingModalOpen, userType]);
+
+  useEffect(() => {
+    if (incomingModalClose) {
+      console.log(`📦 [${userType}] Received modal close signal`);
+      onClose();
+    }
+  }, [incomingModalClose, onClose]);
+
+  // Effect to handle incoming tab changes
+  useEffect(() => {
+    if (incomingTabChange && incomingTabChange.data?.tabIndex !== undefined) {
+      console.log(`📦 [${userType}] Received tab change:`, incomingTabChange.data.tabIndex);
+      setActiveTab(incomingTabChange.data.tabIndex);
+    }
+  }, [incomingTabChange, userType]);
+
+  // Effect to handle incoming image selections
+  useEffect(() => {
+    if (incomingImageSelect && incomingImageSelect.data?.imageIndex !== undefined) {
+      console.log(`📦 [${userType}] Received image select:`, incomingImageSelect.data.imageIndex);
+      setSelectedImageIndex(incomingImageSelect.data.imageIndex);
+    }
+  }, [incomingImageSelect, userType]);
+
+  // Effect to handle incoming day selections
+  useEffect(() => {
+    if (incomingDaySelect && incomingDaySelect.data?.dayIndex !== undefined) {
+      console.log(`📦 [${userType}] Received day select:`, incomingDaySelect.data.dayIndex);
+      setSelectedDay(incomingDaySelect.data.dayIndex);
+    }
+  }, [incomingDaySelect, userType]);
+
+  // Effect to handle incoming fullscreen toggle
+  useEffect(() => {
+    if (incomingFullscreenToggle) {
+      console.log(`📦 [${userType}] Received fullscreen toggle`);
+      setIsImageFullscreen(prev => !prev);
+    }
+  }, [incomingFullscreenToggle, userType]);
+
+  // Effect to handle incoming slideshow toggle
+  useEffect(() => {
+    if (incomingSlideshowToggle) {
+      console.log(`📦 [${userType}] Received slideshow toggle`);
+      setIsImageSlideshow(prev => !prev);
+    }
+  }, [incomingSlideshowToggle, userType]);
+
+  // Effect to handle incoming image navigation
+  useEffect(() => {
+    if (incomingImageNavigate && packageData?.images) {
+      console.log(`📦 [${userType}] Received image navigate:`, incomingImageNavigate.data.direction);
+      const direction = incomingImageNavigate.data.direction;
+      setSelectedImageIndex(prevIndex => {
+        const newIndex = direction === 'next'
+          ? (prevIndex + 1) % packageData.images.length
+          : prevIndex === 0 ? packageData.images.length - 1 : prevIndex - 1;
+        return newIndex;
+      });
+    }
+  }, [incomingImageNavigate, userType, packageData?.images]);
+
+  // Effect to handle incoming zoom changes
+  useEffect(() => {
+    if (incomingZoomChange && incomingZoomChange.data?.direction) {
+      console.log(`📦 [${userType}] Received zoom change:`, incomingZoomChange.data.direction);
+      setImageZoom(prev => {
+        const newZoom = incomingZoomChange.data.direction === 'in' ? prev * 1.2 : prev / 1.2;
+        return Math.max(0.5, Math.min(3, newZoom));
+      });
+    }
+  }, [incomingZoomChange, userType]);
+
+  // The useCoBrowseScrollSync hook handles incoming scroll sync internally
+  // No need for duplicate handling here
+
+  // Effect to handle incoming comparison actions
+  useEffect(() => {
+    if (incomingComparisonAction) {
+      console.log(`📦 [${userType}] Received comparison action:`, incomingComparisonAction.data);
+      // This will be handled by parent components
+    }
+  }, [incomingComparisonAction, userType]);
+
+  // Effect to handle incoming payment actions
+  useEffect(() => {
+    if (incomingPaymentAction) {
+      console.log(`📦 [${userType}] Received payment action:`, incomingPaymentAction.data);
+      // This will be handled by parent components
+    }
+  }, [incomingPaymentAction, userType]);
+
+  // Clear incoming actions after processing
+  useEffect(() => {
+    const hasIncomingActions = incomingTabChange || incomingImageSelect || incomingDaySelect ||
+      incomingFullscreenToggle || incomingSlideshowToggle || incomingImageNavigate ||
+      incomingZoomChange || incomingComparisonAction ||
+      incomingPaymentAction || incomingModalOpen || incomingModalClose;
+
+    if (hasIncomingActions) {
+      // Clear after a short delay to ensure processing is complete
+      setTimeout(() => {
+        clearIncomingActions();
+      }, 100);
+    }
+  }, [incomingTabChange, incomingImageSelect, incomingDaySelect, incomingFullscreenToggle,
+    incomingSlideshowToggle, incomingImageNavigate, incomingZoomChange,
+    incomingComparisonAction, incomingPaymentAction, incomingModalOpen, incomingModalClose,
+    clearIncomingActions]);
+
+  // Enhanced handlers with bidirectional sync
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    sendTabChange(newValue);
+  };
+
+  const handleImageSelect = (index) => {
+    setSelectedImageIndex(index);
+    sendImageSelect(index);
+  };
+
+  const handleDaySelect = (index) => {
+    setSelectedDay(index);
+    sendDaySelect(index);
+  };
+
+  const toggleImageFullscreen = () => {
+    setIsImageFullscreen(!isImageFullscreen);
+    sendFullscreenToggle();
+  };
+
+  const toggleSlideshow = () => {
+    setIsImageSlideshow(!isImageSlideshow);
+    sendSlideshowToggle();
+  };
+
+  const navigateImage = (direction) => {
+    if (packageData && packageData.images) {
+      const newIndex = direction === 'next'
+        ? (selectedImageIndex + 1) % packageData.images.length
+        : selectedImageIndex === 0 ? packageData.images.length - 1 : selectedImageIndex - 1;
+      setSelectedImageIndex(newIndex);
+      sendImageNavigate(direction);
+    }
+  };
+
+  const handleCloseModal = () => {
+    sendModalClose();
+    onClose();
+  };
+
+  const handleImageZoom = (direction) => {
+    setImageZoom(prev => {
+      const newZoom = direction === 'in' ? prev * 1.2 : prev / 1.2;
+      return Math.max(0.5, Math.min(3, newZoom));
+    });
+    sendZoomChange(direction);
+  };
 
   useEffect(() => {
     if (open) {
@@ -123,26 +334,28 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     }
   }, [open]);
 
+  // Simple scroll state update - let the useCoBrowseScrollSync hook handle everything else
   useEffect(() => {
-    const handleScroll = () => {
-      if (dialogRef.current) {
-        const scrollTop = dialogRef.current.scrollTop;
+    const handleScrollUpdate = () => {
+      if (scrollRef.current) {
+        const scrollTop = scrollRef.current.scrollTop;
         setScrollY(scrollTop);
         setIsFloatingButtonsVisible(scrollTop > 200);
       }
     };
 
-    const dialogElement = dialogRef.current;
-    if (dialogElement) {
-      dialogElement.addEventListener('scroll', handleScroll);
-      return () => dialogElement.removeEventListener('scroll', handleScroll);
+    // Add a simple scroll listener to update our local state
+    const scrollElement = scrollRef.current;
+    if (scrollElement && open) {
+      scrollElement.addEventListener('scroll', handleScrollUpdate, { passive: true });
+      return () => scrollElement.removeEventListener('scroll', handleScrollUpdate);
     }
-  }, [open]);
+  }, [open, scrollRef]);
 
   useEffect(() => {
-    if (isImageSlideshow) {
+    if (isImageSlideshow && packageData?.images?.length) {
       slideshowInterval.current = setInterval(() => {
-        setSelectedImageIndex(prev => 
+        setSelectedImageIndex(prev =>
           prev === packageData.images.length - 1 ? 0 : prev + 1
         );
       }, 3000);
@@ -153,47 +366,13 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     return () => clearInterval(slideshowInterval.current);
   }, [isImageSlideshow, packageData?.images?.length]);
 
-  // Add debugging for packageData
-  useEffect(() => {
-    console.log("[PackageDetailsModal] Modal props:", { open, packageData: packageData?.id, userType });
-  }, [open, packageData?.id, userType]);
+  // Add debugging for packageData (commented out to prevent re-renders)
+  // useEffect(() => {
+  //   console.log("[PackageDetailsModal] Modal props:", { open, packageData: packageData?.id, userType });
+  // }, [open, packageData?.id, userType]);
 
   // Don't return null immediately, let the modal render and show loading state
   // if (!packageData) return null;
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const handleImageSelect = (index) => {
-    setSelectedImageIndex(index);
-  };
-
-  const handleDaySelect = (index) => {
-    setSelectedDay(index);
-  };
-
-  const toggleImageFullscreen = () => {
-    setIsImageFullscreen(!isImageFullscreen);
-  };
-
-  const toggleSlideshow = () => {
-    setIsImageSlideshow(!isImageSlideshow);
-  };
-
-  const handleImageZoom = (direction) => {
-    setImageZoom(prev => {
-      const newZoom = direction === 'in' ? prev * 1.2 : prev / 1.2;
-      return Math.max(0.5, Math.min(3, newZoom));
-    });
-  };
-
-  const navigateImage = (direction) => {
-    const newIndex = direction === 'next' 
-      ? (selectedImageIndex + 1) % packageData.images.length
-      : selectedImageIndex === 0 ? packageData.images.length - 1 : selectedImageIndex - 1;
-    setSelectedImageIndex(newIndex);
-  };
 
   const toggleWishlist = () => {
     setIsWishlisted(!isWishlisted);
@@ -203,17 +382,25 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     setPaymentSuccess(true);
     setPaymentError(false);
     setIsPaymentModalOpen(false);
+    sendPaymentAction('payment-success');
   };
 
   const handlePaymentError = () => {
     setPaymentSuccess(false);
     setPaymentError(true);
+    sendPaymentAction('payment-error');
   };
 
   const handleClosePaymentModal = () => {
     setIsPaymentModalOpen(false);
     setPaymentSuccess(false);
     setPaymentError(false);
+    sendPaymentAction('payment-modal-closed');
+  };
+
+  const handleOpenPaymentModal = () => {
+    setIsPaymentModalOpen(true);
+    sendPaymentAction('payment-modal-opened');
   };
 
   const handleCloseSuccessSnackbar = () => {
@@ -267,10 +454,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
       <Box display="flex" justifyContent="space-between" alignItems="center" flexDirection={{ xs: 'column', sm: 'row' }} gap={{ xs: 1, sm: 0 }}>
         <Box flex={1} width="100%">
           <Slide direction="right" in={!isLoading} timeout={800}>
-            <Typography 
-              variant={isMobile ? "h6" : "h5"} 
-              fontWeight="bold" 
-              color="primary.main" 
+            <Typography
+              variant={isMobile ? "h6" : "h5"}
+              fontWeight="bold"
+              color="primary.main"
               gutterBottom
               sx={{
                 background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -283,20 +470,20 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 mb: { xs: 1, sm: 0.5 },
               }}
             >
-            {packageData.title}
-          </Typography>
+              {packageData.title}
+            </Typography>
           </Slide>
           <Fade in={!isLoading} timeout={1000}>
-          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" justifyContent={{ xs: 'center', sm: 'flex-start' }}>
-            <LocationIcon color="action" fontSize="small" />
-            {packageData.route && packageData.route.map((location, index) => (
-              <React.Fragment key={index}>
+            <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" justifyContent={{ xs: 'center', sm: 'flex-start' }}>
+              <LocationIcon color="action" fontSize="small" />
+              {packageData.route && packageData.route.map((location, index) => (
+                <React.Fragment key={index}>
                   <Zoom in={!isLoading} timeout={800 + index * 100}>
-                <Chip
-                  label={location}
-                  variant="outlined"
-                  size="small"
-                  color="primary"
+                    <Chip
+                      label={location}
+                      variant="outlined"
+                      size="small"
+                      color="primary"
                       sx={{
                         transition: 'all 0.3s ease',
                         fontSize: { xs: '0.7rem', sm: '0.75rem' },
@@ -307,17 +494,17 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                       }}
                     />
                   </Zoom>
-                {index < packageData.route.length - 1 && (
-                  <Typography variant="caption" color="text.secondary">•</Typography>
-                )}
-              </React.Fragment>
-            ))}
+                  {index < packageData.route.length - 1 && (
+                    <Typography variant="caption" color="text.secondary">•</Typography>
+                  )}
+                </React.Fragment>
+              ))}
               <Zoom in={!isLoading} timeout={1200}>
-            <Chip
-              label={packageData.duration}
-              color="secondary"
-              size="small"
-                  sx={{ 
+                <Chip
+                  label={packageData.duration}
+                  color="secondary"
+                  size="small"
+                  sx={{
                     ml: { xs: 0, sm: 1 },
                     fontSize: { xs: '0.7rem', sm: '0.75rem' },
                     background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
@@ -326,10 +513,36 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   }}
                 />
               </Zoom>
-          </Box>
+            </Box>
           </Fade>
         </Box>
         <Box display="flex" gap={1} justifyContent={{ xs: 'center', sm: 'flex-end' }} width={{ xs: '100%', sm: 'auto' }}>
+          {/* Scroll Sync Indicator */}
+          <Tooltip title={isActiveController ? "You're controlling scroll" : "Scroll synchronized with other party"}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.5,
+                bgcolor: isActiveController ? 'warning.main' : 'success.main',
+                color: 'white',
+                borderRadius: 1,
+                fontSize: '0.7rem',
+                fontWeight: 'bold',
+                animation: isActiveController ? 'none' : 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.7 },
+                  '100%': { opacity: 1 },
+                },
+              }}
+            >
+              <SyncIcon sx={{ fontSize: '0.8rem' }} />
+              {isActiveController ? 'CONTROLLING' : 'SYNC'}
+            </Box>
+          </Tooltip>
           <Tooltip title="Add to Wishlist">
             <IconButton
               onClick={toggleWishlist}
@@ -337,7 +550,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               sx={{
                 bgcolor: isWishlisted ? 'error.main' : 'grey.100',
                 color: isWishlisted ? 'white' : 'grey.700',
-                '&:hover': { 
+                '&:hover': {
                   bgcolor: isWishlisted ? 'error.dark' : 'grey.200',
                   transform: 'scale(1.1)',
                 },
@@ -352,7 +565,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               size="small"
               sx={{
                 bgcolor: 'grey.100',
-                '&:hover': { 
+                '&:hover': {
                   bgcolor: 'grey.200',
                   transform: 'scale(1.1)',
                 },
@@ -363,21 +576,21 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             </IconButton>
           </Tooltip>
           <Tooltip title="Close">
-        <IconButton
-          onClick={onClose}
-          size="small"
-          sx={{
-            bgcolor: 'grey.100',
-                '&:hover': { 
+            <IconButton
+              onClick={handleCloseModal}
+              size="small"
+              sx={{
+                bgcolor: 'grey.100',
+                '&:hover': {
                   bgcolor: 'error.light',
                   color: 'white',
                   transform: 'scale(1.1)',
                 },
                 transition: 'all 0.3s ease',
-          }}
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
           </Tooltip>
         </Box>
       </Box>
@@ -388,7 +601,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     <Box sx={{ mb: { xs: 2, sm: 3 }, position: 'relative' }}>
       <Grid container spacing={{ xs: 1, sm: 1.5 }}>
         <Grid item xs={12} md={9}>
-          <Card 
+          <Card
             elevation={6}
             sx={{
               position: 'relative',
@@ -413,7 +626,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 height="100%"
                 image={packageData.images[selectedImageIndex]}
                 alt="Package main image"
-                sx={{ 
+                sx={{
                   objectFit: 'cover',
                   transition: 'transform 0.5s ease',
                   transform: `scale(${imageZoom})`,
@@ -422,7 +635,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   },
                 }}
               />
-              
+
               {/* Image overlay with gradient */}
               <Box
                 sx={{
@@ -437,13 +650,13 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   p: { xs: 1.5, sm: 2 },
                 }}
               >
-                <Typography variant="body2" color="white" fontWeight="bold" sx={{ 
+                <Typography variant="body2" color="white" fontWeight="bold" sx={{
                   fontSize: { xs: '0.75rem', sm: '0.875rem' },
                   display: { xs: 'none', sm: 'block' }
                 }}>
                   {packageData.images.length} Photos • Click to view fullscreen
                 </Typography>
-                <Typography variant="caption" color="white" fontWeight="bold" sx={{ 
+                <Typography variant="caption" color="white" fontWeight="bold" sx={{
                   fontSize: '0.7rem',
                   display: { xs: 'block', sm: 'none' }
                 }}>
@@ -564,7 +777,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             </Box>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={3}>
           <Card
             elevation={6}
@@ -602,7 +815,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                         border: selectedImageIndex === index ? 2 : 0,
                         borderColor: 'primary.main',
                         transition: 'all 0.3s ease',
-                        '&:hover': { 
+                        '&:hover': {
                           elevation: 4,
                           transform: 'scale(1.05)',
                         },
@@ -617,7 +830,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                         height={{ xs: 50, sm: 60 }}
                         image={image}
                         alt={`Package image ${index + 1}`}
-                        sx={{ 
+                        sx={{
                           objectFit: 'cover',
                           transition: 'transform 0.3s ease',
                           '&:hover': { transform: 'scale(1.1)' },
@@ -682,7 +895,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             transition: 'transform 0.3s ease',
           }}
         />
-        
+
         {/* Fullscreen Controls */}
         <Box
           sx={{
@@ -768,11 +981,11 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
     <Fade in={!isLoading} timeout={1400}>
       <Box sx={{ mb: { xs: 2, sm: 3 } }}>
         <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
               elevation={3}
-            sx={{
-              height: '100%',
+              sx={{
+                height: '100%',
                 background: `linear-gradient(135deg, ${theme.palette.primary.light}20, ${theme.palette.primary.main}20)`,
                 border: `1px solid ${theme.palette.primary.light}`,
                 borderRadius: { xs: 1.5, sm: 2 },
@@ -794,48 +1007,48 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   >
                     <HighlightIcon fontSize="small" />
                   </Avatar>
-                <Typography variant="subtitle2" fontWeight="bold" color="primary.main" sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  lineHeight: { xs: 1.2, sm: 1.4 }
-                }}>
-                  PACKAGE HIGHLIGHTS
-                </Typography>
-              </Box>
+                  <Typography variant="subtitle2" fontWeight="bold" color="primary.main" sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    lineHeight: { xs: 1.2, sm: 1.4 }
+                  }}>
+                    PACKAGE HIGHLIGHTS
+                  </Typography>
+                </Box>
                 <Stack spacing={{ xs: 1, sm: 1.5 }}>
-                {packageData.highlights.map((highlight, index) => (
+                  {packageData.highlights.map((highlight, index) => (
                     <Slide key={index} direction="right" in={!isLoading} timeout={800 + index * 100}>
                       <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
-                        <CheckIcon 
-                          color="success" 
-                          sx={{ 
+                        <CheckIcon
+                          color="success"
+                          sx={{
                             mt: 0.2,
                             p: 0.3,
                             bgcolor: 'success.light',
                             borderRadius: '50%',
                             color: 'white',
                             fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                          }} 
+                          }}
                         />
-                        <Typography variant="body2" sx={{ 
-                          flex: 1, 
+                        <Typography variant="body2" sx={{
+                          flex: 1,
                           fontSize: { xs: '0.75rem', sm: '0.8rem' },
                           lineHeight: { xs: 1.3, sm: 1.4 }
                         }}>
                           {highlight}
                         </Typography>
-                  </Box>
+                      </Box>
                     </Slide>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-          
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
               elevation={3}
-            sx={{
-              height: '100%',
+              sx={{
+                height: '100%',
                 background: `linear-gradient(135deg, ${theme.palette.success.light}20, ${theme.palette.success.main}20)`,
                 border: `1px solid ${theme.palette.success.light}`,
                 borderRadius: { xs: 1.5, sm: 2 },
@@ -857,22 +1070,22 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                   >
                     <ActivityIcon fontSize="small" />
                   </Avatar>
-                <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  lineHeight: { xs: 1.2, sm: 1.4 }
-                }}>
-                  ACTIVITIES
-                </Typography>
-              </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ 
-                  mb: { xs: 1.5, sm: 2 }, 
+                  <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    lineHeight: { xs: 1.2, sm: 1.4 }
+                  }}>
+                    ACTIVITIES
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{
+                  mb: { xs: 1.5, sm: 2 },
                   fontSize: { xs: '0.75rem', sm: '0.8rem' },
                   lineHeight: { xs: 1.3, sm: 1.4 }
                 }}>
-                Exciting activities and experiences included in this package
-              </Typography>
-              <Button
-                startIcon={<AddIcon fontSize="small" />}
+                  Exciting activities and experiences included in this package
+                </Typography>
+                <Button
+                  startIcon={<AddIcon fontSize="small" />}
                   variant="contained"
                   color="success"
                   fullWidth
@@ -887,16 +1100,16 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                     },
                     transition: 'all 0.3s ease',
                   }}
-              >
-                View Activities
-              </Button>
-            </CardContent>
-          </Card>
+                >
+                  View Activities
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+
         </Grid>
-          
-       
-      </Grid>
-    </Box>
+      </Box>
     </Fade>
   );
 
@@ -910,16 +1123,16 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           mb: { xs: 1.5, sm: 2 },
         }}
       >
-      <Tabs
-        value={activeTab}
-        onChange={handleTabChange}
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
           variant={isMobile ? "scrollable" : "fullWidth"}
           scrollButtons="auto"
-        sx={{
+          sx={{
             bgcolor: 'grey.50',
-          '& .MuiTab-root': {
-            fontWeight: 'bold',
-            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+            '& .MuiTab-root': {
+              fontWeight: 'bold',
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
               py: { xs: 1, sm: 1.5 },
               px: { xs: 1.5, sm: 2 },
               transition: 'all 0.3s ease',
@@ -931,20 +1144,20 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             '& .Mui-selected': {
               bgcolor: 'primary.main',
               color: 'white !important',
-          },
-        }}
-      >
-        {packageData.tabs.map((tab, index) => (
-          <Tab key={index} label={tab} />
-        ))}
-      </Tabs>
+            },
+          }}
+        >
+          {packageData.tabs.map((tab, index) => (
+            <Tab key={index} label={tab} />
+          ))}
+        </Tabs>
       </Paper>
 
       <Fade in={!isLoading} timeout={1000}>
         <Box>
-      {activeTab === 0 && renderItineraryContent()}
-      {activeTab === 1 && renderPoliciesContent()}
-      {activeTab === 2 && renderSummaryContent()}
+          {activeTab === 0 && renderItineraryContent()}
+          {activeTab === 1 && renderPoliciesContent()}
+          {activeTab === 2 && renderSummaryContent()}
         </Box>
       </Fade>
     </Box>
@@ -958,7 +1171,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             <Step key={index} expanded={true}>
               <StepLabel
                 onClick={() => handleDaySelect(index)}
-                sx={{ 
+                sx={{
                   cursor: 'pointer',
                   '& .MuiStepLabel-label': {
                     fontWeight: selectedDay === index ? 'bold' : 'normal',
@@ -968,16 +1181,16 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 }}
               >
                 <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} flexWrap="wrap">
-                  <Typography variant="subtitle1" fontWeight="bold" sx={{ 
+                  <Typography variant="subtitle1" fontWeight="bold" sx={{
                     fontSize: { xs: '0.85rem', sm: '0.95rem' },
                     lineHeight: { xs: 1.2, sm: 1.4 }
                   }}>
                     {day.day} - {day.city}
                   </Typography>
-                  <Chip 
-                    label={day.date} 
-                    size="small" 
-                    color="primary" 
+                  <Chip
+                    label={day.date}
+                    size="small"
+                    color="primary"
                     variant="outlined"
                     sx={{
                       fontWeight: 'bold',
@@ -990,141 +1203,141 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               </StepLabel>
               <StepContent>
                 <Collapse in={selectedDay === index} timeout={500}>
-                <Card
+                  <Card
                     elevation={selectedDay === index ? 6 : 2}
-                  sx={{
+                    sx={{
                       p: { xs: 1.5, sm: 2 },
                       border: selectedDay === index ? 2 : 0,
-                    borderColor: 'primary.main',
+                      borderColor: 'primary.main',
                       borderRadius: { xs: 1.5, sm: 2 },
                       transition: 'all 0.5s ease',
-                    mb: { xs: 1, sm: 1.5 },
-                      background: selectedDay === index 
+                      mb: { xs: 1, sm: 1.5 },
+                      background: selectedDay === index
                         ? `linear-gradient(135deg, ${theme.palette.primary.light}10, ${theme.palette.background.paper})`
                         : 'background.paper',
-                  }}
-                >
-                  {/* Flight Information */}
-                  {day.flightNote && (
+                    }}
+                  >
+                    {/* Flight Information */}
+                    {day.flightNote && (
                       <Fade in={selectedDay === index} timeout={800}>
                         <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
                           <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1, sm: 1.5 }}>
                             <Avatar sx={{ bgcolor: 'info.main', width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 } }}>
                               <FlightIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
                             </Avatar>
-                            <Typography variant="subtitle2" fontWeight="bold" color="info.main" sx={{ 
+                            <Typography variant="subtitle2" fontWeight="bold" color="info.main" sx={{
                               fontSize: { xs: '0.8rem', sm: '0.875rem' }
                             }}>
-                          FLIGHT
-                        </Typography>
-                      </Box>
-                          <Paper 
-                            elevation={2} 
-                            sx={{ 
-                              p: { xs: 1.5, sm: 2 }, 
+                              FLIGHT
+                            </Typography>
+                          </Box>
+                          <Paper
+                            elevation={2}
+                            sx={{
+                              p: { xs: 1.5, sm: 2 },
                               bgcolor: 'info.50',
                               borderRadius: { xs: 1, sm: 1.5 },
                               border: `1px solid ${theme.palette.info.light}`,
                             }}
                           >
-                            <Typography variant="body2" color="info.main" sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: 1, 
+                            <Typography variant="body2" color="info.main" sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
                               fontSize: { xs: '0.75rem', sm: '0.8rem' }
                             }}>
                               <InfoIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
-                          {day.flightNote}
-                        </Typography>
-                      </Paper>
-                    </Box>
+                              {day.flightNote}
+                            </Typography>
+                          </Paper>
+                        </Box>
                       </Fade>
-                  )}
+                    )}
 
-                  {/* Hotel Information */}
-                  {day.hotel && (
+                    {/* Hotel Information */}
+                    {day.hotel && (
                       <Fade in={selectedDay === index} timeout={1000}>
-                    <Box>
+                        <Box>
                           <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={{ xs: 1, sm: 1.5 }}>
                             <Avatar sx={{ bgcolor: 'success.main', width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 } }}>
                               <HotelIcon sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} />
                             </Avatar>
-                            <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
+                            <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{
                               fontSize: { xs: '0.8rem', sm: '0.875rem' }
                             }}>
-                          HOTEL
-                        </Typography>
-                      </Box>
+                              HOTEL
+                            </Typography>
+                          </Box>
                           <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: { xs: 1, sm: 1.5 } }}>
                             <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                               <Grid item xs={12} md={8}>
-                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ 
+                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{
                                   fontSize: { xs: '0.85rem', sm: '0.95rem' }
                                 }}>
-                              {day.hotel.name}
-                            </Typography>
+                                  {day.hotel.name}
+                                </Typography>
                                 <Box display="flex" alignItems="center" gap={1} mb={{ xs: 1, sm: 1.5 }}>
-                              <Rating value={day.hotel.stars} readOnly size="small" />
-                                  <Typography variant="body2" fontWeight="bold" sx={{ 
+                                  <Rating value={day.hotel.stars} readOnly size="small" />
+                                  <Typography variant="body2" fontWeight="bold" sx={{
                                     fontSize: { xs: '0.7rem', sm: '0.8rem' }
                                   }}>
-                                ({day.hotel.rating})
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ 
-                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
-                            }}>
+                                    ({day.hotel.rating})
+                                  </Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary" gutterBottom sx={{
+                                  fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                }}>
                                   📍 {day.hotel.location}
-                            </Typography>
-                            <Typography variant="body2" fontWeight="bold" gutterBottom sx={{ 
-                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
-                            }}>
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold" gutterBottom sx={{
+                                  fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                }}>
                                   🛏️ {day.hotel.stay}
-                            </Typography>
-                            <Typography variant="body2" gutterBottom sx={{ 
-                              fontSize: { xs: '0.7rem', sm: '0.8rem' }
-                            }}>
+                                </Typography>
+                                <Typography variant="body2" gutterBottom sx={{
+                                  fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                }}>
                                   🏨 {day.hotel.type}
-                            </Typography>
+                                </Typography>
                                 <Box sx={{ mt: { xs: 1, sm: 1.5 } }}>
-                            {day.hotel.inclusions.map((inclusion, idx) => (
-                              <Chip
-                                key={idx}
-                                label={inclusion}
-                                size="small"
-                                color="success"
-                                variant="outlined"
-                                      sx={{ 
-                                        mr: { xs: 0.25, sm: 0.5 }, 
+                                  {day.hotel.inclusions.map((inclusion, idx) => (
+                                    <Chip
+                                      key={idx}
+                                      label={inclusion}
+                                      size="small"
+                                      color="success"
+                                      variant="outlined"
+                                      sx={{
+                                        mr: { xs: 0.25, sm: 0.5 },
                                         mb: { xs: 0.25, sm: 0.5 },
                                         fontSize: { xs: '0.65rem', sm: '0.7rem' },
                                         '&:hover': { bgcolor: 'success.light', color: 'white' },
                                         transition: 'all 0.3s ease',
                                       }}
-                              />
-                            ))}
+                                    />
+                                  ))}
                                 </Box>
-                          </Grid>
+                              </Grid>
                               <Grid item xs={12} md={4}>
                                 <Card elevation={2} sx={{ borderRadius: { xs: 1, sm: 1.5 }, overflow: 'hidden' }}>
-                            <CardMedia
-                              component="img"
+                                  <CardMedia
+                                    component="img"
                                     height={{ xs: 80, sm: 100 }}
                                     image={day.hotel.image || '/api/placeholder/150/120'}
-                              alt={day.hotel.name}
+                                    alt={day.hotel.name}
                                     sx={{
                                       transition: 'transform 0.3s ease',
                                       '&:hover': { transform: 'scale(1.1)' },
                                     }}
-                            />
+                                  />
                                 </Card>
-                          </Grid>
-                        </Grid>
-                      </Paper>
-                    </Box>
+                              </Grid>
+                            </Grid>
+                          </Paper>
+                        </Box>
                       </Fade>
-                  )}
-                </Card>
+                    )}
+                  </Card>
                 </Collapse>
               </StepContent>
             </Step>
@@ -1134,10 +1347,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
       {/* Enhanced Sidebar */}
       <Grid item xs={12} md={4}>
-        <Card 
-          elevation={4} 
-          sx={{ 
-            position: 'sticky', 
+        <Card
+          elevation={4}
+          sx={{
+            position: 'sticky',
             top: { xs: 80, sm: 100 },
             borderRadius: { xs: 1.5, sm: 2 },
             overflow: 'hidden',
@@ -1150,13 +1363,13 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               color: 'white',
             }}
           >
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ 
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{
               fontSize: { xs: '0.85rem', sm: '0.95rem' }
             }}>
               Trip Timeline
             </Typography>
-            <Typography variant="body2" sx={{ 
-              opacity: 0.9, 
+            <Typography variant="body2" sx={{
+              opacity: 0.9,
               fontSize: { xs: '0.7rem', sm: '0.8rem' }
             }}>
               Click on any day to view details
@@ -1196,7 +1409,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                       {index + 1}
                     </Avatar>
                   </ListItemIcon>
-                  <ListItemText 
+                  <ListItemText
                     primary={date}
                     primaryTypographyProps={{
                       fontWeight: selectedDay === index ? 'bold' : 'normal',
@@ -1212,10 +1425,10 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
 
             {/* Enhanced Best Deals Section */}
             <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
-              <Paper 
-                elevation={3} 
-                sx={{ 
-                  p: { xs: 1.5, sm: 2 }, 
+              <Paper
+                elevation={3}
+                sx={{
+                  p: { xs: 1.5, sm: 2 },
                   background: `linear-gradient(135deg, ${theme.palette.success.light}20, ${theme.palette.success.main}20)`,
                   border: `1px solid ${theme.palette.success.light}`,
                   borderRadius: { xs: 1, sm: 1.5 },
@@ -1223,17 +1436,17 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
               >
                 <Box display="flex" alignItems="center" gap={1} mb={{ xs: 1, sm: 1.5 }}>
                   <OfferIcon color="success" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }} />
-                  <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{ 
+                  <Typography variant="subtitle2" fontWeight="bold" color="success.main" sx={{
                     fontSize: { xs: '0.8rem', sm: '0.875rem' }
                   }}>
-                {packageData.sidebar.bestDeals.message}
-              </Typography>
+                    {packageData.sidebar.bestDeals.message}
+                  </Typography>
                 </Box>
                 <Stack spacing={{ xs: 0.75, sm: 1 }}>
-                {packageData.sidebar.bestDeals.actions.map((action, index) => (
+                  {packageData.sidebar.bestDeals.actions.map((action, index) => (
                     <Box key={index} display="flex" alignItems="center" gap={1}>
-                      <CheckIcon 
-                        color="success" 
+                      <CheckIcon
+                        color="success"
                         sx={{
                           p: 0.2,
                           bgcolor: 'success.main',
@@ -1242,16 +1455,16 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                           fontSize: { xs: '0.65rem', sm: '0.75rem' },
                         }}
                       />
-                      <Typography variant="body2" sx={{ 
-                        flex: 1, 
+                      <Typography variant="body2" sx={{
+                        flex: 1,
                         fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }}>
                         {action}
                       </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </Paper>
+                    </Box>
+                  ))}
+                </Stack>
+              </Paper>
             </Box>
           </CardContent>
         </Card>
@@ -1266,74 +1479,74 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           <SecurityIcon fontSize="small" />
         </Avatar>
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-        Cancellation & Payment Policies
-      </Typography>
+          Cancellation & Payment Policies
+        </Typography>
       </Box>
-      
+
       <Grid container spacing={{ xs: 2, sm: 3 }}>
         <Grid item xs={12} md={6}>
           <Card elevation={2} sx={{ p: { xs: 2, sm: 2.5 }, height: '100%', borderRadius: { xs: 1, sm: 1.5 } }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="error.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
-            Cancellation Policy
-          </Typography>
+              Cancellation Policy
+            </Typography>
             <Stack spacing={{ xs: 1, sm: 1.5 }}>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <CheckIcon color="success" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>Free cancellation</strong> up to 7 days before departure
-          </Typography>
+                </Typography>
               </Box>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <InfoIcon color="warning" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>50% refund</strong> for cancellations between 3-7 days before departure
-          </Typography>
+                </Typography>
               </Box>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <CloseIcon color="error" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>No refund</strong> for cancellations within 3 days of departure
-          </Typography>
-        </Box>
+                </Typography>
+              </Box>
             </Stack>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
           <Card elevation={2} sx={{ p: { xs: 2, sm: 2.5 }, height: '100%', borderRadius: { xs: 1, sm: 1.5 } }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="success.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
-            Payment Policy
-          </Typography>
+              Payment Policy
+            </Typography>
             <Stack spacing={{ xs: 1, sm: 1.5 }}>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <MoneyIcon color="primary" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>30% advance payment</strong> required to confirm booking
-          </Typography>
+                </Typography>
               </Box>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <ScheduleIcon color="warning" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>Balance payment</strong> due 15 days before departure
-          </Typography>
+                </Typography>
               </Box>
               <Box display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
                 <CheckIcon color="success" sx={{ mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }} />
                 <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                   <strong>EMI options available</strong> with 0% interest for 6 months
-          </Typography>
-        </Box>
-      </Stack>
+                </Typography>
+              </Box>
+            </Stack>
           </Card>
         </Grid>
       </Grid>
 
-      <Box sx={{ 
-        mt: { xs: 2, sm: 3 }, 
-        p: { xs: 1.5, sm: 2 }, 
-        bgcolor: 'info.50', 
-        borderRadius: { xs: 1, sm: 1.5 }, 
-        border: `1px solid ${theme.palette.info.light}` 
+      <Box sx={{
+        mt: { xs: 2, sm: 3 },
+        p: { xs: 1.5, sm: 2 },
+        bgcolor: 'info.50',
+        borderRadius: { xs: 1, sm: 1.5 },
+        border: `1px solid ${theme.palette.info.light}`
       }}>
         <Typography variant="body2" color="info.main" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
           💡 Pro Tip:
@@ -1352,17 +1565,17 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           <InfoIcon fontSize="small" />
         </Avatar>
         <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-        Package Summary
-      </Typography>
+          Package Summary
+        </Typography>
       </Box>
-      
+
       <Grid container spacing={{ xs: 2, sm: 3 }}>
         <Grid item xs={12} md={6}>
-          <Card 
-            elevation={2} 
-            sx={{ 
-              p: { xs: 2, sm: 2.5 }, 
-              height: '100%', 
+          <Card
+            elevation={2}
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              height: '100%',
               borderRadius: { xs: 1, sm: 1.5 },
               border: `1px solid ${theme.palette.success.light}`,
               bgcolor: 'success.50',
@@ -1370,7 +1583,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           >
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="success.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
               ✅ Package Includes
-          </Typography>
+            </Typography>
             <Stack spacing={{ xs: 1, sm: 1.5 }}>
               {[
                 'Accommodation as per itinerary',
@@ -1380,30 +1593,30 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 'Professional tour guide'
               ].map((item, index) => (
                 <Box key={index} display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
-                  <CheckIcon 
-                    color="success" 
-                    sx={{ 
+                  <CheckIcon
+                    color="success"
+                    sx={{
                       mt: 0.5,
                       p: 0.2,
                       bgcolor: 'success.main',
                       borderRadius: '50%',
                       color: 'white',
                       fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                    }} 
+                    }}
                   />
                   <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>{item}</Typography>
-            </Box>
+                </Box>
               ))}
-          </Stack>
+            </Stack>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
-          <Card 
-            elevation={2} 
-            sx={{ 
-              p: { xs: 2, sm: 2.5 }, 
-              height: '100%', 
+          <Card
+            elevation={2}
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              height: '100%',
               borderRadius: { xs: 1, sm: 1.5 },
               border: `1px solid ${theme.palette.error.light}`,
               bgcolor: 'error.50',
@@ -1411,7 +1624,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           >
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="error.main" sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' } }}>
               ❌ Package Excludes
-          </Typography>
+            </Typography>
             <Stack spacing={{ xs: 1, sm: 1.5 }}>
               {[
                 'International/Domestic flights',
@@ -1421,21 +1634,21 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
                 'Tips and gratuities'
               ].map((item, index) => (
                 <Box key={index} display="flex" alignItems="flex-start" gap={{ xs: 1, sm: 1.5 }}>
-                  <CloseIcon 
-                    color="error" 
-                    sx={{ 
+                  <CloseIcon
+                    color="error"
+                    sx={{
                       mt: 0.5,
                       p: 0.2,
                       bgcolor: 'error.main',
                       borderRadius: '50%',
                       color: 'white',
                       fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                    }} 
+                    }}
                   />
                   <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>{item}</Typography>
-            </Box>
+                </Box>
               ))}
-          </Stack>
+            </Stack>
           </Card>
         </Grid>
       </Grid>
@@ -1509,25 +1722,25 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
         <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>
           💳 Price Summary
         </Typography>
-        </Box>
+      </Box>
 
       <CardContent sx={{ p: { xs: 1, sm: 1.5 } }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" gap={{ xs: 1, sm: 2 }}>
           {/* Left Side - Price Details */}
           <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} flexWrap="wrap" flex={1}>
             {/* Original Price */}
-            <Box 
+            <Box
               sx={{
-                display: 'flex', 
-                alignItems: 'center', 
+                display: 'flex',
+                alignItems: 'center',
                 gap: 0.5,
                 p: { xs: 0.5, sm: 0.75 },
                 bgcolor: 'grey.100',
                 borderRadius: 1,
                 border: '1px solid',
                 borderColor: 'grey.300',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
+                transition: 'all 0.3s ease',
+                '&:hover': {
                   bgcolor: 'grey.200',
                   transform: 'scale(1.02)',
                 }
@@ -1535,25 +1748,25 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             >
               <Typography variant="caption" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' }, color: 'text.secondary' }}>
                 Original:
-                  </Typography>
+              </Typography>
               <Typography
                 variant="caption"
-                    sx={{
-                  textDecoration: 'line-through', 
+                sx={{
+                  textDecoration: 'line-through',
                   fontSize: { xs: '0.55rem', sm: '0.6rem' },
-                      fontWeight: 'bold',
+                  fontWeight: 'bold',
                   color: 'text.secondary'
-                    }}
-                  >
+                }}
+              >
                 ₹{packageData.price.original.toLocaleString()}
               </Typography>
-              </Box>
-            
+            </Box>
+
             {/* Final Price */}
-      <Box
-        sx={{
-                display: 'flex', 
-                alignItems: 'center', 
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: 0.5,
                 p: { xs: 0.5, sm: 0.75 },
                 bgcolor: 'primary.50',
@@ -1569,21 +1782,21 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             >
               <Typography variant="caption" fontWeight="bold" color="primary.main" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' } }}>
                 Final:
-        </Typography>
+              </Typography>
               <Typography variant="body2" fontWeight="bold" color="primary.main" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-            ₹{packageData.price.discounted.toLocaleString()}
-          </Typography>
-        </Box>
+                ₹{packageData.price.discounted.toLocaleString()}
+              </Typography>
+            </Box>
 
-        {/* Savings */}
-        <Box
-          sx={{
-            bgcolor: 'success.main',
-            color: 'white',
+            {/* Savings */}
+            <Box
+              sx={{
+                bgcolor: 'success.main',
+                color: 'white',
                 px: { xs: 0.75, sm: 1 },
                 py: { xs: 0.5, sm: 0.75 },
                 borderRadius: 1,
-            textAlign: 'center',
+                textAlign: 'center',
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   bgcolor: 'success.dark',
@@ -1594,64 +1807,64 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
             >
               <Typography variant="caption" fontWeight="bold" sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' } }}>
                 🎉 Save ₹{(packageData.price.original - packageData.price.discounted).toLocaleString()}
-          </Typography>
-        </Box>
+              </Typography>
+            </Box>
 
-        {/* EMI Option */}
-        <Box
-          sx={{
-            bgcolor: 'info.50',
+            {/* EMI Option */}
+            <Box
+              sx={{
+                bgcolor: 'info.50',
                 px: { xs: 0.75, sm: 1 },
                 py: { xs: 0.5, sm: 0.75 },
                 borderRadius: 1,
-            border: `1px solid ${theme.palette.info.light}`,
+                border: `1px solid ${theme.palette.info.light}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   bgcolor: 'info.100',
                   transform: 'scale(1.02)',
                 }
-          }}
-        >
+              }}
+            >
               <Typography variant="caption" color="info.main" fontWeight="bold" sx={{ fontSize: { xs: '0.5rem', sm: '0.55rem' } }}>
                 💳 EMI from {packageData.price.emi}
-          </Typography>
+              </Typography>
             </Box>
-        </Box>
+          </Box>
 
           {/* Right Side - Payment Button */}
           <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1 }}>
             {/* Trust Badges */}
-           
+
 
             {/* Proceed to Payment Button */}
-        <Button
-          variant="contained"
+            <Button
+              variant="contained"
               size="small"
-              onClick={() => setIsPaymentModalOpen(true)}
-          sx={{
+              onClick={handleOpenPaymentModal}
+              sx={{
                 py: { xs: 0.75, sm: 1 },
                 px: { xs: 1.5, sm: 2 },
                 fontSize: { xs: '0.8rem', sm: '0.9rem' },
-            fontWeight: 'bold',
+                fontWeight: 'bold',
                 borderRadius: { xs: 0.5, sm: 0.75 },
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 boxShadow: theme.shadows[4],
-              '&:hover': {
+                '&:hover': {
                   transform: 'scale(1.05)',
                   boxShadow: theme.shadows[8],
                   background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-              },
-              transition: 'all 0.3s ease',
+                },
+                transition: 'all 0.3s ease',
                 minWidth: { xs: 'auto', sm: '140px' },
-            }}
-          >
+              }}
+            >
               Proceed to Payment
-        </Button>
-            </Box>
-            </Box>
-        
+            </Button>
+          </Box>
+        </Box>
+
         {/* Additional Info */}
-        <Typography variant="caption" color="text.secondary" sx={{ 
+        <Typography variant="caption" color="text.secondary" sx={{
           fontSize: { xs: '0.5rem', sm: '0.55rem' },
           display: 'block',
           mt: { xs: 0.5, sm: 0.75 },
@@ -1659,7 +1872,7 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
           opacity: 0.8,
         }}>
           Per {packageData.price.per} • {packageData.price.notes}
-              </Typography>
+        </Typography>
       </CardContent>
     </Card>
   );
@@ -2024,77 +2237,80 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   return (
     <>
       {isLoading && renderLoadingScreen()}
-      
-    <Dialog
+
+      <Dialog
         open={open && !isLoading}
-      onClose={onClose}
-      maxWidth={false}
-      fullScreen
+        onClose={handleCloseModal}
+        maxWidth={false}
+        fullScreen
         TransitionComponent={Slide}
         TransitionProps={{ direction: "up" }}
-      sx={{
-        '& .MuiDialog-paper': {
-          margin: 0,
-          maxHeight: '100vh',
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: 0,
+            maxHeight: '100vh',
             background: `linear-gradient(135deg, ${theme.palette.background.default}, ${theme.palette.grey[50]})`,
-        },
-      }}
-    >
-      {packageData ? (
-        <>
-          {renderTopBanner()}
-          
-          {renderPriceBox()}
-          
-         
-          
-          <DialogContent
+          },
+        }}
+      >
+        {packageData ? (
+          <>
+            {renderTopBanner()}
+
+            {renderPriceBox()}
+
+
+
+            <DialogContent
               ref={scrollRef}
-            sx={{
-              p: 0,
-              height: 'calc(100vh - 100px)',
-              overflow: 'auto',
+              sx={{
+                p: 0,
+                height: 'calc(100vh - 100px)',
+                overflow: 'auto',
                 scrollBehavior: 'smooth',
+                // Add visual indicator when this side is actively controlling
+                borderLeft: isActiveController ? '4px solid' : 'none',
+                borderColor: 'primary.main',
+              }}
+            >
+              <Box sx={{ px: isMobile ? 1.5 : 3, py: 2 }}>
+                {renderImageGallery()}
+                {renderHighlightsBadges()}
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} lg={12}>
+                    {renderTabSection()}
+                  </Grid>
+                </Grid>
+              </Box>
+            </DialogContent>
+          </>
+        ) : (
+          <DialogContent
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '400px',
             }}
           >
-              <Box sx={{ px: isMobile ? 1.5 : 3, py: 2 }}>
-              {renderImageGallery()}
-              {renderHighlightsBadges()}
-              
-                <Grid container spacing={3}>
-                <Grid item xs={12} lg={12}>
-                  {renderTabSection()}
-                </Grid>
-              </Grid>
+            <Box textAlign="center">
+              <CircularProgress size={60} sx={{ mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                Loading package details...
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Please wait while we prepare the package information.
+              </Typography>
             </Box>
           </DialogContent>
-        </>
-      ) : (
-        <DialogContent
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '400px',
-          }}
-        >
-          <Box textAlign="center">
-            <CircularProgress size={60} sx={{ mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Loading package details...
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Please wait while we prepare the package information.
-            </Typography>
-          </Box>
-        </DialogContent>
-      )}
-    </Dialog>
+        )}
+      </Dialog>
 
       {packageData && renderImageFullscreen()}
       {packageData && renderFloatingActions()}
       {packageData && renderPaymentModal()}
-      
+
       {/* Success Notification */}
       <Snackbar
         open={paymentSuccess}
@@ -2122,4 +2338,4 @@ const PackageDetailsModal = ({ open, onClose, packageData, userType = 'customer'
   );
 };
 
-export default memo(PackageDetailsModal); 
+export default PackageDetailsModal; 

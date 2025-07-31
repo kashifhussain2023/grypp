@@ -1,33 +1,30 @@
 // Centralized package data for all components - used in MeetingPage, AgentCatalog, and Customer components
 export const samplePackageData = [
   {
-    "id": "pkg_ladakh_001",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_001",
+    "name": "World Tour Package 1",
+    "title": "Exclusive Journey 1 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "2N Delhi",
-      "2N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "1N Pangong"
+      "2N City A",
+      "2N City B",
+      "3N City C"
     ],
-    "duration": "12D/11N",
+    "duration": "6D/5N",
     "highlights": [
-      "Royal Enfield Bike Ride",
-      "Monastery Visits",
-      "Magnetic Hill Visit",
-      "Pangong Tso Lake",
-      "Nubra Valley Desert Safari"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
       "Itinerary",
@@ -35,111 +32,103 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 2570,
-      "discounted": 2313,
+      "original": 1050,
+      "discounted": 950,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$771/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$316/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -257,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -105,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -128,
+        "desc": "5% off for groups",
+        "value": -52,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 1",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_002",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_003",
+    "name": "World Tour Package 3",
+    "title": "Exclusive Journey 3 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
+      "1N City A",
+      "4N City B",
+      "3N City C"
     ],
-    "duration": "8D/9N",
+    "duration": "8D/7N",
     "highlights": [
-      "Zanskar Valley Exploration",
-      "Leh Local Sightseeing",
-      "Royal Enfield Bike Ride",
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
       "Itinerary",
@@ -147,109 +136,862 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 3706,
-      "discounted": 3335,
+      "original": 1150,
+      "discounted": 1050,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1112/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$350/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -370,
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -115,
+        "applied": false
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -57,
+        "applied": true
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 3",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_004",
+    "name": "World Tour Package 4",
+    "title": "Exclusive Journey 4 2023 Discover Wonders",
+    "type": "Adventure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "2N City A",
+      "1N City B",
+      "2N City C"
+    ],
+    "duration": "9D/8N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1200,
+      "discounted": 1100,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$366/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -120,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
+        "desc": "5% off for groups",
+        "value": -60,
+        "applied": false
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 4",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1533106418989-88406c7cc8e2?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_008",
+    "name": "World Tour Package 8",
+    "title": "Exclusive Journey 8 2023 Discover Wonders",
+    "type": "Adventure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "3N City A",
+      "1N City B",
+      "2N City C"
+    ],
+    "duration": "13D/12N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1400,
+      "discounted": 1300,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$433/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -140,
+        "applied": true
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -70,
+        "applied": false
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 8",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug",
+        "013 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_009",
+    "name": "World Tour Package 9",
+    "title": "Exclusive Journey 9 2023 Discover Wonders",
+    "type": "Leisure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "1N City A",
+      "2N City B",
+      "3N City C"
+    ],
+    "duration": "14D/4N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1450,
+      "discounted": 1350,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$450/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -145,
+        "applied": false
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -72,
+        "applied": true
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 9",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug",
+        "013 Aug",
+        "014 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_011",
+    "name": "World Tour Package 11",
+    "title": "Exclusive Journey 11 2023 Discover Wonders",
+    "type": "Leisure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "3N City A",
+      "4N City B",
+      "3N City C"
+    ],
+    "duration": "6D/6N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1550,
+      "discounted": 1450,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$483/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -155,
+        "applied": false
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -77,
+        "applied": false
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 11",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_012",
+    "name": "World Tour Package 12",
+    "title": "Exclusive Journey 12 2023 Discover Wonders",
+    "type": "Adventure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "1N City A",
+      "1N City B",
+      "2N City C"
+    ],
+    "duration": "7D/7N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1600,
+      "discounted": 1500,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$500/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -160,
+        "applied": true
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -80,
+        "applied": true
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 12",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1533106418989-88406c7cc8e2?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_016",
+    "name": "World Tour Package 16",
+    "title": "Exclusive Journey 16 2023 Discover Wonders",
+    "type": "Adventure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "2N City A",
+      "1N City B",
+      "2N City C"
+    ],
+    "duration": "11D/11N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1800,
+      "discounted": 1700,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$566/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -180,
+        "applied": true
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -90,
+        "applied": false
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 16",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_017",
+    "name": "World Tour Package 17",
+    "title": "Exclusive Journey 17 2023 Discover Wonders",
+    "type": "Leisure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "3N City A",
+      "2N City B",
+      "3N City C"
+    ],
+    "duration": "12D/12N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 1850,
+      "discounted": 1750,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$583/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
         "value": -185,
         "applied": false
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -92,
+        "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 17",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_003",
-    "name": "Ride to Roof of the World",
-    "title": "Ride to Roof of the World - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_019",
+    "name": "World Tour Package 19",
+    "title": "Exclusive Journey 19 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
+      "2N City A",
+      "4N City B",
+      "3N City C"
     ],
-    "duration": "7D/9N",
+    "duration": "14D/5N",
     "highlights": [
-      "Magnetic Hill Visit",
-      "Leh Local Sightseeing",
-      "Nubra Valley Desert Safari",
-      "Pangong Tso Lake",
-      "Khardung La Pass"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -258,220 +1000,110 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 4516,
-      "discounted": 4064,
+      "original": 1950,
+      "discounted": 1850,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1355/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$616/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -451,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -195,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -225,
+        "desc": "5% off for groups",
+        "value": -97,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 19",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug",
+        "013 Aug",
+        "014 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_004",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
+    "id": "pkg_world_020",
+    "name": "World Tour Package 20",
+    "title": "Exclusive Journey 20 2023 Discover Wonders",
     "type": "Adventure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
+      "3N City A",
+      "1N City B",
+      "2N City C"
     ],
-    "duration": "8D/6N",
+    "duration": "5D/6N",
     "highlights": [
-      "Royal Enfield Bike Ride",
-      "Monastery Visits",
-      "Zanskar Valley Exploration",
-      "Magnetic Hill Visit",
-      "Pangong Tso Lake"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4206,
-      "discounted": 3785,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1262/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -420,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -210,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_005",
-    "name": "High Passes Biking",
-    "title": "High Passes Biking - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "8D/6N",
-    "highlights": [
-      "Leh Local Sightseeing",
-      "Royal Enfield Bike Ride",
-      "Magnetic Hill Visit",
-      "Khardung La Pass",
-      "Pangong Tso Lake"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -480,446 +1112,101 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 4820,
-      "discounted": 4338,
+      "original": 2000,
+      "discounted": 1900,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1446/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$633/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -482,
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -200,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -241,
+        "desc": "5% off for groups",
+        "value": -100,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 20",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1533106418989-88406c7cc8e2?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_006",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
+    "id": "pkg_world_024",
+    "name": "World Tour Package 24",
+    "title": "Exclusive Journey 24 2023 Discover Wonders",
     "type": "Adventure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "11D/6N",
-    "highlights": [
-      "Pangong Tso Lake",
-      "Nubra Valley Desert Safari",
-      "Zanskar Valley Exploration",
-      "Royal Enfield Bike Ride",
-      "Monastery Visits"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4375,
-      "discounted": 3937,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1312/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -437,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -218,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_007",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "9D/11N",
-    "highlights": [
-      "Zanskar Valley Exploration",
-      "Nubra Valley Desert Safari",
-      "Magnetic Hill Visit",
-      "Khardung La Pass",
-      "Monastery Visits"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4790,
-      "discounted": 4311,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1437/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -479,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -239,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_008",
-    "name": "Ladakh Bike Adventure",
-    "title": "Ladakh Bike Adventure - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "11D/10N",
-    "highlights": [
-      "Royal Enfield Bike Ride",
-      "Monastery Visits",
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit",
-      "Nubra Valley Desert Safari"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 3185,
-      "discounted": 2866,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$955/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -318,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -159,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_009",
-    "name": "Frozen Lake Challenge",
-    "title": "Frozen Lake Challenge - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
+      "1N City A",
+      "1N City B",
+      "2N City C"
     ],
     "duration": "9D/10N",
     "highlights": [
-      "Leh Local Sightseeing",
-      "Magnetic Hill Visit",
-      "Pangong Tso Lake",
-      "Zanskar Valley Exploration",
-      "Nubra Valley Desert Safari"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -928,887 +1215,105 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 2961,
-      "discounted": 2664,
+      "original": 2200,
+      "discounted": 2100,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$888/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$700/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -296,
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -220,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -148,
-        "applied": false
+        "desc": "5% off for groups",
+        "value": -110,
+        "applied": true
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 24",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_010",
-    "name": "High Passes Biking",
-    "title": "High Passes Biking - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_025",
+    "name": "World Tour Package 25",
+    "title": "Exclusive Journey 25 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
+      "2N City A",
+      "2N City B",
+      "3N City C"
     ],
-    "duration": "12D/6N",
+    "duration": "10D/11N",
     "highlights": [
-      "Leh Local Sightseeing",
-      "Magnetic Hill Visit",
-      "Monastery Visits",
-      "Khardung La Pass",
-      "Zanskar Valley Exploration"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2761,
-      "discounted": 2484,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$828/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -276,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -138,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_011",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "11D/10N",
-    "highlights": [
-      "Leh Local Sightseeing",
-      "Zanskar Valley Exploration",
-      "Nubra Valley Desert Safari",
-      "Magnetic Hill Visit",
-      "Royal Enfield Bike Ride"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2845,
-      "discounted": 2560,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$853/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -284,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -142,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_012",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "10D/8N",
-    "highlights": [
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit",
-      "Nubra Valley Desert Safari",
-      "Monastery Visits",
-      "Zanskar Valley Exploration"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2888,
-      "discounted": 2599,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$866/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -288,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -144,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_013",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "7D/8N",
-    "highlights": [
-      "Pangong Tso Lake",
-      "Monastery Visits",
-      "Royal Enfield Bike Ride",
-      "Zanskar Valley Exploration",
-      "Leh Local Sightseeing"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4330,
-      "discounted": 3897,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1299/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -433,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -216,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_014",
-    "name": "Ladakh Bike Adventure",
-    "title": "Ladakh Bike Adventure - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "9D/9N",
-    "highlights": [
-      "Pangong Tso Lake",
-      "Khardung La Pass",
-      "Royal Enfield Bike Ride",
-      "Leh Local Sightseeing",
-      "Nubra Valley Desert Safari"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 1692,
-      "discounted": 1522,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$507/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -169,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -84,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_015",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "8D/6N",
-    "highlights": [
-      "Royal Enfield Bike Ride",
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit",
-      "Nubra Valley Desert Safari",
-      "Monastery Visits"
-    ],
-    "images": [
-      
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4615,
-      "discounted": 4153,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1384/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -461,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -230,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_016",
-    "name": "Ladakh Bike Adventure",
-    "title": "Ladakh Bike Adventure - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "11D/7N",
-    "highlights": [
-      "Leh Local Sightseeing",
-      "Pangong Tso Lake",
-      "Royal Enfield Bike Ride",
-      "Zanskar Valley Exploration",
-      "Magnetic Hill Visit"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2275,
-      "discounted": 2047,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$682/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -227,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -113,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_017",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "8D/7N",
-    "highlights": [
-      "Monastery Visits",
-      "Leh Local Sightseeing",
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Royal Enfield Bike Ride"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -1817,554 +1322,106 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 4072,
-      "discounted": 3664,
+      "original": 2250,
+      "discounted": 2150,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1221/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$716/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -407,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -225,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -203,
+        "desc": "5% off for groups",
+        "value": -112,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 25",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_018",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_027",
+    "name": "World Tour Package 27",
+    "title": "Exclusive Journey 27 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "2N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "1N Pangong"
-    ],
-    "duration": "10D/7N",
-    "highlights": [
-      "Monastery Visits",
-      "Khardung La Pass",
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Leh Local Sightseeing"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 3154,
-      "discounted": 2838,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$946/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -315,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -157,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_019",
-    "name": "Desert Valley Cruise",
-    "title": "Desert Valley Cruise - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "9D/8N",
-    "highlights": [
-      "Monastery Visits",
-      "Zanskar Valley Exploration",
-      "Royal Enfield Bike Ride",
-      "Leh Local Sightseeing",
-      "Magnetic Hill Visit"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 1881,
-      "discounted": 1692,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$564/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -188,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -94,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_020",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "9D/8N",
-    "highlights": [
-      "Royal Enfield Bike Ride",
-      "Nubra Valley Desert Safari",
-      "Leh Local Sightseeing",
-      "Monastery Visits",
-      "Zanskar Valley Exploration"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 3893,
-      "discounted": 3503,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1168/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -389,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -194,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_021",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
+    "description": "Experience the most breathtaking destinations around the world.",
     "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
+      "1N City A",
+      "4N City B",
+      "3N City C"
     ],
-    "duration": "7D/9N",
+    "duration": "12D/4N",
     "highlights": [
-      "Khardung La Pass",
-      "Royal Enfield Bike Ride",
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Monastery Visits"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4973,
-      "discounted": 4475,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1492/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -497,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -248,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_022",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "8D/9N",
-    "highlights": [
-      "Magnetic Hill Visit",
-      "Khardung La Pass",
-      "Royal Enfield Bike Ride",
-      "Zanskar Valley Exploration",
-      "Leh Local Sightseeing"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -2373,111 +1430,109 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 4833,
-      "discounted": 4349,
+      "original": 2350,
+      "discounted": 2250,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1450/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$750/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -483,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -235,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -241,
-        "applied": false
+        "desc": "5% off for groups",
+        "value": -117,
+        "applied": true
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 27",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_023",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
+    "id": "pkg_world_028",
+    "name": "World Tour Package 28",
+    "title": "Exclusive Journey 28 2023 Discover Wonders",
     "type": "Adventure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
+      "2N City A",
+      "1N City B",
+      "2N City C"
     ],
-    "duration": "8D/7N",
+    "duration": "13D/5N",
     "highlights": [
-      "Leh Local Sightseeing",
-      "Pangong Tso Lake",
-      "Monastery Visits",
-      "Nubra Valley Desert Safari",
-      "Zanskar Valley Exploration"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
       "Itinerary",
@@ -2485,356 +1540,23 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 4074,
-      "discounted": 3666,
+      "original": 2400,
+      "discounted": 2300,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$1222/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$766/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -407,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -203,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_024",
-    "name": "Desert Valley Cruise",
-    "title": "Desert Valley Cruise - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "8D/10N",
-    "highlights": [
-      "Zanskar Valley Exploration",
-      "Leh Local Sightseeing",
-      "Khardung La Pass",
-      "Royal Enfield Bike Ride",
-      "Nubra Valley Desert Safari"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4140,
-      "discounted": 3726,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1242/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -414,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -207,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_025",
-    "name": "Frozen Lake Challenge",
-    "title": "Frozen Lake Challenge - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "12D/11N",
-    "highlights": [
-      "Nubra Valley Desert Safari",
-      "Leh Local Sightseeing",
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2168,
-      "discounted": 1951,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$650/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -216,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -108,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_026",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "7D/8N",
-    "highlights": [
-      "Nubra Valley Desert Safari",
-      "Zanskar Valley Exploration",
-      "Monastery Visits",
-      "Pangong Tso Lake",
-      "Royal Enfield Bike Ride"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2409,
-      "discounted": 2168,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$723/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
         "value": -240,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
+        "desc": "5% off for groups",
         "value": -120,
         "applied": false
       }
@@ -2842,308 +1564,86 @@ export const samplePackageData = [
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 28",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1533106418989-88406c7cc8e2?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug",
+        "012 Aug",
+        "013 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
+
   {
-    "id": "pkg_ladakh_027",
-    "name": "Ladakh Bike Adventure",
-    "title": "Ladakh Bike Adventure - Royal Enfield Expedition",
+    "id": "pkg_world_032",
+    "name": "World Tour Package 32",
+    "title": "Exclusive Journey 32 2023 Discover Wonders",
     "type": "Adventure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
+      "3N City A",
+      "1N City B",
+      "2N City C"
     ],
-    "duration": "10D/9N",
+    "duration": "7D/9N",
     "highlights": [
-      "Leh Local Sightseeing",
-      "Monastery Visits",
-      "Zanskar Valley Exploration",
-      "Royal Enfield Bike Ride",
-      "Khardung La Pass"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2927,
-      "discounted": 2634,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$878/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -292,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -146,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_028",
-    "name": "Frozen Lake Challenge",
-    "title": "Frozen Lake Challenge - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "11D/10N",
-    "highlights": [
-      "Nubra Valley Desert Safari",
-      "Leh Local Sightseeing",
-      "Magnetic Hill Visit",
-      "Pangong Tso Lake",
-      "Khardung La Pass"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4107,
-      "discounted": 3696,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1232/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -410,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -205,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_029",
-    "name": "High Passes Biking",
-    "title": "High Passes Biking - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "8D/11N",
-    "highlights": [
-      "Royal Enfield Bike Ride",
-      "Magnetic Hill Visit",
-      "Nubra Valley Desert Safari",
-      "Khardung La Pass",
-      "Monastery Visits"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -3152,778 +1652,103 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 1639,
-      "discounted": 1475,
+      "original": 2600,
+      "discounted": 2500,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$492/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$833/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -163,
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -260,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -81,
+        "desc": "5% off for groups",
+        "value": -130,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 32",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_030",
-    "name": "Ride to Roof of the World",
-    "title": "Ride to Roof of the World - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_033",
+    "name": "World Tour Package 33",
+    "title": "Exclusive Journey 33 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
+      "1N City A",
+      "2N City B",
+      "3N City C"
     ],
     "duration": "8D/10N",
     "highlights": [
-      "Royal Enfield Bike Ride",
-      "Leh Local Sightseeing",
-      "Magnetic Hill Visit",
-      "Pangong Tso Lake",
-      "Khardung La Pass"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2051,
-      "discounted": 1845,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$615/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -205,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -102,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_031",
-    "name": "High Passes Biking",
-    "title": "High Passes Biking - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "9D/10N",
-    "highlights": [
-      "Magnetic Hill Visit",
-      "Royal Enfield Bike Ride",
-      "Monastery Visits",
-      "Leh Local Sightseeing",
-      "Zanskar Valley Exploration"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 2498,
-      "discounted": 2248,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$749/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -249,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -124,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_032",
-    "name": "Ultimate Biker\u2019s Dream",
-    "title": "Ultimate Biker\u2019s Dream - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "8D/11N",
-    "highlights": [
-      "Zanskar Valley Exploration",
-      "Magnetic Hill Visit",
-      "Nubra Valley Desert Safari",
-      "Royal Enfield Bike Ride",
-      "Khardung La Pass"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 1663,
-      "discounted": 1496,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$499/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -166,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -83,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_033",
-    "name": "Snow Ride Saga",
-    "title": "Snow Ride Saga - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Srinagar",
-      "2N Kargil",
-      "3N Leh",
-      "2N Pangong",
-      "1N Nubra"
-    ],
-    "duration": "11D/11N",
-    "highlights": [
-      "Monastery Visits",
-      "Khardung La Pass",
-      "Royal Enfield Bike Ride",
-      "Nubra Valley Desert Safari",
-      "Zanskar Valley Exploration"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 1658,
-      "discounted": 1492,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$497/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -165,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -82,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_034",
-    "name": "Royal Ride to Leh",
-    "title": "Royal Ride to Leh - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "12D/8N",
-    "highlights": [
-      "Royal Enfield Bike Ride",
-      "Monastery Visits",
-      "Khardung La Pass",
-      "Nubra Valley Desert Safari",
-      "Magnetic Hill Visit"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 1965,
-      "discounted": 1768,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$589/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -196,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -98,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_035",
-    "name": "Desert Valley Cruise",
-    "title": "Desert Valley Cruise - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "11D/8N",
-    "highlights": [
-      "Leh Local Sightseeing",
-      "Royal Enfield Bike Ride",
-      "Khardung La Pass",
-      "Monastery Visits",
-      "Pangong Tso Lake"
-    ],
-    "images": [
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4513,
-      "discounted": 4061,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1354/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -451,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -225,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_036",
-    "name": "Snow Ride Saga",
-    "title": "Snow Ride Saga - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "2N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "1N Pangong"
-    ],
-    "duration": "12D/9N",
-    "highlights": [
-      "Khardung La Pass",
-      "Monastery Visits",
-      "Pangong Tso Lake",
-      "Magnetic Hill Visit",
-      "Zanskar Valley Exploration"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
@@ -3932,333 +1757,106 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 2959,
-      "discounted": 2663,
+      "original": 2650,
+      "discounted": 2550,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$888/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$850/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -295,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -265,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -147,
-        "applied": false
+        "desc": "5% off for groups",
+        "value": -132,
+        "applied": true
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 33",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
+
   {
-    "id": "pkg_ladakh_037",
-    "name": "Himalayan Horizon Tour",
-    "title": "Himalayan Horizon Tour - Royal Enfield Expedition",
-    "type": "Adventure",
+    "id": "pkg_world_035",
+    "name": "World Tour Package 35",
+    "title": "Exclusive Journey 35 2023 Discover Wonders",
+    "type": "Leisure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "2N Delhi",
-      "3N Leh",
-      "2N Pangong",
-      "2N Nubra"
-    ],
-    "duration": "8D/9N",
-    "highlights": [
-      "Monastery Visits",
-      "Zanskar Valley Exploration",
-      "Nubra Valley Desert Safari",
-      "Royal Enfield Bike Ride",
-      "Khardung La Pass"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4114,
-      "discounted": 3702,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1234/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -411,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -205,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_038",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
-    "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
-    ],
-    "duration": "11D/8N",
-    "highlights": [
-      "Magnetic Hill Visit",
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Khardung La Pass",
-      "Nubra Valley Desert Safari"
-    ],
-    "images": [
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop"
-    ],
-    "tabs": [
-      "Itinerary",
-      "Policies",
-      "Summary"
-    ],
-    "price": {
-      "original": 4344,
-      "discounted": 3909,
-      "currency": "USD",
-      "per": "Adult",
-      "emi": "$1303/mo",
-      "notes": "Excluding applicable taxes and bike rental"
-    },
-    "coupons": [
-      {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -434,
-        "applied": true
-      },
-      {
-        "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -217,
-        "applied": false
-      }
-    ],
-    "itinerary": [
-      {
-        "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
-        "transfers": [
-          {
-            "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
-          }
-        ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
-        "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
-        ],
-        "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
-          "inclusions": [
-            "Breakfast included",
-            "Bike storage"
-          ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200&h=150&fit=crop"
-        }
-      }
-    ],
-    "sidebar": {
-      "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
-      ],
-      "bestDeals": {
-        "message": "Adventure Season Special",
-        "actions": [
-          "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
-        ]
-      }
-    }
-  },
-  {
-    "id": "pkg_ladakh_039",
-    "name": "Mystic Mountains Expedition",
-    "title": "Mystic Mountains Expedition - Royal Enfield Expedition",
-    "type": "Adventure",
-    "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
+    "description": "Experience the most breathtaking destinations around the world.",
     "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "2N Delhi",
-      "2N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "1N Pangong"
+      "3N City A",
+      "4N City B",
+      "3N City C"
     ],
-    "duration": "10D/7N",
+    "duration": "10D/12N",
     "highlights": [
-      "Zanskar Valley Exploration",
-      "Pangong Tso Lake",
-      "Nubra Valley Desert Safari",
-      "Khardung La Pass",
-      "Leh Local Sightseeing"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop"
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
       "Itinerary",
@@ -4266,110 +1864,107 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 3233,
-      "discounted": 2909,
+      "original": 2750,
+      "discounted": 2650,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$970/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$883/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -323,
-        "applied": true
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -275,
+        "applied": false
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -161,
+        "desc": "5% off for groups",
+        "value": -137,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 35",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }
   },
   {
-    "id": "pkg_ladakh_040",
-    "name": "Frozen Lake Challenge",
-    "title": "Frozen Lake Challenge - Royal Enfield Expedition",
+    "id": "pkg_world_036",
+    "name": "World Tour Package 36",
+    "title": "Exclusive Journey 36 2023 Discover Wonders",
     "type": "Adventure",
     "currency": "USD",
-    "description": "Exciting motorcycle tour of Ladakh covering majestic landscapes and adventurous routes.",
-    "image": "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
     "route": [
-      "1N Manali",
-      "3N Leh",
-      "2N Nubra",
-      "2N Pangong"
+      "1N City A",
+      "1N City B",
+      "2N City C"
     ],
-    "duration": "11D/10N",
+    "duration": "11D/4N",
     "highlights": [
-      "Royal Enfield Bike Ride",
-      "Pangong Tso Lake",
-      "Nubra Valley Desert Safari",
-      "Khardung La Pass",
-      "Leh Local Sightseeing"
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
     ],
     "images": [
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=300&h=200&fit=crop",
-      "https://images.unsplash.com/photo-1603789511433-3a6e6f7cc33d?w=300&h=200&fit=crop",
-      
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop"
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
     ],
     "tabs": [
       "Itinerary",
@@ -4377,79 +1972,182 @@ export const samplePackageData = [
       "Summary"
     ],
     "price": {
-      "original": 3208,
-      "discounted": 2887,
+      "original": 2800,
+      "discounted": 2700,
       "currency": "USD",
       "per": "Adult",
-      "emi": "$962/mo",
-      "notes": "Excluding applicable taxes and bike rental"
+      "emi": "$900/mo",
+      "notes": "Includes local transfers and accommodation"
     },
     "coupons": [
       {
-        "code": "BIKEADV10",
-        "desc": "Special Discount",
-        "value": -320,
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -280,
         "applied": true
       },
       {
         "code": "EXPLORE5",
-        "desc": "Explore More Offer",
-        "value": -160,
+        "desc": "5% off for groups",
+        "value": -140,
+        "applied": true
+      }
+    ],
+    "itinerary": [
+      {
+        "day": "Day 1",
+        "date": "01 Aug, Mon",
+        "city": "City A",
+        "transfers": [
+          {
+            "type": "Airport Transfer",
+            "details": "Private AC Vehicle"
+          }
+        ],
+        "flightNote": "Arrival and city tour",
+        "activities": [
+          "Hotel check-in",
+          "Evening city walk"
+        ],
+        "hotel": {
+          "name": "Hotel Deluxe 36",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
+          "inclusions": [
+            "Breakfast",
+            "City tour"
+          ],
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1533106418989-88406c7cc8e2?w=200&h=150&fit=crop"
+        }
+      }
+    ],
+    "sidebar": {
+      "days": [
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug",
+        "06 Aug",
+        "07 Aug",
+        "08 Aug",
+        "09 Aug",
+        "010 Aug",
+        "011 Aug"
+      ],
+      "bestDeals": {
+        "message": "Special Seasonal Discount",
+        "actions": [
+          "Early bird pricing",
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
+        ]
+      }
+    }
+  },
+  {
+    "id": "pkg_world_040",
+    "name": "World Tour Package 40",
+    "title": "Exclusive Journey 40 2023 Discover Wonders",
+    "type": "Adventure",
+    "currency": "USD",
+    "description": "Experience the most breathtaking destinations around the world.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=4500&q=90",
+    "route": [
+      "2N City A",
+      "1N City B",
+      "2N City C"
+    ],
+    "duration": "5D/8N",
+    "highlights": [
+      "Local cultural experience",
+      "Scenic viewpoints",
+      "Gastronomic delights",
+      "Historical landmarks"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1508182313328-cb63c0f12f85?w=300&h=200&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=200&fit=crop"
+    ],
+    "tabs": [
+      "Itinerary",
+      "Policies",
+      "Summary"
+    ],
+    "price": {
+      "original": 3000,
+      "discounted": 2900,
+      "currency": "USD",
+      "per": "Adult",
+      "emi": "$966/mo",
+      "notes": "Includes local transfers and accommodation"
+    },
+    "coupons": [
+      {
+        "code": "WORLDTRIP10",
+        "desc": "10% off for early birds",
+        "value": -300,
+        "applied": true
+      },
+      {
+        "code": "EXPLORE5",
+        "desc": "5% off for groups",
+        "value": -150,
         "applied": false
       }
     ],
     "itinerary": [
       {
         "day": "Day 1",
-        "date": "05 Jun, Sat",
-        "city": "Delhi",
+        "date": "01 Aug, Mon",
+        "city": "City A",
         "transfers": [
           {
             "type": "Airport Transfer",
-            "details": "AC vehicle to hotel"
+            "details": "Private AC Vehicle"
           }
         ],
-        "flightNote": "Arrival in Delhi, bike briefing session",
+        "flightNote": "Arrival and city tour",
         "activities": [
-          "Bike allocation",
-          "Safety briefing",
-          "Route planning"
+          "Hotel check-in",
+          "Evening city walk"
         ],
         "hotel": {
-          "name": "The Lalit New Delhi",
-          "stars": 5,
-          "location": "Connaught Place",
-          "stay": "2 Nights - 05 Jun to 07 Jun",
-          "type": "Executive Room",
+          "name": "Hotel Deluxe 40",
+          "stars": 4,
+          "location": "Downtown",
+          "stay": "2 Nights - 01 Aug to 03 Aug",
+          "type": "Deluxe Room",
           "inclusions": [
-            "Breakfast included",
-            "Bike storage"
+            "Breakfast",
+            "City tour"
           ],
-          "rating": 4.6,
-          "image": "https://images.unsplash.com/photo-1582703152745-57c7b1ddf30a?w=200&h=150&fit=crop"
+          "rating": 4.5,
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
         }
       }
     ],
     "sidebar": {
       "days": [
-        "05 Jun",
-        "06 Jun",
-        "07 Jun",
-        "08 Jun",
-        "09 Jun",
-        "10 Jun",
-        "11 Jun",
-        "12 Jun",
-        "13 Jun",
-        "14 Jun"
+        "01 Aug",
+        "02 Aug",
+        "03 Aug",
+        "04 Aug",
+        "05 Aug"
       ],
       "bestDeals": {
-        "message": "Adventure Season Special",
+        "message": "Special Seasonal Discount",
         "actions": [
           "Early bird pricing",
-          "Group discounts available",
-          "Free gear rental",
-          "Travel insurance included"
+          "Group discounts",
+          "Travel insurance included",
+          "Free local sim"
         ]
       }
     }

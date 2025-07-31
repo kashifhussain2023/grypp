@@ -19,7 +19,6 @@ import {
 } from "@mui/icons-material";
 import { useCoBrowseScrollSync } from "../hooks/useCoBrowseScrollSync";
 import PackageDetailsModal from "./PackageDetailsModal";
-import { openTokSessionSingleton } from "../services/OpenTokSessionManager";
 
 const CustomerCatalogView = ({
   sharedPackages = [],
@@ -32,7 +31,7 @@ const CustomerCatalogView = ({
   isComparisonFull = () => false,
   onComparePackages = () => { },
   packageDetailsToOpen = null,
-  onPackageDetailsOpened = () => {}
+  sendPackageDetailsAction = null,
 }) => {
   // Local state for modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,155 +40,90 @@ const CustomerCatalogView = ({
   // Co-browse scroll sync hook
   const { scrollRef, isActiveController } = useCoBrowseScrollSync('customer', true);
 
-  // Effect to handle opening modal from agent signal
-  // useEffect(() => {
-  //   if (packageDetailsToOpen) {
-  //     console.log("[Customer Catalog] Opening modal from agent signal with package:", packageDetailsToOpen.id);
-  //     setSelectedPackage(packageDetailsToOpen);
-  //     setModalOpen(true);
-  //     onPackageDetailsOpened(); // Clear the prop
-  //   } else if (packageDetailsToOpen === null && modalOpen) {
-  //     console.log("[Customer Catalog] Closing modal from agent signal");
-  //     // Close modal when packageDetailsToOpen is explicitly set to null
-  //     setModalOpen(false);
-  //     setSelectedPackage(null);
-  //   }
-  // }, [packageDetailsToOpen, onPackageDetailsOpened, modalOpen]);
-
+  // Effect to handle opening modal from agent signal (handled by parent)
+  useEffect(() => {
+    if (packageDetailsToOpen) {
+      console.log(`📦 [customer] Opening modal from parent signal with package:`, packageDetailsToOpen.id);
+      setSelectedPackage(packageDetailsToOpen);
+      setModalOpen(true);
+    }
+  }, [packageDetailsToOpen]);
 
   // Modal handlers
   const handleOpenModal = (pkg) => {
-    console.log("[Customer Catalog] handleOpenModal called with package:", pkg.id);
-    
-    // Set state in a single batch to prevent multiple re-renders
+    console.log("[Customer Catalog] Opening modal for package:", pkg.id);
     setSelectedPackage(pkg);
     setModalOpen(true);
-    
-    // Send signal to agent to open the same modal using singleton
-    // Only send signal if not opened via signal from agent
-    if (packageDetailsToOpen !== pkg) {
+
+    // Send signal to agent to open the same modal using parent's signal function
+    if (sendPackageDetailsAction) {
       console.log("[Customer Catalog] Sending signal to agent to open package details");
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        openTokSessionSingleton.sendSignal(
-          {
-            type: "open-package-details",
-            data: JSON.stringify({
-              action: "open-modal",
-              packageData: pkg,
-              userType: "customer",
-              timestamp: new Date().toISOString(),
-            }),
-          },
-          (err) => {
-            if (err) {
-              console.error("Failed to send open-package-details signal:", err);
-            } else {
-              console.log("Successfully sent open-package-details signal to agent");
-            }
-          }
-        );
-      } else {
-        console.error("[Customer Catalog] No session available in singleton");
-      }
-    } else {
-      console.log("[Customer Catalog] Not sending signal - opened via agent signal");
+      sendPackageDetailsAction('customer-opened-package-details', pkg);
     }
   };
 
   const handleCloseModal = () => {
+    console.log("[Customer Catalog] Closing modal");
     setModalOpen(false);
     setSelectedPackage(null);
-    
-    // Send signal to agent to close the same modal using singleton
-    // Only send signal if not closed via signal from agent
-    if (packageDetailsToOpen !== null) {
+
+    // Send signal to agent to close the same modal using parent's signal function
+    if (sendPackageDetailsAction) {
       console.log("[Customer Catalog] Sending signal to agent to close package details");
-      const session = openTokSessionSingleton.getSession();
-      if (session) {
-        openTokSessionSingleton.sendSignal(
-          {
-            type: "close-package-details",
-            data: JSON.stringify({
-              action: "close-modal",
-              userType: "customer",
-              timestamp: new Date().toISOString(),
-            }),
-          },
-          (err) => {
-            if (err) {
-              console.error("Failed to send close-package-details signal:", err);
-            } else {
-              console.log("Successfully sent close-package-details signal to agent");
-            }
-          }
-        );
-      } else {
-        console.error("[Customer Catalog] No session available in singleton");
-      }
-    } else {
-      console.log("[Customer Catalog] Not sending signal - closed via agent signal");
+      sendPackageDetailsAction('close-package-details');
     }
   };
 
-  console.log("[Customer Catalog] Scroll sync active controller:", isActiveController);
-  console.log("[Customer Catalog] Shared packages:", sharedPackages.length);
-  // Remove excessive debugging that causes re-renders
-  // console.log("[Customer Catalog] Shared packages data:", sharedPackages);
-  // console.log("[Customer Catalog] Shared packages type:", typeof sharedPackages);
-  // console.log("[Customer Catalog] Shared packages is array:", Array.isArray(sharedPackages));
-  // console.log("[Customer Catalog] Modal state - modalOpen:", modalOpen);
-  // console.log("[Customer Catalog] Modal state - selectedPackage:", selectedPackage);
-  // console.log("[Customer Catalog] Modal state - packageDetailsToOpen:", packageDetailsToOpen);
+  // Debug logging moved to useEffect to prevent re-renders
 
   return (
     <Box sx={{ position: 'relative', height: '80vh', display: 'flex', flexDirection: 'column' }}>
       <DialogContent
         sx={{ p: 0, flex: 1, display: 'flex', flexDirection: 'column' }}
       >
-      {/* Header with sync indicator */}
-      <Box sx={{
-        p: 3,
-        bgcolor: "primary.main",
-        color: "white",
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <Typography variant="h6">
-          Shared Tour Packages ({sharedPackages.length})
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Chip
-            label="From Agent"
-            size="small"
-            sx={{
-              bgcolor: "rgba(255, 255, 255, 0.2)",
-              color: "white",
-            }}
-          />
-
-          {/* Comparison Notification */}
-          {compareList && compareList.length > 0 && (
+        {/* Header with sync indicator */}
+        <Box sx={{
+          p: 3,
+          bgcolor: "primary.main",
+          color: "white",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <Typography variant="h6">
+            Shared Tour Packages ({sharedPackages.length})
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <Chip
-              label={`${compareList.length} packages to compare`}
+              label="From Agent"
               size="small"
-              color="secondary"
               sx={{
                 bgcolor: "rgba(255, 255, 255, 0.2)",
                 color: "white",
-                fontWeight: 600,
-                animation: "pulse 2s infinite",
-                "@keyframes pulse": {
-                  "0%": { opacity: 1 },
-                  "50%": { opacity: 0.7 },
-                  "100%": { opacity: 1 },
-                },
               }}
             />
-          )}
 
-          {/* {isActiveController && (
+            {/* Comparison Notification */}
+            {compareList && compareList.length > 0 && (
+              <Chip
+                label={`${compareList.length} packages to compare`}
+                size="small"
+                color="secondary"
+                sx={{
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  color: "white",
+                  fontWeight: 600,
+                  animation: "pulse 2s infinite",
+                  "@keyframes pulse": {
+                    "0%": { opacity: 1 },
+                    "50%": { opacity: 0.7 },
+                    "100%": { opacity: 1 },
+                  },
+                }}
+              />
+            )}
+
+            {/* {isActiveController && (
             <Chip
               label="You're controlling scroll"
               size="small"
@@ -199,391 +133,391 @@ const CustomerCatalogView = ({
               }}
             />
           )} */}
-          {!isActiveController && (
-            <Chip
-              label="Synced with agent"
-              size="small"
-              sx={{
-                bgcolor: "rgba(33, 150, 243, 0.9)",
-                color: "white",
-              }}
-            />
-          )}
+            {!isActiveController && (
+              <Chip
+                label="Synced with agent"
+                size="small"
+                sx={{
+                  bgcolor: "rgba(33, 150, 243, 0.9)",
+                  color: "white",
+                }}
+              />
+            )}
+          </Box>
         </Box>
-      </Box>
 
-      {/* Scrollable Packages Grid */}
-      <Box
-        ref={scrollRef}
-        id="agent-catalog-scroll"
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          p: 3,
-          // Add visual indicator when this side is actively controlling
-          borderLeft: isActiveController ? '4px solid' : 'none',
-          borderColor: 'success.main',
-          // Prevent scroll conflicts
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: '#f1f1f1',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#c1c1c1',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            background: '#a8a8a8',
-          },
-        }}
-      >
-        <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-          {/* Remove debugging logs that cause re-renders */}
-          {sharedPackages.map((pkg, index) => {
-            return (
-              <Grid sx={{ width: "250px" }} item xs={3} sm={3} md={3} lg={3} key={pkg.id}>
-              <Grow
-                in={true}
-                timeout={300 + (index * 100)}
-                style={{ transformOrigin: '0 0 0' }}
-              >
-                <Card
-                  sx={{
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                    position: "relative",
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    border: isInComparison(pkg.id) ? "3px solid #4caf50" : "1px solid transparent",
-                    boxShadow: isInComparison(pkg.id) ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 2px 8px rgba(0,0,0,0.1)",
-                    "&:hover": {
-                      transform: "translateY(-8px) scale(1.02)",
-                      boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-                      "& .package-image": {
-                        transform: "scale(1.05)",
-                      },
-                      "& .view-details-hint": {
-                        opacity: 1,
-                        transform: "translateY(0)",
-                      },
-                    },
-                    "&::before": {
-                      content: '"⭐"',
-                      position: "absolute",
-                      top: -8,
-                      right: -8,
-                      fontSize: "24px",
-                      zIndex: 2,
-                    },
-                  }}
-                  onClick={() => handleOpenModal(pkg)}
-                >
-                  {/* Add to Compare Button */}
-                  <Tooltip title={
-                    isInComparison(pkg.id)
-                      ? "Remove from comparison"
-                      : isComparisonFull()
-                        ? "Maximum 3 packages for comparison"
-                        : "Add to comparison"
-                  }>
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("[Customer Catalog] Comparison icon clicked for package:", pkg.id);
-                        console.log("[Customer Catalog] isInComparison:", isInComparison(pkg.id));
-                        console.log("[Customer Catalog] isComparisonFull:", isComparisonFull());
-                        console.log("[Customer Catalog] compareList length:", compareList.length);
-                        
-                        // Add click animation
-                        e.target.style.transform = "scale(0.8)";
-                        setTimeout(() => {
-                          e.target.style.transform = "scale(1)";
-                        }, 150);
-                        
-                        if (isInComparison(pkg.id)) {
-                          console.log("[Customer Catalog] Removing from comparison");
-                          removeFromCompare(pkg.id);
-                        } else if (!isComparisonFull()) {
-                          console.log("[Customer Catalog] Adding to comparison");
-                          addToCompare(pkg);
-                        } else {
-                          console.log("[Customer Catalog] Comparison is full, cannot add more");
-                        }
-                      }}
-                      sx={{
-                        position: "absolute",
-                        top: 12,
-                        left: 12,
-                        zIndex: 3,
-                        bgcolor: isInComparison(pkg.id) ? "secondary.main" : "rgba(255, 255, 255, 0.95)",
-                        color: isInComparison(pkg.id) ? "white" : "primary.main",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        transition: "all 0.3s ease",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                        border: isInComparison(pkg.id) ? "2px solid white" : "2px solid rgba(255, 255, 255, 0.3)",
-                        "&:hover": {
-                          bgcolor: isInComparison(pkg.id) ? "secondary.dark" : "rgba(255, 255, 255, 1)",
-                          transform: "scale(1.1)",
-                          boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-                        },
-                        "&:disabled": {
-                          opacity: 0.5,
-                          bgcolor: "rgba(255, 255, 255, 0.7)",
-                        },
-                      }}
-                    >
-                      <CompareIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-
-                  {/* Comparison Selected Badge */}
-                  {isInComparison(pkg.id) && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 12,
-                        right: 12,
-                        zIndex: 3,
-                        bgcolor: "success.main",
-                        color: "white",
-                        borderRadius: "50%",
-                        width: 24,
-                        height: 24,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        boxShadow: "0 2px 8px rgba(76, 175, 80, 0.4)",
-                      }}
-                    >
-                      ✓
-                    </Box>
-                  )}
-
-                  {/* Package Image */}
-                  <Box
-                    sx={{
-                      height: 180,
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
+        {/* Scrollable Packages Grid */}
+        <Box
+          ref={scrollRef}
+          id="agent-catalog-scroll"
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 3,
+            // Add visual indicator when this side is actively controlling
+            borderLeft: isActiveController ? '4px solid' : 'none',
+            borderColor: 'success.main',
+            // Prevent scroll conflicts
+            scrollBehavior: 'smooth',
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c1c1c1',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: '#a8a8a8',
+            },
+          }}
+        >
+          <Grid container spacing={3} sx={{ justifyContent: "center" }}>
+            {/* Remove debugging logs that cause re-renders */}
+            {sharedPackages.map((pkg, index) => {
+              return (
+                <Grid sx={{ width: "250px" }} item xs={3} sm={3} md={3} lg={3} key={pkg.id}>
+                  <Grow
+                    in={true}
+                    timeout={300 + (index * 100)}
+                    style={{ transformOrigin: '0 0 0' }}
                   >
-                    <CardMedia
-                      className="package-image"
-                      component="img"
-                      image={pkg.image}
-                      alt={pkg.name}
+                    <Card
                       sx={{
                         height: "100%",
-                        width: "100%",
-                        objectFit: "cover",
-                        transition: "transform 0.4s ease",
-                      }}
-                    />
-
-                    {/* Hover Overlay for Details */}
-                    <Box
-                      className="view-details-hint"
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        bgcolor: "rgba(0, 0, 0, 0.3)",
-                        opacity: 0,
-                        transition: "opacity 0.3s ease",
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: "white",
-                          fontWeight: "bold",
-                          textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-                        }}
-                      >
-                        Click to View Details
-                      </Typography>
-                    </Box>
-
-                    {/* Recommended Badge */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 12,
-                        left: 12,
-                        bgcolor: "rgba(76, 175, 80, 0.95)",
-                        color: "white",
-                        px: 2,
-                        py: 0.5,
-                        borderRadius: 2,
-                        fontSize: "0.75rem",
-                        fontWeight: "bold",
-                        backdropFilter: "blur(10px)",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                      }}
-                    >
-                      RECOMMENDED
-                    </Box>
-
-                    {/* Type Badge */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 12,
-                        right: 12,
-                        zIndex: 2,
-                      }}
-                    >
-                      <Chip
-                        label={pkg.type}
-                        size="small"
-                        sx={{
-                          bgcolor: "rgba(255, 255, 255, 0.95)",
-                          color: "primary.main",
-                          fontWeight: 600,
-                          backdropFilter: "blur(10px)",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
-                  <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                    {/* Package Name */}
-                    <Typography
-                      variant="h6"
-                      gutterBottom
-                      sx={{
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        lineHeight: 1.2,
-                        mb: 1,
-                        minHeight: "2.4rem",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
+                        flexDirection: "column",
+                        transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                        position: "relative",
+                        borderRadius: 3,
                         overflow: "hidden",
-                      }}
-                    >
-                      {pkg.name}
-                    </Typography>
-
-                    {/* Description */}
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        fontSize: "0.8rem",
-                        lineHeight: 1.4,
-                        minHeight: "3.6rem",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {pkg.description}
-                    </Typography>
-
-                    {/* Price and Action */}
-                    <Box sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mt: "auto"
-                    }}>
-                      <Typography
-                        variant="h6"
-                        color="primary.main"
-                        sx={{
-                          fontSize: "1.1rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        ${(pkg.price?.discounted || pkg.price)?.toLocaleString?.('en-US') || pkg.price?.discounted || pkg.price}
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          bgcolor: "success.main",
-                          "&:hover": {
-                            bgcolor: "success.dark",
+                        cursor: "pointer",
+                        border: isInComparison(pkg.id) ? "3px solid #4caf50" : "1px solid transparent",
+                        boxShadow: isInComparison(pkg.id) ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 2px 8px rgba(0,0,0,0.1)",
+                        "&:hover": {
+                          transform: "translateY(-8px) scale(1.02)",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                          "& .package-image": {
                             transform: "scale(1.05)",
                           },
-                          fontSize: "0.7rem",
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          transition: "all 0.3s ease",
-                        }}
-                        onClick={() => onInterested(pkg)}
-                      >
-                        Interested
-                      </Button>
-                    </Box>
-
-                    {/* View Details Button */}
-                    <Box sx={{ mt: 2 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenModal(pkg);
-                        }}
-                        sx={{
-                          fontWeight: 600,
-                          py: 1,
-                          borderWidth: 2,
-                          "&:hover": {
-                            bgcolor: "primary.main",
-                            color: "white",
-                            borderWidth: 2,
-                            transform: "scale(1.02)",
+                          "& .view-details-hint": {
+                            opacity: 1,
+                            transform: "translateY(0)",
                           },
-                          transition: "all 0.3s ease",
+                        },
+                        "&::before": {
+                          content: '"⭐"',
+                          position: "absolute",
+                          top: -8,
+                          right: -8,
+                          fontSize: "24px",
+                          zIndex: 2,
+                        },
+                      }}
+                      onClick={() => handleOpenModal(pkg)}
+                    >
+                      {/* Add to Compare Button */}
+                      <Tooltip title={
+                        isInComparison(pkg.id)
+                          ? "Remove from comparison"
+                          : isComparisonFull()
+                            ? "Maximum 3 packages for comparison"
+                            : "Add to comparison"
+                      }>
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("[Customer Catalog] Comparison icon clicked for package:", pkg.id);
+                            console.log("[Customer Catalog] isInComparison:", isInComparison(pkg.id));
+                            console.log("[Customer Catalog] isComparisonFull:", isComparisonFull());
+                            console.log("[Customer Catalog] compareList length:", compareList.length);
+
+                            // Add click animation
+                            e.target.style.transform = "scale(0.8)";
+                            setTimeout(() => {
+                              e.target.style.transform = "scale(1)";
+                            }, 150);
+
+                            if (isInComparison(pkg.id)) {
+                              console.log("[Customer Catalog] Removing from comparison");
+                              removeFromCompare(pkg.id);
+                            } else if (!isComparisonFull()) {
+                              console.log("[Customer Catalog] Adding to comparison");
+                              addToCompare(pkg);
+                            } else {
+                              console.log("[Customer Catalog] Comparison is full, cannot add more");
+                            }
+                          }}
+                          sx={{
+                            position: "absolute",
+                            top: 12,
+                            left: 12,
+                            zIndex: 3,
+                            bgcolor: isInComparison(pkg.id) ? "secondary.main" : "rgba(255, 255, 255, 0.95)",
+                            color: isInComparison(pkg.id) ? "white" : "primary.main",
+                            borderRadius: "50%",
+                            padding: "8px",
+                            transition: "all 0.3s ease",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                            border: isInComparison(pkg.id) ? "2px solid white" : "2px solid rgba(255, 255, 255, 0.3)",
+                            "&:hover": {
+                              bgcolor: isInComparison(pkg.id) ? "secondary.dark" : "rgba(255, 255, 255, 1)",
+                              transform: "scale(1.1)",
+                              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+                            },
+                            "&:disabled": {
+                              opacity: 0.5,
+                              bgcolor: "rgba(255, 255, 255, 0.7)",
+                            },
+                          }}
+                        >
+                          <CompareIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {/* Comparison Selected Badge */}
+                      {isInComparison(pkg.id) && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 12,
+                            right: 12,
+                            zIndex: 3,
+                            bgcolor: "success.main",
+                            color: "white",
+                            borderRadius: "50%",
+                            width: 24,
+                            height: 24,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                            boxShadow: "0 2px 8px rgba(76, 175, 80, 0.4)",
+                          }}
+                        >
+                          ✓
+                        </Box>
+                      )}
+
+                      {/* Package Image */}
+                      <Box
+                        sx={{
+                          height: 180,
+                          position: "relative",
+                          overflow: "hidden",
                         }}
                       >
-                        View Details
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grow>
-            </Grid>
-          );
-        })}
-        </Grid>
+                        <CardMedia
+                          className="package-image"
+                          component="img"
+                          image={pkg.image}
+                          alt={pkg.name}
+                          sx={{
+                            height: "100%",
+                            width: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.4s ease",
+                          }}
+                        />
 
-        {/* Empty State */}
-        {sharedPackages.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 6 }}>
-            <Typography variant="h6" color="text.secondary">
-              No packages shared yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Your agent will share personalized travel packages during the call
-            </Typography>
-          </Box>
-        )}
-      </Box>
+                        {/* Hover Overlay for Details */}
+                        <Box
+                          className="view-details-hint"
+                          sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            bgcolor: "rgba(0, 0, 0, 0.3)",
+                            opacity: 0,
+                            transition: "opacity 0.3s ease",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: "white",
+                              fontWeight: "bold",
+                              textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+                            }}
+                          >
+                            Click to View Details
+                          </Typography>
+                        </Box>
+
+                        {/* Recommended Badge */}
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 12,
+                            left: 12,
+                            bgcolor: "rgba(76, 175, 80, 0.95)",
+                            color: "white",
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            backdropFilter: "blur(10px)",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                          }}
+                        >
+                          RECOMMENDED
+                        </Box>
+
+                        {/* Type Badge */}
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 12,
+                            right: 12,
+                            zIndex: 2,
+                          }}
+                        >
+                          <Chip
+                            label={pkg.type}
+                            size="small"
+                            sx={{
+                              bgcolor: "rgba(255, 255, 255, 0.95)",
+                              color: "primary.main",
+                              fontWeight: 600,
+                              backdropFilter: "blur(10px)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                            }}
+                          />
+                        </Box>
+                      </Box>
+
+                      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                        {/* Package Name */}
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            lineHeight: 1.2,
+                            mb: 1,
+                            minHeight: "2.4rem",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {pkg.name}
+                        </Typography>
+
+                        {/* Description */}
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 2,
+                            fontSize: "0.8rem",
+                            lineHeight: 1.4,
+                            minHeight: "3.6rem",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {pkg.description}
+                        </Typography>
+
+                        {/* Price and Action */}
+                        <Box sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mt: "auto"
+                        }}>
+                          <Typography
+                            variant="h6"
+                            color="primary.main"
+                            sx={{
+                              fontSize: "1.1rem",
+                              fontWeight: 700,
+                            }}
+                          >
+                            ${(pkg.price?.discounted || pkg.price)?.toLocaleString?.('en-US') || pkg.price?.discounted || pkg.price}
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                              bgcolor: "success.main",
+                              "&:hover": {
+                                bgcolor: "success.dark",
+                                transform: "scale(1.05)",
+                              },
+                              fontSize: "0.7rem",
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: 2,
+                              transition: "all 0.3s ease",
+                            }}
+                            onClick={() => onInterested(pkg)}
+                          >
+                            Interested
+                          </Button>
+                        </Box>
+
+                        {/* View Details Button */}
+                        <Box sx={{ mt: 2 }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenModal(pkg);
+                            }}
+                            sx={{
+                              fontWeight: 600,
+                              py: 1,
+                              borderWidth: 2,
+                              "&:hover": {
+                                bgcolor: "primary.main",
+                                color: "white",
+                                borderWidth: 2,
+                                transform: "scale(1.02)",
+                              },
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grow>
+                </Grid>
+              );
+            })}
+          </Grid>
+
+          {/* Empty State */}
+          {sharedPackages.length === 0 && (
+            <Box sx={{ textAlign: "center", py: 6 }}>
+              <Typography variant="h6" color="text.secondary">
+                No packages shared yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Your agent will share personalized travel packages during the call
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </DialogContent>
 
       {/* Sticky Footer for Comparison */}
@@ -653,14 +587,13 @@ const CustomerCatalogView = ({
       )}
 
       {/* Package Details Modal */}
-      {/* Remove debugging log that causes re-renders */}
       {modalOpen && (
-      <PackageDetailsModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        packageData={selectedPackage}
-        userType="customer"
-      />
+        <PackageDetailsModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          packageData={selectedPackage}
+          userType="customer"
+        />
       )}
     </Box>
   );
